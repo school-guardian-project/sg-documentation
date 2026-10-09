@@ -1,4 +1,3 @@
-<br/><br/><br/>
 
 **Propuesta Técnica del Software**
 
@@ -29,7 +28,7 @@ Neiva, 6 de octubre de 2026
 
 Presione F9 (o clic derecho → Actualizar campo) para generar el índice.
 
-# 1\. Resumen ejecutivo
+# 1 Resumen ejecutivo
 
 ## 1.1 La propuesta en síntesis
 
@@ -68,7 +67,7 @@ El modelo propuesto separa el dominio en **nueve servicios de dominio** detrás 
 | Duración estimada          | 28 semanas (estimación preliminar)                                      |
 | Esfuerzo estimado          | 107–156 personas·semana (estimación)                                    |
 
-# 2\. Diagnóstico y problema
+# 2 Diagnóstico y problema
 
 ## 2.1 Situación actual del transporte escolar
 
@@ -127,7 +126,7 @@ La comunicación se resuelve por canales informales —llamadas, mensajes y avis
 | De entrega    | Integraciones externas de GPS y notificaciones aún sin proveedor confirmado.             | No pueden considerarse listas para producción hasta cerrar el contrato. |
 | De proceso    | Ramas develop, main y docs; mensajes de confirmación con convención.                     | Cambios y liberaciones siguen el flujo documentado.                     |
 
-# 3\. Objetivos de la propuesta
+# 3 Objetivos de la propuesta
 
 ## 3.1 Objetivo general
 
@@ -159,7 +158,7 @@ Diseñar, construir y poner en marcha una plataforma centralizada que garantice 
 | D-05 | Carga inicial de datos de la institución          | Datos           | Demostración y puesta en marcha   | Abierta             | Imposibilidad de aceptación con datos reales |
 | D-06 | Formato del flujo del dispositivo GPS             | Externo         | Ingesta de posicionamiento        | Abierta             | Seguimiento no disponible en vivo            |
 
-# 4\. Solución y alcance
+# 4 Solución y alcance
 
 ## 4.1 Descripción de la solución
 
@@ -232,7 +231,7 @@ Guardian Escolar se compone de cuatro bloques construidos sobre una base común 
 | PARENT      | Acudiente: sigue la ruta, recibe notificaciones de subida y bajada y consulta el historial.           | Móvil           |
 | STUDENT     | Estudiante: identificación QR vinculada a su perfil para bordar el vehículo.                          | Móvil           |
 
-# 5\. Modelo arquitectónico y stack
+# 5 Modelo arquitectónico y stack
 
 ## 5.1 Estilo arquitectónico y principios técnicos
 
@@ -461,7 +460,7 @@ Las relaciones centrales del negocio son institución → sede → (bus, ruta, p
 | Pipeline por servicio                                          | Detección temprana de regresiones y liberaciones repetibles.                                                                   | Publicación manual                                         |
 | Registros correlacionados, salud y métricas                    | Diagnóstico entre servicios y verificación del objetivo de disponibilidad.                                                     | Registros en texto plano sin correlación                   |
 
-# 6\. Capacidades funcionales clave
+# 6 Capacidades funcionales clave
 
 ## 6.1 Estructura de requisitos
 
@@ -517,7 +516,7 @@ El alcance funcional comprende **30 requisitos funcionales distribuidos en 10 gr
 
 Las historias se priorizan con un enfoque de seguridad primero: se entrega completa la cadena crítica —identidad, usuarios, rutas, flota, escaneo QR y notificaciones— antes de incorporar funciones de madurez como el reporte de incidentes y la personalización.
 
-# 7\. Seguridad y cumplimiento
+# 7 Seguridad y cumplimiento
 
 ## 7.1 Identificación, autorización y sesiones
 
@@ -579,7 +578,7 @@ Las historias se priorizan con un enfoque de seguridad primero: se entrega compl
 
 El servicio de auditoría concentra el registro de acciones críticas y de errores en un esquema de solo inserción. A esta evidencia se suman el historial de bordadas (Boarding), las ejecuciones de ruta (RouteExecution), las alertas y sus destinatarios (Alert, AlertRecipient) y las sesiones (SessionProfile). En conjunto, permiten reconstruir qué ocurrió en un trayecto, quién ejecutó una acción administrativa y qué usuarios fueron notificados.
 
-# 8\. Modelo de despliegue y entornos
+# 8 Modelo de despliegue y entornos
 
 ## 8.1 Entornos
 
@@ -687,7 +686,7 @@ curl -fsS <http://localhost:8000/health>
 
 La publicación en producción utiliza despliegue canario con reversión automática. Antes de liberar se verifica la revisión y aprobación del cambio, el paso de la batería de pruebas en el entorno de pruebas —incluido el rendimiento con k6—, la aprobación de aceptación de la institución, la ejecución de las migraciones antes del código y la disponibilidad del procedimiento de reversión. Ante un comportamiento adverso, se revierte a la versión anterior y, si existiera una migración incompatible, se activa el procedimiento de contingencia con aprobación del responsable técnico.
 
-# 9\. Plan de implementación por fases
+# 9 Plan de implementación por fases
 
 ## 9.1 Enfoque de entrega
 
@@ -744,7 +743,7 @@ Hito H1 H2 H3 H4 H5
 
 Escala: una columna equivale a una semana. Las duraciones y las fechas son una estimación preliminar sujeta a la confirmación de dependencias externas.
 
-# 10\. Recursos
+# 10 Recursos
 
 ## 10.1 Equipo y roles
 
@@ -793,7 +792,7 @@ La dedicación corresponde a la fase de construcción, en la que el equipo alcan
 | Pruebas de rendimiento     | k6 en el entorno de pruebas                                                                           | Verificación de latencia antes de liberar       |
 | Monitoreo                  | Comprobaciones de salud, registros estructurados con identificador de correlación, métricas y alertas | Observabilidad de pruebas y producción          |
 
-# 11\. Estimación de esfuerzo por fase
+# 11 Estimación de esfuerzo por fase
 
 ## 11.1 Base de la estimación
 
@@ -842,7 +841,7 @@ La estimación se expresa en **personas·semana** y se presenta como **rango**, 
 
 Los porcentajes son referencias de planeación y no constituyen un compromiso contractual.
 
-# 12\. Análisis de riesgos
+# 12 Análisis de riesgos
 
 ## 12.1 Criterios de valoración
 
@@ -921,7 +920,7 @@ Las estrategias disponibles son mitigar (reducir probabilidad o impacto), evitar
 | Q-03 | ¿Cuáles son los objetivos de punto y tiempo de recuperación por esquema?                 | Operación             | Puesta en marcha     |
 | Q-04 | ¿Qué tolerancia fuera de línea debe soportar el cálculo de tiempos estimados de llegada? | Dominio               | Siguiente incremento |
 
-# 13\. Criterios de éxito
+# 13 Criterios de éxito
 
 ## 13.1 Resultados clave
 
@@ -951,7 +950,7 @@ Las estrategias disponibles son mitigar (reducir probabilidad o impacto), evitar
 
 El sistema se considera aceptado cuando la batería de pruebas en el entorno de pruebas se supera —unitarias, de integración, de extremo a extremo, de contrato, de carga y de seguridad—, el objetivo de disponibilidad y la latencia P95 se verifican, las pruebas de humo son satisfactorias en cada entorno, la revisión de seguridad no reporta hallazgos críticos pendientes y la institución aprueba formalmente el alcance entregado.
 
-# 14\. Conclusiones y próximos pasos
+# 14 Conclusiones y próximos pasos
 
 ## 14.1 Conclusiones
 

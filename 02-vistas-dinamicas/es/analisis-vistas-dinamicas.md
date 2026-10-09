@@ -1,4 +1,3 @@
-<br/><br/><br/>
 
 **Análisis del Software: Vistas Dinámicas**
 
@@ -29,7 +28,7 @@ Neiva, 6 de octubre de 2026
 
 Presione F9 (o clic derecho → Actualizar campo) para generar el índice.
 
-# 1\. Introducción
+# 1 Introducción
 
 ## 1.1 Propósito
 
@@ -89,7 +88,7 @@ Los diagramas se presentan en notación gráfica ASCII. La numeración de los me
 | Servicio de notificaciones push | Entrega de avisos a los dispositivos móvil                        | Notificaciones Expo (DeviceToken)               |
 | Dispositivo GPS                 | Emisión periódica de posición a bordo del bus                     | Dispositivo embarcado con IMEI registrado       |
 
-# 2\. Diagrama general de casos de uso
+# 2 Diagrama general de casos de uso
 
 ## 2.1 Descripción general
 
@@ -142,7 +141,7 @@ Los casos sin requisito formal asociado (UC-04, UC-21 y UC-22) cubren capacidade
 | Inclusión | UC-08 Asignar bus a ruta            | UC-06 Asignar conductor a bus         | La cobertura de la ruta deriva del conductor del bus     |
 | Extensión | UC-02 Gestión de cuentas            | UC-22 Auditoría                       | La desactivación de cuentas genera registro de auditoría |
 
-# 3\. Diagramas de secuencia
+# 3 Diagramas de secuencia
 
 Los diagramas de esta sección representan los flujos de mensajes entre clientes, puerta de enlace, servicios de dominio y broker de eventos. Cada diagrama se acompaña de su tabla de mensajes paso a paso y de las notas de excepción que describen los resultados alternativos y de error.
 
@@ -690,7 +689,7 @@ Notas de excepción:
 - Fallo del proveedor de notificaciones: se aplica reintento con espera creciente y se registra el error para su seguimiento.
 - Alerta no leída dentro del plazo: permanece en estado pendiente de atención y es visible en el tablero administrativo.
 
-# 4\. Diagramas de actividad
+# 4 Diagramas de actividad
 
 Los diagramas de actividad describen procesos de negocio completos, con los carriles de responsabilidad de cada participante, los puntos de decisión y las guardas que condicionan el avance del flujo.
 
@@ -991,7 +990,7 @@ Los diagramas de actividad describen procesos de negocio completos, con los carr
 | 8     | ¿Fallo de consumo?        | Decisión  | Servicio de auditoría | Guarda: el mensaje no fue procesado.                                 |
 | 9     | Reintento                 | Actividad | Servicio de auditoría | Reproceso con identificador de evento para garantizar idempotencia.  |
 
-# 5\. Diagramas de estados
+# 5 Diagramas de estados
 
 Las máquinas de estados siguientes describen el ciclo de vida de los objetos persistentes. Cada transición se etiqueta con el evento que la provoca y se condiciona por una guarda cuando la regla de negocio lo exige.
 
@@ -1356,7 +1355,7 @@ v
 | INACTIVE            | Reactivación por el administrador                  | Datos de la cuenta íntegros                  | Restablecimiento de la capacidad de autenticación                     | ACTIVE   |
 | INACTIVE            | Eliminación lógica definitiva                      | Conservación del registro histórico          | Mantenimiento del registro sin borrado físico para auditoría          | INACTIVE |
 
-# 6\. Trazabilidad dinámica ↔ RF/HU
+# 6 Trazabilidad dinámica ↔ RF/HU
 
 La tabla siguiente vincula cada artefacto dinámico con los requisitos funcionales e historias de usuario que modela, de modo que toda vista dinámica quede justificada y todo requisito con comportamiento relevante aparezca representado.
 

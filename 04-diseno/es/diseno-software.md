@@ -1,4 +1,3 @@
-<br/><br/><br/>
 
 **Diseño del Software**
 
@@ -29,7 +28,7 @@ Neiva, 6 de octubre de 2026
 
 Presione F9 (o clic derecho → Actualizar campo) para generar el índice.
 
-# 1\. Introducción y principios de diseño
+# 1 Introducción y principios de diseño
 
 ## 1.1 Propósito y alcance
 
@@ -85,7 +84,7 @@ Los principios siguientes rigen toda decisión de diseño del sistema y se eval�
 | Tiempo                  | Marcas de fecha y hora en DATETIME2 con huso horario UTC en los flujos nuevos                                                                                                            |
 | Comunicación            | REST versionado en el borde, gRPC para llamadas internas de baja latencia y Kafka para desacoplamiento asincrónico; diagramas en representación ASCII orientada a lectura en texto plano |
 
-# 2\. Modelo arquitectónico
+# 2 Modelo arquitectónico
 
 La arquitectura de Guardian Escolar se describe en cuatro vistas complementarias: contexto, contenedores, despliegue y capas internas. Las tres primeras siguen la notación de vistas de arquitectura (contexto, contenedores y componentes) adaptada a diagramas ASCII, de modo que el documento sea legible en cualquier medio de texto y no dependa de imágenes ni de notaciones gráficas propietarias.
 
@@ -399,7 +398,7 @@ Las siguientes preocupaciones se resuelven de forma transversal y no quedan conf
 | Accesibilidad                | Contraste mínimo de 4.5:1 para texto, 3:1 para elementos gráficos, navegación completa por teclado y soporte de lector de pantalla.                                                                                        |
 | Trazabilidad de la operación | Toda acción relevante genera un evento de auditoría con actor, acción, entidad, marca de tiempo y origen.                                                                                                                  |
 
-# 3\. Patrones de diseño aplicados
+# 3 Patrones de diseño aplicados
 
 Los patrones de esta sección fueron verificados en la implementación del sistema. La tabla los presenta con su intención, el lugar donde se aplica y el mecanismo concreto que lo materializa.
 
@@ -436,7 +435,7 @@ Los patrones de esta sección fueron verificados en la implementación del siste
 | Malla de servicio                                         | El número de servicios y el tráfico actual no justifican la sobrecarga operativa de un sidecar en cada contenedor.                                              |
 | Modelo de resultado enriquecido (envoltorio de resultado) | Los errores se devuelven con el estado HTTP propio de la operación y un cuerpo de problema normalizado, sin envoltorio adicional en el cuerpo de éxito.         |
 
-# 4\. Interfaces gráficas
+# 4 Interfaces gráficas
 
 La plataforma se entrega en dos superficies: una aplicación web de gestión y una aplicación móvil de consulta y registro en campo. La web se dirige a los perfiles administrativos (super administrador y administrador del colegio) y a las pantallas públicas; la móvil se dirige a conductor, acudiente y estudiante, que operan desde el vehículo o desde el camino. Ambas superficies comparten tokens, componentes y reglas de validación, de modo que la identidad visual y el comportamiento sean un solo sistema.
 
@@ -1093,7 +1092,7 @@ Estructura y comportamiento:
 - Los iconos sueltos reciben etiqueta accesible o mensaje emergente.
 - No se permite desplazamiento horizontal ni controles superpuestos en ningún punto de quiebre, y el texto se puede ampliar sin pérdida de contenido ni solapamientos.
 
-# 5\. Modelo de datos
+# 5 Modelo de datos
 
 La plataforma se persiste en una base de datos relacional única sobre SQL Server 2022 con once esquemas lógicos, uno por contexto de dominio, y treinta y ocho tablas en total. Cada servicio accede únicamente a su esquema; las claves foráneas que cruzan esquemas existen para garantizar integridad referencial dentro del motor, no para habilitar lecturas directas entre servicios. El esquema físico se mantiene con migraciones versionadas que se aplican en orden determinista en cada arranque.
 
@@ -1551,7 +1550,7 @@ Datos semilla con los que arranca el sistema:
 | Retención operativa          | Las posiciones de GpsLocation y las sesiones de SessionProfile son datos de volumen creciente y se depuran por antigüedad conforme a la política de retención de la plataforma. |
 | Copias de seguridad          | La base se respalda de forma programada con restauración verificada; el esquema se reconstruye con migraciones si la restauración no es posible.                                |
 
-# 6\. Contratos de interfaz
+# 6 Contratos de interfaz
 
 Los contratos se agrupan en tres familias: recursos REST versionados bajo el prefijo /api/v1 y expuestos a través del paso de API, eventos de dominio publicados en el broker, y llamadas RPC internas de baja latencia. La autorización se evalúa por rol y permiso tanto en el paso de API como en cada servicio, de modo que la columna de rol de la tabla siguiente representa la matriz de acceso efectiva.
 
@@ -1673,7 +1672,7 @@ Las llamadas internas de baja latencia usan RPC sobre canal persistente en el pu
 
 Comportamiento del cliente: canal compartido con ciclo de vida gestionado por el contenedor, tiempo límite por llamada, reintento acotado ante fallo transitorio y transformación del error remoto a un error de dominio que la capa de API traduce a una respuesta de problema. Los mensajes de solicitud y respuesta transportan identificadores como cadenas y estados como valores booleanos o de catálogo, evitando estructuras anidadas profundas.
 
-# 7\. Decisiones y trade-offs de diseño
+# 7 Decisiones y trade-offs de diseño
 
 **Tabla 37**. Decisiones de diseño y alternativas descartadas
 

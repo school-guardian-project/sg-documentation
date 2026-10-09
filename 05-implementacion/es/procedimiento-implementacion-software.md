@@ -1,4 +1,3 @@
-<br/><br/><br/>
 
 **Procedimiento de Implementación del Software**
 
@@ -29,7 +28,7 @@ Neiva, 6 de octubre de 2026
 
 Presione F9 (o clic derecho → Actualizar campo) para generar el índice.
 
-# 1\. Propósito y alcance
+# 1 Propósito y alcance
 
 ## 1.1 Propósito
 
@@ -69,7 +68,7 @@ Excluye: el desarrollo de funcionalidad y las pruebas de nivel de código, ejecu
 - Los plazos del cronograma son **estimaciones de planificación**; los compromisos contractuales se fijan en el acta de aceptación.
 - «Entorno» designa al conjunto de componentes desplegados con la misma finalidad; «componente», a cualquier unidad desplegable.
 
-# 2\. Prerrequisitos
+# 2 Prerrequisitos
 
 ## 2.1 Recursos de hardware
 
@@ -150,7 +149,7 @@ docker images
 
 La implantación no comienza si alguna comprobación falla o si la línea base de código no corresponde a la versión aprobada para publicación.
 
-# 3\. Arquitectura de entornos
+# 3 Arquitectura de entornos
 
 ## 3.1 Entornos soportados
 
@@ -261,7 +260,7 @@ v
 
 La convención de nombres de variables es APP_\[SERVICIO\]\_\[VARIABLE\]; cada servicio conserva además sus claves de cadena de conexión y de dirección del broker.
 
-# 4\. Procedimiento de implementación paso a paso
+# 4 Procedimiento de implementación paso a paso
 
 ## 4.1 Paso 1: infraestructura base
 
@@ -627,7 +626,7 @@ Cierre: cada uno de los cinco roles inicia sesión, los permisos corresponden al
 
 Se registra la configuración aplicada con fecha, responsable y entorno; se rotan las credenciales provisionales de desarrollo si el entorno es de pruebas o de producción; se confirma que ningún secreto quede presente en los artefactos publicados ni en los registros; y, por último, se ejecuta la verificación completa de la sección 5.
 
-# 5\. Verificación posdespliegue
+# 5 Verificación posdespliegue
 
 ## 5.1 Criterio de veredicto
 
@@ -699,7 +698,7 @@ Se registra la configuración aplicada con fecha, responsable y entorno; se rota
 
 El responsable de calidad completa una fila por punto con identificador, fecha, entorno, responsable, resultado de la comprobación, veredicto y referencia de evidencia. El registro se conserva con el acta de aceptación y alimenta la revisión de dirección.
 
-# 6\. Versionado y publicación de versiones
+# 6 Versionado y publicación de versiones
 
 ## 6.1 Esquema de versionado
 
@@ -752,7 +751,7 @@ Reglas: ninguna integración directa en las ramas protegidas; una tarea por rama
 | Pruebas     | Continua tras integrar en la rama principal                                                | Automática, con aviso al responsable de producto            |
 | Producción  | Ventana acordada con la institución, evitando el horario de servicio de transporte escolar | Responsable técnico y, en cambios mayores, doble aprobación |
 
-# 7\. Procedimiento de reversión (rollback)
+# 7 Procedimiento de reversión (rollback)
 
 ## 7.1 Disparadores
 
@@ -818,7 +817,7 @@ En despliegues basados en contenedores sin orquestador, la reversión consiste e
 | R-5 | Métricas      | Tasa de error y latencia dentro de umbral                  | PASS/FAIL |
 | R-6 | Registro      | Incidente documentado con causa raíz y acciones            | PASS/FAIL |
 
-# 8\. Canal de integración y publicación continua
+# 8 Canal de integración y publicación continua
 
 ## 8.1 Etapas del canal
 
@@ -865,7 +864,7 @@ Los umbrales de cobertura y rendimiento proceden de la estrategia de calidad del
 | 7    | Observación intensiva los primeros 30 minutos                   | Responsable de guardia disponible        |
 | 8    | Registro de la publicación                                      | Historial de despliegues actualizado     |
 
-# 9\. Monitoreo y soporte post-implementación
+# 9 Monitoreo y soporte post-implementación
 
 ## 9.1 Objetivos de nivel de servicio
 
@@ -937,7 +936,7 @@ Principios: se respalda la instancia completa y se documentan los responsables d
 - **Presupuesto de error**: agotado el objetivo de disponibilidad, se priorizan correcciones por encima de nueva funcionalidad.
 - **Soporte post-implementación**: periodo de acompañamiento con guardia definida, revisión semanal de alertas y reporte de estado al cierre de cada semana.
 
-# 10\. Matriz RACI y cronograma de implantación
+# 10 Matriz RACI y cronograma de implantación
 
 ## 10.1 Roles del equipo de implantación
 
@@ -982,16 +981,16 @@ Duraciones estimadas de planificación; los compromisos contractuales se fijan c
 
 | Fase                      | Actividad central                                     | Duración estimada | Dependencia         | Resultado                 |
 | ------------------------- | ----------------------------------------------------- | ----------------- | ------------------- | ------------------------- |
-| 1\. Preparación           | Prerrequisitos, secretos y accesos                    | 2 jornadas        | Línea base aprobada | Entorno habilitado        |
-| 2\. Infraestructura base  | Motor, broker, almacén efímero y borde                | 1 jornada         | Fase 1              | Infraestructura saludable |
-| 3\. Base de datos         | Migraciones de los 11 esquemas y verificación         | 2 jornadas        | Fase 2              | 38 tablas disponibles     |
-| 4\. Servicios de dominio  | Construcción, arranque y salud de los nueve servicios | 2 jornadas        | Fase 3              | Servicios operativos      |
-| 5\. Puerta de enlace      | Rutas, políticas y verificación de ruteo              | 1 jornada         | Fase 4              | Tráfico enrutado          |
-| 6\. Clientes              | Publicación web y generación y distribución móvil     | 2 jornadas        | Fase 5              | Aplicaciones disponibles  |
-| 7\. Configuración inicial | Variables, políticas, catálogos y usuarios semilla    | 1 jornada         | Fase 6              | Sistema parametrizado     |
-| 8\. Verificación          | Checklist completo con veredicto                      | 2 jornadas        | Fase 7              | Veredicto PASS            |
-| 9\. Aceptación            | Demostración, observaciones y firma                   | 1 jornada         | Fase 8              | Acta firmada              |
-| 10\. Soporte              | Acompañamiento post-implementación                    | 30 días           | Fase 9              | Cierre del soporte        |
+| 1 Preparación           | Prerrequisitos, secretos y accesos                    | 2 jornadas        | Línea base aprobada | Entorno habilitado        |
+| 2 Infraestructura base  | Motor, broker, almacén efímero y borde                | 1 jornada         | Fase 1              | Infraestructura saludable |
+| 3 Base de datos         | Migraciones de los 11 esquemas y verificación         | 2 jornadas        | Fase 2              | 38 tablas disponibles     |
+| 4 Servicios de dominio  | Construcción, arranque y salud de los nueve servicios | 2 jornadas        | Fase 3              | Servicios operativos      |
+| 5 Puerta de enlace      | Rutas, políticas y verificación de ruteo              | 1 jornada         | Fase 4              | Tráfico enrutado          |
+| 6 Clientes              | Publicación web y generación y distribución móvil     | 2 jornadas        | Fase 5              | Aplicaciones disponibles  |
+| 7 Configuración inicial | Variables, políticas, catálogos y usuarios semilla    | 1 jornada         | Fase 6              | Sistema parametrizado     |
+| 8 Verificación          | Checklist completo con veredicto                      | 2 jornadas        | Fase 7              | Veredicto PASS            |
+| 9 Aceptación            | Demostración, observaciones y firma                   | 1 jornada         | Fase 8              | Acta firmada              |
+| 10 Soporte              | Acompañamiento post-implementación                    | 30 días           | Fase 9              | Cierre del soporte        |
 
 Total estimado: 14 jornadas de implantación más 30 días de soporte posterior.
 
@@ -1009,7 +1008,7 @@ Total estimado: 14 jornadas de implantación más 30 días de soporte posterior.
 | M6 — Sistema parametrizado | Políticas y usuarios semilla operativos            | Registro de configuración        |
 | M7 — Aceptación            | Verificación en PASS y firma del acta              | Acta de aceptación               |
 
-# 11\. Gestión de cambios y aceptación
+# 11 Gestión de cambios y aceptación
 
 ## 11.1 Clasificación de los cambios
 

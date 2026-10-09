@@ -1,4 +1,3 @@
-<br/><br/><br/>
 
 **Acciones Correctivas, Preventivas y de Mejoramiento**
 
@@ -29,7 +28,7 @@ Neiva, 6 de octubre de 2026
 
 Presione F9 (o clic derecho → Actualizar campo) para generar el índice.
 
-# 1\. Introducción y objetivo
+# 1 Introducción y objetivo
 
 ## 1.1 Propósito
 
@@ -80,7 +79,7 @@ El documento está dirigido al equipo del proyecto, al responsable de calidad y 
 | RPO / RTO      | Objetivo de punto de recuperación y objetivo de tiempo de recuperación.                        |
 | SLO            | Objetivo de nivel de servicio (disponibilidad 99,9 % en producción).                           |
 
-# 2\. Marco conceptual de las acciones ACPM
+# 2 Marco conceptual de las acciones ACPM
 
 ## 2.1 Acción correctiva
 
@@ -143,7 +142,7 @@ El documento está dirigido al equipo del proyecto, al responsable de calidad y 
 | Dependencias y preguntas abiertas del proyecto                      | Preventiva                | Líder de proyecto                       |
 | Auditoría interna del sistema de gestión                            | Preventiva / mejoramiento | Responsable de calidad y pruebas        |
 
-# 3\. Clasificación y criterios de severidad y prioridad
+# 3 Clasificación y criterios de severidad y prioridad
 
 ## 3.1 Criterio de clasificación por tipo
 
@@ -216,7 +215,7 @@ La evidencia es el soporte del cierre y se declara al definir la acción, no des
 - Una ACPM **bloqueada por una dependencia externa** (proveedor de notificaciones, alimentación de dispositivos de posición, datos maestros de instituciones) se mantiene en estado «En espera» con la dependencia registrada, y su plazo se suspende solo con aprobación del líder de proyecto.
 - No se cierra ninguna ACPM con causa raíz no confirmada; la ausencia de análisis impide el cierre aunque la acción esté implementada.
 
-# 4\. Procedimiento documentado de gestión ACPM
+# 4 Procedimiento documentado de gestión ACPM
 
 ## 4.1 Flujo general del procedimiento
 
@@ -302,13 +301,13 @@ Métricas y tablero actualizados
 
 | Etapa                        | Actividad realizada                                                                | Responsable                                       | Plazo máximo                            |
 | ---------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------- | --------------------------------------- |
-| 1\. Detección                | Identificación del hallazgo con evidencia objetiva                                 | Quien detecta, en el rol que origina la detección | Dentro de la misma jornada              |
-| 2\. Registro                 | Apertura en el registro maestro con el formulario único y clasificación preliminar | Responsable de calidad y pruebas                  | 2 días hábiles                          |
-| 3\. Análisis de causa raíz   | Cinco porqués e Ishikawa; confirmación de la causa con evidencia                   | Responsable técnico con el responsable de calidad | 5 días hábiles (3 días en prioridad P1) |
-| 4\. Definición de la acción  | Tipo, alcance, responsable, fecha compromiso y criterio de eficacia                | Líder de proyecto                                 | 3 días hábiles                          |
-| 5\. Implementación           | Ejecución del cambio y registro de la evidencia                                    | Responsable asignado en la etapa 4                | Según prioridad (sección 3.3)           |
-| 6\. Verificación de eficacia | Evaluación contra el criterio definido, por rol distinto del implementador         | Responsable de calidad y pruebas                  | Según prioridad (sección 3.3)           |
-| 7\. Cierre                   | Aprobación, archivado de evidencia, lección aprendida y actualización de métricas  | Líder de proyecto                                 | 5 días hábiles tras la verificación     |
+| 1 Detección                | Identificación del hallazgo con evidencia objetiva                                 | Quien detecta, en el rol que origina la detección | Dentro de la misma jornada              |
+| 2 Registro                 | Apertura en el registro maestro con el formulario único y clasificación preliminar | Responsable de calidad y pruebas                  | 2 días hábiles                          |
+| 3 Análisis de causa raíz   | Cinco porqués e Ishikawa; confirmación de la causa con evidencia                   | Responsable técnico con el responsable de calidad | 5 días hábiles (3 días en prioridad P1) |
+| 4 Definición de la acción  | Tipo, alcance, responsable, fecha compromiso y criterio de eficacia                | Líder de proyecto                                 | 3 días hábiles                          |
+| 5 Implementación           | Ejecución del cambio y registro de la evidencia                                    | Responsable asignado en la etapa 4                | Según prioridad (sección 3.3)           |
+| 6 Verificación de eficacia | Evaluación contra el criterio definido, por rol distinto del implementador         | Responsable de calidad y pruebas                  | Según prioridad (sección 3.3)           |
+| 7 Cierre                   | Aprobación, archivado de evidencia, lección aprendida y actualización de métricas  | Líder de proyecto                                 | 5 días hábiles tras la verificación     |
 
 **Tiempo objetivo de ciclo completo** (de la etapa 1 a la etapa 7): no superior a 45 días naturales para prioridad P1 y P2, y no superior a un ciclo de sprint para acciones de mejoramiento derivadas de deuda técnica.
 
@@ -495,7 +494,7 @@ Toda ACPM deja rastro en los artefactos de gestión del proyecto. La trazabilida
 
 **Comunicación.** La apertura de una acción de prioridad P1 se comunica en la jornada siguiente a su registro a los responsables involucrados y al líder de proyecto. El estado completo del registro se comunica en la revisión semanal de calidad. Las acciones con impacto en usuarios (bordadas, notificaciones, seguimiento en tiempo real) se comunican también al responsable de operaciones para su incorporación en el aviso a usuarios cuando corresponda. Las acciones sin responsable designado o sin fecha compromiso se escalan de oficio por el responsable de calidad en el siguiente ciclo de revisión.
 
-# 5\. Registro maestro de ACPM
+# 5 Registro maestro de ACPM
 
 ## 5.1 Criterios de lectura del registro
 
@@ -560,7 +559,7 @@ Toda ACPM deja rastro en los artefactos de gestión del proyecto. La trazabilida
 
 **Lectura de la síntesis:** las 17 acciones derivadas de brechas verificadas se encuentran abiertas o en ejecución a la fecha de referencia, con causa raíz confirmada en los casos en que la etapa 3 se completó y declarada «En análisis» en el resto. Ninguna acción real se declara cerrada porque ninguna tiene aún evidencia de eficacia registrada.
 
-# 6\. Métricas de gestión ACPM
+# 6 Métricas de gestión ACPM
 
 ## 6.1 Definición y fórmula
 
@@ -586,15 +585,15 @@ Los valores que siguen son **criterios de aceptación propuestos** por el equipo
 
 | Métrica                                   | Meta propuesta                                                      | Frecuencia de corte   | Responsable del cálculo          |
 | ----------------------------------------- | ------------------------------------------------------------------- | --------------------- | -------------------------------- |
-| 1\. Cumplimiento en plazo de cierre       | ≥ 90 %                                                              | Por ciclo de revisión | Responsable de calidad y pruebas |
-| 2\. Tiempo medio de ciclo                 | ≤ 30 días naturales                                                 | Por ciclo de revisión | Responsable de calidad y pruebas |
-| 3\. Tasa de recurrencia                   | ≤ 5 %                                                               | Trimestral            | Responsable de calidad y pruebas |
-| 4\. Verificación de eficacia              | 100 % de los cierres                                                | Por ciclo de revisión | Responsable de calidad y pruebas |
-| 5\. Distribución por tipo                 | Preventivas ≥ 30 % del total acumulado                              | Trimestral            | Líder de proyecto                |
-| 6\. Acciones vencidas                     | 0 al cierre de cada ciclo                                           | Por ciclo de revisión | Líder de proyecto                |
-| 7\. Antigüedad media de abiertas          | ≤ 45 días naturales                                                 | Por ciclo de revisión | Responsable de calidad y pruebas |
-| 8\. Cobertura de trazabilidad verificable | 100 % de los 30 requisitos funcionales antes de la aceptación final | Mensual               | Responsable de calidad y pruebas |
-| 9\. Carga preventiva                      | En tendencia creciente respecto del periodo anterior                | Trimestral            | Líder de proyecto                |
+| 1 Cumplimiento en plazo de cierre       | ≥ 90 %                                                              | Por ciclo de revisión | Responsable de calidad y pruebas |
+| 2 Tiempo medio de ciclo                 | ≤ 30 días naturales                                                 | Por ciclo de revisión | Responsable de calidad y pruebas |
+| 3 Tasa de recurrencia                   | ≤ 5 %                                                               | Trimestral            | Responsable de calidad y pruebas |
+| 4 Verificación de eficacia              | 100 % de los cierres                                                | Por ciclo de revisión | Responsable de calidad y pruebas |
+| 5 Distribución por tipo                 | Preventivas ≥ 30 % del total acumulado                              | Trimestral            | Líder de proyecto                |
+| 6 Acciones vencidas                     | 0 al cierre de cada ciclo                                           | Por ciclo de revisión | Líder de proyecto                |
+| 7 Antigüedad media de abiertas          | ≤ 45 días naturales                                                 | Por ciclo de revisión | Responsable de calidad y pruebas |
+| 8 Cobertura de trazabilidad verificable | 100 % de los 30 requisitos funcionales antes de la aceptación final | Mensual               | Responsable de calidad y pruebas |
+| 9 Carga preventiva                      | En tendencia creciente respecto del periodo anterior                | Trimestral            | Líder de proyecto                |
 
 **Regla de actualización:** el corte se realiza siempre en la misma fecha de cierre de ciclo; los valores se calculan sobre el registro maestro sin excepciones ni ajustes manuales, y toda métrica fuera de meta genera una entrada en el registro (correctiva si incumple un criterio adoptado, de mejoramiento si se trata de elevar la meta).
 
@@ -608,15 +607,15 @@ El siguiente corte ilustra la aplicación de las fórmulas con los datos del reg
 
 | Métrica                                   | Datos del corte                                        | Resultado                | Meta propuesta                     | Valoración                                 |
 | ----------------------------------------- | ------------------------------------------------------ | ------------------------ | ---------------------------------- | ------------------------------------------ |
-| 4\. Verificación de eficacia              | 4 cierres, los 4 con evidencia registrada              | 100 %                    | 100 %                              | Cumple                                     |
-| 5\. Distribución por tipo                 | Correctivas 8, preventivas 6, mejoramiento 7, total 21 | 38,1 % / 28,6 % / 33,3 % | Preventivas ≥ 30 %                 | No cumple: la carga preventiva debe crecer |
-| 6\. Acciones vencidas                     | Ninguna acción tiene fecha compromiso superada         | 0                        | 0                                  | Cumple                                     |
-| 8\. Cobertura de trazabilidad verificable | 0 requisitos con caso de prueba sobre 30               | 0 %                      | 100 % antes de la aceptación final | No cumple: acción de mayor prioridad       |
-| 9\. Carga preventiva                      | 6 preventivas sobre 21 registros                       | 28,6 %                   | En tendencia creciente             | En observación                             |
+| 4 Verificación de eficacia              | 4 cierres, los 4 con evidencia registrada              | 100 %                    | 100 %                              | Cumple                                     |
+| 5 Distribución por tipo                 | Correctivas 8, preventivas 6, mejoramiento 7, total 21 | 38,1 % / 28,6 % / 33,3 % | Preventivas ≥ 30 %                 | No cumple: la carga preventiva debe crecer |
+| 6 Acciones vencidas                     | Ninguna acción tiene fecha compromiso superada         | 0                        | 0                                  | Cumple                                     |
+| 8 Cobertura de trazabilidad verificable | 0 requisitos con caso de prueba sobre 30               | 0 %                      | 100 % antes de la aceptación final | No cumple: acción de mayor prioridad       |
+| 9 Carga preventiva                      | 6 preventivas sobre 21 registros                       | 28,6 %                   | En tendencia creciente             | En observación                             |
 
 Las métricas 1, 2, 3 y 7 requieren al menos dos cierres reales para su cálculo; se reportarán desde el primer corte en el que existan acciones cerradas con evidencia, y su ausencia se declara explícitamente en el tablero para no falsear el estado del sistema de gestión.
 
-# 7\. Tablero de indicadores para la revisión de dirección
+# 7 Tablero de indicadores para la revisión de dirección
 
 ## 7.1 Composición del tablero
 
@@ -651,7 +650,7 @@ El tablero se presenta íntegro en cada revisión de dirección y combina las m�
 
 **Escalado:** cualquier indicador fuera de meta en dos cortes consecutivos se convierte en una entrada de mejoramiento con fecha compromiso, y su persistencia se eleva a la revisión de dirección con propuesta de cambio de prioridad o de recursos.
 
-# 8\. Conclusiones
+# 8 Conclusiones
 
 - El procedimiento ACPM ofrece un ciclo completo y auditable: de la detección al cierre con evidencia, con causa raíz obligatoria y verificación realizada por un rol distinto del implementador.
 - La clasificación en correctiva, preventiva y de mejoramiento, sustentada en criterios explícitos, evita que la corrección se disfraze de mejora y que una no conformidad se cierre sin causa tratada.
@@ -659,7 +658,7 @@ El tablero se presenta íntegro en cada revisión de dirección y combina las m�
 - Las métricas y el tablero convierten la calidad en un asunto de dirección y no solo del equipo técnico: la trazabilidad entre requisitos y pruebas, hoy el indicador más débil, es el compromiso de mayor prioridad.
 - El valor del sistema de gestión se sostiene en la disciplina de actualización: un registro sin cierres verificados, o una meta sin corte periódico, pierde su capacidad de decisión.
 
-# 9\. Anexo A — Plantilla de formulario único
+# 9 Anexo A — Plantilla de formulario único
 
 El formulario único es el instrumento de apertura, seguimiento y cierre de toda ACPM. Su uso es obligatorio; los campos vacíos impiden avanzar a la etapa siguiente.
 
@@ -669,7 +668,7 @@ Sistema: Guardian Escolar Versión del formulario: 1.0
 
 ────────────────────────────────────────────────────────────────────
 
-1\. IDENTIFICACIÓN
+1 IDENTIFICACIÓN
 
 ID: ...................... (C-nn | P-nn | M-nn | EJ-nn)
 
@@ -685,7 +684,7 @@ Estado: .................. (Abierta | En análisis | En ejecución |
 
 En espera | Verificación | Cerrada)
 
-2\. DETECCIÓN
+2 DETECCIÓN
 
 Fecha de detección: .......
 
@@ -705,21 +704,21 @@ Requisito, historia o componente afectado: (RF-nn | NFR-nnn | HU-... )
 
 Evidencia de la detección: ..................
 
-3\. ANÁLISIS DE CAUSA RAÍZ
+3 ANÁLISIS DE CAUSA RAÍZ
 
 Causas inmediatas: ........
 
 Técnica de los cinco porqués:
 
-1\. ¿Por qué? .............
+1 ¿Por qué? .............
 
-2\. ¿Por qué? .............
+2 ¿Por qué? .............
 
-3\. ¿Por qué? .............
+3 ¿Por qué? .............
 
-4\. ¿Por qué? .............
+4 ¿Por qué? .............
 
-5\. ¿Por qué? .............
+5 ¿Por qué? .............
 
 Diagrama de Ishikawa (6M):
 
@@ -739,7 +738,7 @@ Causa raíz confirmada: .....
 
 Factores contribuyentes (sin asignación de culpa): ................
 
-4\. DEFINICIÓN DE LA ACCIÓN
+4 DEFINICIÓN DE LA ACCIÓN
 
 Acción definida: ..........
 
@@ -763,7 +762,7 @@ Aprobación del líder de proyecto: ........ Fecha: ...............
 
 Conformidad de seguridad (si aplica): ..... Fecha: ...............
 
-5\. IMPLEMENTACIÓN
+5 IMPLEMENTACIÓN
 
 Fecha de implementación: ...
 
@@ -771,7 +770,7 @@ Cambios realizados: ........
 
 Evidencia de ejecución: ....
 
-6\. VERIFICACIÓN DE EFICACIA
+6 VERIFICACIÓN DE EFICACIA
 
 Fecha de verificación: .....
 
@@ -785,7 +784,7 @@ Si no es eficaz: reapertura conservando el ID, elevación de
 
 prioridad un nivel y retorno a la etapa 3: ........................
 
-7\. CIERRE
+7 CIERRE
 
 Fecha de cierre: ...........
 
@@ -799,7 +798,7 @@ Métricas y tablero actualizados: (Sí | No)
 
 Próxima revisión programada: ......
 
-8\. REAPERTURA (solo si corresponde)
+8 REAPERTURA (solo si corresponde)
 
 Motivo: ....................
 

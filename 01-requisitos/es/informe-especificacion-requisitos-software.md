@@ -1,4 +1,3 @@
-<br/><br/><br/>
 
 **Informe de Especificación de Requisitos de Software**
 
@@ -16,187 +15,187 @@ Neiva, 6 de octubre de 2026
 
 **Tabla de contenido**
 
-[**1\. Introducción**](#_heading=) **5**
+[**1 Introducción**](#introduccion) **5**
 
-[1.1 Propósito](#_heading=) 5
+[1.1 Propósito](#proposito) 5
 
-[1.2 Alcance del producto](#_heading=) 5
+[1.2 Alcance del producto](#alcance-del-producto) 5
 
-[1.3 Definiciones y acrónimos](#_heading=) 7
+[1.3 Definiciones y acrónimos](#definiciones-y-acronimos) 7
 
-[1.4 Referencias normativas](#_heading=) 8
+[1.4 Referencias normativas](#referencias-normativas) 8
 
-[**2\. Descripción general**](#_heading=) **9**
+[**2 Descripción general**](#descripcion-general) **9**
 
-[2.1 Perspectiva y características del producto](#_heading=) 9
+[2.1 Perspectiva y características del producto](#perspectiva-y-caracteristicas-del-producto) 9
 
-[2.2 Clases de usuario](#_heading=) 11
+[2.2 Clases de usuario](#clases-de-usuario) 11
 
-[2.3 Restricciones](#_heading=) 12
+[2.3 Restricciones](#restricciones) 12
 
-[2.4 Supuestos y dependencias](#_heading=) 13
+[2.4 Supuestos y dependencias](#supuestos-y-dependencias) 13
 
-[**3\. Requisitos funcionales**](#_heading=) **15**
+[**3 Requisitos funcionales**](#requisitos-funcionales) **15**
 
-[3.1 Grupo RF-01 — Gestión de usuarios (User Management)](#_heading=) 16
+[3.1 Grupo RF-01 — Gestión de usuarios (User Management)](#grupo-rf-01-gestion-de-usuarios-user-management) 16
 
-[3.1.1 RF-01.1 — Creación de cuentas con rol asignado](#_heading=) 16
+[3.1.1 RF-01.1 — Creación de cuentas con rol asignado](#rf-01-1-creacion-de-cuentas-con-rol-asignado) 16
 
-[3.1.2 RF-01.2 — Actualización de datos de la cuenta](#_heading=) 17
+[3.1.2 RF-01.2 — Actualización de datos de la cuenta](#rf-01-2-actualizacion-de-datos-de-la-cuenta) 17
 
-[3.1.3 RF-01.3 — Activación y desactivación de cuentas](#_heading=) 18
+[3.1.3 RF-01.3 — Activación y desactivación de cuentas](#rf-01-3-activacion-y-desactivacion-de-cuentas) 18
 
-[3.1.4 RF-01.4 — Vinculación de estudiantes a la cuenta de un acudiente](#_heading=) 19
+[3.1.4 RF-01.4 — Vinculación de estudiantes a la cuenta de un acudiente](#rf-01-4-vinculacion-de-estudiantes-a-la-cuenta-de-un-acudiente) 19
 
-[3.2 Grupo RF-02 — Autenticación (Authentication)](#_heading=) 19
+[3.2 Grupo RF-02 — Autenticación (Authentication)](#grupo-rf-02-autenticacion-authentication) 19
 
-[3.2.1 RF-02.1 — Autenticación con credenciales y emisión de token](#_heading=) 20
+[3.2.1 RF-02.1 — Autenticación con credenciales y emisión de token](#rf-02-1-autenticacion-con-credenciales-y-emision-de-token) 20
 
-[3.2.2 RF-02.2 — Cierre de sesión y renovación del token](#_heading=) 20
+[3.2.2 RF-02.2 — Cierre de sesión y renovación del token](#rf-02-2-cierre-de-sesion-y-renovacion-del-token) 20
 
-[3.3 Grupo RF-03 — Gestión de rutas escolares, flota y asignaciones (School Route Management)](#_heading=) 21
+[3.3 Grupo RF-03 — Gestión de rutas escolares, flota y asignaciones (School Route Management)](#grupo-rf-03-gestion-de-rutas-escolares-flota-y-asignaciones-school-route-management) 21
 
-[3.3.1 RF-03.1 — Creación de una ruta con datos, paradas ordenadas y horarios](#_heading=) 22
+[3.3.1 RF-03.1 — Creación de una ruta con datos, paradas ordenadas y horarios](#rf-03-1-creacion-de-una-ruta-con-datos-paradas-ordenadas-y-horarios) 22
 
-[3.3.2 RF-03.2 — Validación de unicidad de la ruta](#_heading=) 22
+[3.3.2 RF-03.2 — Validación de unicidad de la ruta](#rf-03-2-validacion-de-unicidad-de-la-ruta) 22
 
-[3.3.3 RF-03.3 — Actualización de datos de la ruta](#_heading=) 23
+[3.3.3 RF-03.3 — Actualización de datos de la ruta](#rf-03-3-actualizacion-de-datos-de-la-ruta) 23
 
-[3.3.4 RF-03.4 — Eliminación de datos de la ruta](#_heading=) 24
+[3.3.4 RF-03.4 — Eliminación de datos de la ruta](#rf-03-4-eliminacion-de-datos-de-la-ruta) 24
 
-[3.3.5 RF-03.5 — Asignación y desasignación de un bus a una ruta](#_heading=) 24
+[3.3.5 RF-03.5 — Asignación y desasignación de un bus a una ruta](#rf-03-5-asignacion-y-desasignacion-de-un-bus-a-una-ruta) 24
 
-[3.3.6 RF-03.6 — Creación, edición y activación o desactivación de buses](#_heading=) 25
+[3.3.6 RF-03.6 — Creación, edición y activación o desactivación de buses](#rf-03-6-creacion-edicion-y-activacion-o-desactivacion-de-buses) 25
 
-[3.3.7 RF-03.7 — Asignación y desasignación de un conductor a un bus](#_heading=) 26
+[3.3.7 RF-03.7 — Asignación y desasignación de un conductor a un bus](#rf-03-7-asignacion-y-desasignacion-de-un-conductor-a-un-bus) 26
 
-[3.3.8 RF-03.8 — Asignación de estudiantes a una ruta con parada de subida y bajada](#_heading=) 27
+[3.3.8 RF-03.8 — Asignación de estudiantes a una ruta con parada de subida y bajada](#rf-03-8-asignacion-de-estudiantes-a-una-ruta-con-parada-de-subida-y-bajada) 27
 
-[3.4 Grupo RF-04 — Gestión del escaneo QR: control de subida y bajada (QR Scanning Management)](#_heading=) 27
+[3.4 Grupo RF-04 — Gestión del escaneo QR: control de subida y bajada (QR Scanning Management)](#grupo-rf-04-gestion-del-escaneo-qr-control-de-subida-y-bajada-qr-scanning-management) 27
 
-[3.4.1 RF-04.1 — Generación del código QR individual del estudiante](#_heading=) 28
+[3.4.1 RF-04.1 — Generación del código QR individual del estudiante](#rf-04-1-generacion-del-codigo-qr-individual-del-estudiante) 28
 
-[3.4.2 RF-04.2 — Lectura del código QR para registrar la subida](#_heading=) 29
+[3.4.2 RF-04.2 — Lectura del código QR para registrar la subida](#rf-04-2-lectura-del-codigo-qr-para-registrar-la-subida) 29
 
-[3.4.3 RF-04.3 — Lectura del código QR para registrar la bajada](#_heading=) 29
+[3.4.3 RF-04.3 — Lectura del código QR para registrar la bajada](#rf-04-3-lectura-del-codigo-qr-para-registrar-la-bajada) 29
 
-[3.5 Grupo RF-05 — Notificaciones de bordada (Boarding Notifications)](#_heading=) 30
+[3.5 Grupo RF-05 — Notificaciones de bordada (Boarding Notifications)](#grupo-rf-05-notificaciones-de-bordada-boarding-notifications) 30
 
-[3.5.1 RF-05.1 — Detección del evento de subida del estudiante](#_heading=) 30
+[3.5.1 RF-05.1 — Detección del evento de subida del estudiante](#rf-05-1-deteccion-del-evento-de-subida-del-estudiante) 30
 
-[3.5.2 RF-05.2 — Notificación automática de subida al acudiente](#_heading=) 31
+[3.5.2 RF-05.2 — Notificación automática de subida al acudiente](#rf-05-2-notificacion-automatica-de-subida-al-acudiente) 31
 
-[3.5.3 RF-05.3 — Notificación automática de bajada al acudiente](#_heading=) 32
+[3.5.3 RF-05.3 — Notificación automática de bajada al acudiente](#rf-05-3-notificacion-automatica-de-bajada-al-acudiente) 32
 
-[3.5.4 RF-05.4 — Alerta por detención prolongada del bus](#_heading=) 32
+[3.5.4 RF-05.4 — Alerta por detención prolongada del bus](#rf-05-4-alerta-por-detencion-prolongada-del-bus) 32
 
-[3.6 Grupo RF-06 — Rastreo en tiempo real del bus (Real-Time Bus Tracking)](#_heading=) 33
+[3.6 Grupo RF-06 — Rastreo en tiempo real del bus (Real-Time Bus Tracking)](#grupo-rf-06-rastreo-en-tiempo-real-del-bus-real-time-bus-tracking) 33
 
-[3.6.1 RF-06.1 — Captura continua de la ubicación GPS del bus](#_heading=) 33
+[3.6.1 RF-06.1 — Captura continua de la ubicación GPS del bus](#rf-06-1-captura-continua-de-la-ubicacion-gps-del-bus) 33
 
-[3.6.2 RF-06.2 — Visualización de la ubicación en mapa interactivo](#_heading=) 34
+[3.6.2 RF-06.2 — Visualización de la ubicación en mapa interactivo](#rf-06-2-visualizacion-de-la-ubicacion-en-mapa-interactivo) 34
 
-[3.6.3 RF-06.3 — Alerta por pérdida de señal GPS](#_heading=) 35
+[3.6.3 RF-06.3 — Alerta por pérdida de señal GPS](#rf-06-3-alerta-por-perdida-de-senal-gps) 35
 
-[3.7 Grupo RF-07 — Gestión de viajes (Trip Management)](#_heading=) 36
+[3.7 Grupo RF-07 — Gestión de viajes (Trip Management)](#grupo-rf-07-gestion-de-viajes-trip-management) 36
 
-[3.7.1 RF-07.1 — Ciclo de viaje: inicio y finalización](#_heading=) 36
+[3.7.1 RF-07.1 — Ciclo de viaje: inicio y finalización](#rf-07-1-ciclo-de-viaje-inicio-y-finalizacion) 36
 
-[3.8 Grupo RF-08 — Incidentes (Incidents)](#_heading=) 37
+[3.8 Grupo RF-08 — Incidentes (Incidents)](#grupo-rf-08-incidentes-incidents) 37
 
-[3.8.1 RF-08.1 — Reporte de incidente y notificación automática](#_heading=) 37
+[3.8.1 RF-08.1 — Reporte de incidente y notificación automática](#rf-08-1-reporte-de-incidente-y-notificacion-automatica) 37
 
-[3.9 Grupo RF-09 — Consulta de rutas (Route Inquiry)](#_heading=) 38
+[3.9 Grupo RF-09 — Consulta de rutas (Route Inquiry)](#grupo-rf-09-consulta-de-rutas-route-inquiry) 38
 
-[3.9.1 RF-09.1 — Consulta por el acudiente de la ruta de su estudiante](#_heading=) 38
+[3.9.1 RF-09.1 — Consulta por el acudiente de la ruta de su estudiante](#rf-09-1-consulta-por-el-acudiente-de-la-ruta-de-su-estudiante) 38
 
-[3.9.2 RF-09.2 — Consulta por el conductor de su ruta asignada](#_heading=) 38
+[3.9.2 RF-09.2 — Consulta por el conductor de su ruta asignada](#rf-09-2-consulta-por-el-conductor-de-su-ruta-asignada) 38
 
-[3.10 Grupo RF-10 — Personalización (Personalization)](#_heading=) 39
+[3.10 Grupo RF-10 — Personalización (Personalization)](#grupo-rf-10-personalizacion-personalization) 39
 
-[3.10.1 RF-10.1 — Personalización de los colores del sistema (tema)](#_heading=) 39
+[3.10.1 RF-10.1 — Personalización de los colores del sistema (tema)](#rf-10-1-personalizacion-de-los-colores-del-sistema-tema) 39
 
-[3.10.2 RF-10.2 — Configuración de la interfaz en al menos cuatro idiomas](#_heading=) 40
+[3.10.2 RF-10.2 — Configuración de la interfaz en al menos cuatro idiomas](#rf-10-2-configuracion-de-la-interfaz-en-al-menos-cuatro-idiomas) 40
 
-[**4\. Requisitos no funcionales**](#_heading=) **42**
+[**4 Requisitos no funcionales**](#requisitos-no-funcionales) **42**
 
-[4.1 RNF-01 Rendimiento](#_heading=) 42
+[4.1 RNF-01 Rendimiento](#rnf-01-rendimiento) 42
 
-[4.2 RNF-02 Disponibilidad](#_heading=) 43
+[4.2 RNF-02 Disponibilidad](#rnf-02-disponibilidad) 43
 
-[4.3 RNF-03 Escalabilidad](#_heading=) 44
+[4.3 RNF-03 Escalabilidad](#rnf-03-escalabilidad) 44
 
-[4.4 RNF-04 Seguridad](#_heading=) 44
+[4.4 RNF-04 Seguridad](#rnf-04-seguridad) 44
 
-[4.5 RNF-05 Observabilidad](#_heading=) 45
+[4.5 RNF-05 Observabilidad](#rnf-05-observabilidad) 45
 
-[4.6 RNF-06 Mantenibilidad](#_heading=) 46
+[4.6 RNF-06 Mantenibilidad](#rnf-06-mantenibilidad) 46
 
-[4.7 RNF-07 Portabilidad](#_heading=) 46
+[4.7 RNF-07 Portabilidad](#rnf-07-portabilidad) 46
 
-[4.8 RNF-08 Recuperación ante desastres](#_heading=) 46
+[4.8 RNF-08 Recuperación ante desastres](#rnf-08-recuperacion-ante-desastres) 46
 
-[**5\. Requisitos de interfaz**](#_heading=) **48**
+[**5 Requisitos de interfaz**](#requisitos-de-interfaz) **48**
 
-[5.1 Interfaz de usuario](#_heading=) 48
+[5.1 Interfaz de usuario](#interfaz-de-usuario) 48
 
-[5.2 Interfaz de hardware](#_heading=) 48
+[5.2 Interfaz de hardware](#interfaz-de-hardware) 48
 
-[5.3 Interfaz de software](#_heading=) 49
+[5.3 Interfaz de software](#interfaz-de-software) 49
 
-[5.4 Interfaz de comunicaciones](#_heading=) 49
+[5.4 Interfaz de comunicaciones](#interfaz-de-comunicaciones) 49
 
-[**6\. Requisitos de datos**](#_heading=) **52**
+[**6 Requisitos de datos**](#requisitos-de-datos) **52**
 
-[6.1 Modelo lógico de datos (resumen)](#_heading=) 52
+[6.1 Modelo lógico de datos (resumen)](#modelo-logico-de-datos-resumen) 52
 
-[6.2 Reglas de integridad y validación](#_heading=) 53
+[6.2 Reglas de integridad y validación](#reglas-de-integridad-y-validacion) 53
 
-[6.3 Ciclo de vida y retención de datos](#_heading=) 54
+[6.3 Ciclo de vida y retención de datos](#ciclo-de-vida-y-retencion-de-datos) 54
 
-[6.4 Protección de datos personales](#_heading=) 55
+[6.4 Protección de datos personales](#proteccion-de-datos-personales) 55
 
-[**7\. Historias de usuario**](#_heading=) **56**
+[**7 Historias de usuario**](#historias-de-usuario) **56**
 
-[7.1 Épicas](#_heading=) 56
+[7.1 Épicas](#epicas) 56
 
-[7.2 Historias de usuario por épica](#_heading=) 56
+[7.2 Historias de usuario por épica](#historias-de-usuario-por-epica) 56
 
-[7.2.1 Épica EP-001 — Subida y bajada mediante QR](#_heading=) 56
+[7.2.1 Épica EP-001 — Subida y bajada mediante QR](#epica-ep-001-subida-y-bajada-mediante-qr) 56
 
-[7.2.2 Épica EP-002 — Notificaciones](#_heading=) 57
+[7.2.2 Épica EP-002 — Notificaciones](#epica-ep-002-notificaciones) 57
 
-[7.2.3 Épica EP-003 — Gestión de rutas y flota](#_heading=) 58
+[7.2.3 Épica EP-003 — Gestión de rutas y flota](#epica-ep-003-gestion-de-rutas-y-flota) 58
 
-[7.2.4 Épica EP-004 — Gestión de usuarios y familia](#_heading=) 61
+[7.2.4 Épica EP-004 — Gestión de usuarios y familia](#epica-ep-004-gestion-de-usuarios-y-familia) 61
 
-[7.2.5 Épica EP-005 — Seguimiento en vivo](#_heading=) 62
+[7.2.5 Épica EP-005 — Seguimiento en vivo](#epica-ep-005-seguimiento-en-vivo) 62
 
-[7.2.6 Épica EP-006 — Incidentes](#_heading=) 62
+[7.2.6 Épica EP-006 — Incidentes](#epica-ep-006-incidentes) 62
 
-[7.2.7 Épica EP-007 — Interfaz y personalización](#_heading=) 63
+[7.2.7 Épica EP-007 — Interfaz y personalización](#epica-ep-007-interfaz-y-personalizacion) 63
 
-[**8\. Criterios de aceptación generales y estrategia de verificación**](#_heading=) **64**
+[**8 Criterios de aceptación generales y estrategia de verificación**](#criterios-de-aceptacion-generales-y-estrategia-de-verificacion) **64**
 
-[8.1 Criterios de aceptación generales](#_heading=) 64
+[8.1 Criterios de aceptación generales](#criterios-de-aceptacion-generales) 64
 
-[8.2 Estrategia de verificación](#_heading=) 64
+[8.2 Estrategia de verificación](#estrategia-de-verificacion) 64
 
-[8.3 Umbrales de calidad y métricas](#_heading=) 66
+[8.3 Umbrales de calidad y métricas](#umbrales-de-calidad-y-metricas) 66
 
-[**9\. Glosario**](#_heading=) **67**
+[**9 Glosario**](#glosario) **67**
 
-[9.1 Glosario del dominio](#_heading=) 67
+[9.1 Glosario del dominio](#glosario-del-dominio) 67
 
-[9.2 Glosario técnico](#_heading=) 68
+[9.2 Glosario técnico](#glosario-tecnico) 68
 
-[**10\. Anexo: matriz de trazabilidad HU↔RF**](#_heading=) **70**
+[**10 Anexo: matriz de trazabilidad HU↔RF**](#anexo-matriz-de-trazabilidad-hurf) **70**
 
-[10.1 Matriz de historias de usuario hacia requisitos funcionales](#_heading=) 70
+[10.1 Matriz de historias de usuario hacia requisitos funcionales](#matriz-de-historias-de-usuario-hacia-requisitos-funcionales) 70
 
-[10.2 Cobertura de requisitos funcionales](#_heading=) 71
+[10.2 Cobertura de requisitos funcionales](#cobertura-de-requisitos-funcionales) 71
 
-# 1\. Introducción
+# 1 Introducción
 
 ## 1.1 Propósito
 
@@ -312,7 +311,7 @@ Las siguientes normas y marcos regulatorios son de aplicación obligatoria o de 
 | Reglamento General de Protección de Datos (GDPR)   | Aplicable si el producto se ofrece en la Unión Europea.                                       |
 | ---                                                | ---                                                                                           |
 
-# 2\. Descripción general
+# 2 Descripción general
 
 ## 2.1 Perspectiva y características del producto
 
@@ -448,7 +447,7 @@ Los actores externos que interactúan con el sistema, sin ser usuarios autentica
 | 13    | Contrato de roles y autorización alineado entre los equipos de servicios y de frontales.                                  | Dependencia | Se bloquearía la publicación con control de acceso.                            |
 | ---   | ---                                                                                                                       | ---         | ---                                                                            |
 
-# 3\. Requisitos funcionales
+# 3 Requisitos funcionales
 
 Esta sección especifica **30 requisitos funcionales** organizados en **10 grupos funcionales**. Cada requisito indica su identificador, su denominación, una descripción detallada, sus entradas y salidas, sus precondiciones y postcondiciones y las reglas de negocio que lo gobiernan. La prioridad utiliza la escala Alta, Media y Baja según el valor de negocio y la dependencia operativa.
 
@@ -1204,7 +1203,7 @@ El usuario selecciona el idioma de la interfaz entre al menos cuatro idiomas sop
 - Los diccionarios se resuelven en el cliente y la preferencia se almacena por dispositivo.
 - El cambio de idioma no altera los datos almacenados ni los mensajes de negocio ya registrados.
 
-# 4\. Requisitos no funcionales
+# 4 Requisitos no funcionales
 
 Los ocho requisitos no funcionales fijan métricas verificables. Toda afirmación de calidad no medida se considera insuficiente: «el sistema debe ser rápido» no es un requisito; «la latencia P95 de los endpoints críticos debe ser inferior a 300 ms bajo 50 solicitudes por segundo» sí lo es.
 
@@ -1371,7 +1370,7 @@ Cada solicitud externa genera un identificador de correlación único que se pro
 | Desastre total de la región           | < 4 horas (recuperación en región secundaria) | < 1 hora                       |
 | ---                                   | ---                                           | ---                            |
 
-# 5\. Requisitos de interfaz
+# 5 Requisitos de interfaz
 
 ## 5.1 Interfaz de usuario
 
@@ -1452,7 +1451,7 @@ Adicionalmente, los servicios emiten eventos de dominio internos —alta y actua
 | gRPC                        | 5001       | Telemetría de geolocalización        |
 | ---                         | ---        | ---                                  |
 
-# 6\. Requisitos de datos
+# 6 Requisitos de datos
 
 ## 6.1 Modelo lógico de datos (resumen)
 
@@ -1519,7 +1518,7 @@ El software administra **38 tablas** distribuidas en **11 esquemas**, uno por se
 | Trazabilidad      | Toda acción crítica sobre datos personales queda registrada con quién, qué, cuándo, dirección IP y aplicación.                                                     |
 | ---               | ---                                                                                                                                                                |
 
-# 7\. Historias de usuario
+# 7 Historias de usuario
 
 ## 7.1 Épicas
 
@@ -1593,7 +1592,7 @@ El backlog del producto se organiza en **7 épicas** que agrupan **20 historias 
 | HU-UI-002 | El usuario elige el idioma de la interfaz entre al menos cuatro | Todos los roles | Web y móvil    | Baja          | Al elegir un idioma soportado, las etiquetas se cargan desde su diccionario; sin preferencia guardada, la interfaz usa el idioma predeterminado. |
 | ---       | ---                                                             | ---             | ---            | ---           | ---                                                                                                                                              |
 
-# 8\. Criterios de aceptación generales y estrategia de verificación
+# 8 Criterios de aceptación generales y estrategia de verificación
 
 ## 8.1 Criterios de aceptación generales
 
@@ -1670,7 +1669,7 @@ Las pruebas unitarias se ejecutan en cada entrega de código; las de integració
 | Disponibilidad                     | SLO 99,9 % mensual                          | Monitoreo del entorno de producción                              |
 | ---                                | ---                                         | ---                                                              |
 
-# 9\. Glosario
+# 9 Glosario
 
 ## 9.1 Glosario del dominio
 
@@ -1766,7 +1765,7 @@ Las pruebas unitarias se ejecutan en cada entrega de código; las de integració
 | Umbral de detención     | Tiempo máximo configurado de inmovilización del bus antes de generar una alerta.                          |
 | ---                     | ---                                                                                                       |
 
-# 10\. Anexo: matriz de trazabilidad HU↔RF
+# 10 Anexo: matriz de trazabilidad HU↔RF
 
 ## 10.1 Matriz de historias de usuario hacia requisitos funcionales
 
