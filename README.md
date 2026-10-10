@@ -12,22 +12,22 @@ Cada documento tiene dos versiones:
 
 ```text
 documentation/
-├── 01-requisitos/
+├── 01-Informe-Especificacion-Requisitos-Software/
 │   ├── es/
 │   └── en/
-├── 02-vistas-dinamicas/
+├── 02-Analisis-Software-Vistas-Dinamicas/
 │   ├── es/
 │   └── en/
-├── 03-propuesta-tecnica/
+├── 03-Propuesta-Tecnica-Software/
 │   ├── es/
 │   └── en/
-├── 04-diseno/
+├── 04-Diseno-Software/
 │   ├── es/
 │   └── en/
-├── 05-implementacion/
+├── 07-Procedimiento-Implementacion-Software/
 │   ├── es/
 │   └── en/
-└── 06-mejoramiento/
+└── 08-Acciones-Correctivas-Prevenciones-Mejoramiento/
     ├── es/
     └── en/
 ```
@@ -36,12 +36,12 @@ documentation/
 
 | Área | Español | English |
 | --- | --- | --- |
-| Requisitos | [Informe de especificación de requisitos](./01-requisitos/es/informe-especificacion-requisitos-software.md) | [Software Requirements Specification](./01-requisitos/en/software-requirements-specification.md) |
-| Vistas dinámicas | [Análisis de vistas dinámicas](./02-vistas-dinamicas/es/analisis-vistas-dinamicas.md) | [Dynamic Views Analysis](./02-vistas-dinamicas/en/dynamic-views-analysis.md) |
-| Propuesta técnica | [Propuesta técnica](./03-propuesta-tecnica/es/propuesta-tecnica.md) | [Technical Proposal](./03-propuesta-tecnica/en/technical-proposal.md) |
-| Diseño | [Diseño del software](./04-diseno/es/diseno-software.md) | [Software Design](./04-diseno/en/software-design.md) |
-| Implementación | [Procedimiento de implementación](./05-implementacion/es/procedimiento-implementacion-software.md) | [Implementation Procedure](./05-implementacion/en/software-implementation-procedure.md) |
-| Mejoramiento | [Acciones correctivas, preventivas y de mejoramiento](./06-mejoramiento/es/acciones-correctivas-prevenciones-mejoramiento.md) | [Corrective, Preventive and Improvement Actions](./06-mejoramiento/en/corrective-preventive-improvement-actions.md) |
+| Requisitos | [Informe de especificación de requisitos](./01-Informe-Especificacion-Requisitos-Software/es/01-Informe-Especificacion-Requisitos-Software.md) | [Software Requirements Specification](./01-Informe-Especificacion-Requisitos-Software/en/01-Informe-Especificacion-Requisitos-Software.md) |
+| Vistas dinámicas | [Análisis del software: vistas dinámicas](./02-Analisis-Software-Vistas-Dinamicas/es/02-Analisis-Software-Vistas-Dinamicas.md) | [Software Analysis: Dynamic Views](./02-Analisis-Software-Vistas-Dinamicas/en/02-Analisis-Software-Vistas-Dinamicas.md) |
+| Propuesta técnica | [Propuesta técnica del software](./03-Propuesta-Tecnica-Software/es/03-Propuesta-Tecnica-Software.md) | [Software Technical Proposal](./03-Propuesta-Tecnica-Software/en/03-Propuesta-Tecnica-Software.md) |
+| Diseño | [Diseño del software](./04-Diseno-Software/es/04-Diseno-Software.md) | [Software Design](./04-Diseno-Software/en/04-Diseno-Software.md) |
+| Implementación | [Procedimiento de implementación del software](./07-Procedimiento-Implementacion-Software/es/07-Procedimiento-Implementacion-Software.md) | [Software Implementation Procedure](./07-Procedimiento-Implementacion-Software/en/07-Procedimiento-Implementacion-Software.md) |
+| Mejoramiento | [Acciones correctivas, preventivas y de mejoramiento](./08-Acciones-Correctivas-Prevenciones-Mejoramiento/es/08-Acciones-Correctivas-Prevenciones-Mejoramiento.md) | [Corrective, Preventive and Improvement Actions](./08-Acciones-Correctivas-Prevenciones-Mejoramiento/en/08-Acciones-Correctivas-Prevenciones-Mejoramiento.md) |
 
 ## Convenciones editoriales
 
