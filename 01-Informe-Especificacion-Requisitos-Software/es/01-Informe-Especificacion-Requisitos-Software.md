@@ -1,201 +1,40 @@
+# Informe de Especificación de Requisitos de Software
 
-**Informe de Especificación de Requisitos de Software**
+**Guardian Escolar**
 
-Guardian Escolar
+*Especificación de requisitos del sistema Guardian Escolar — plataforma de transporte escolar seguro*
 
-Johan Smith Santamaria Fernández  
-Sharik Dayanna Rojas Ibarra  
-Juan Pablo Chala Ramírez
+**Integrantes del proyecto:**
 
-SENA — Servicio Nacional de Aprendizaje  
-Ficha 3145556  
-Centro de La Industria , La Empresa y Los Servicios (Neiva - Huila)
+- Johan Smith Santamaria Fernández
+- Sharik Dayanna Rojas Ibarra
+- Juan Pablo Chala Ramírez
 
-Neiva, 6 de octubre de 2026
+**Programa:** Tecnólogo en Análisis y Desarrollo de Software
+**Ficha:** 3145556
+**Centro de formación:** Sede La Industria, La Empresa y Los Servicios - SENA
+**Lugar:** Neiva, Huila, Colombia
+**Fecha:** 6 de octubre de 2026
 
-**Tabla de contenido**
+---
 
-[**1 Introducción**](#introduccion) **5**
+## Tabla de contenido
 
-[1.1 Propósito](#proposito) 5
+1. [Introducción](#1-introducción)
+2. [Descripción general](#2-descripción-general)
+3. [Requisitos funcionales](#3-requisitos-funcionales)
+4. [Requisitos no funcionales](#4-requisitos-no-funcionales)
+5. [Requisitos de interfaz](#5-requisitos-de-interfaz)
+6. [Requisitos de datos](#6-requisitos-de-datos)
+7. [Historias de usuario](#7-historias-de-usuario)
+8. [Criterios de aceptación generales y estrategia de verificación](#8-criterios-de-aceptación-generales-y-estrategia-de-verificación)
+9. [Glosario](#9-glosario)
+10. [Anexo: matriz de trazabilidad HU↔RF](#10-anexo-matriz-de-trazabilidad-hurf)
+11. [Referencias](#11-referencias)
 
-[1.2 Alcance del producto](#alcance-del-producto) 5
+---
 
-[1.3 Definiciones y acrónimos](#definiciones-y-acronimos) 7
-
-[1.4 Referencias normativas](#referencias-normativas) 8
-
-[**2 Descripción general**](#descripcion-general) **9**
-
-[2.1 Perspectiva y características del producto](#perspectiva-y-caracteristicas-del-producto) 9
-
-[2.2 Clases de usuario](#clases-de-usuario) 11
-
-[2.3 Restricciones](#restricciones) 12
-
-[2.4 Supuestos y dependencias](#supuestos-y-dependencias) 13
-
-[**3 Requisitos funcionales**](#requisitos-funcionales) **15**
-
-[3.1 Grupo RF-01 — Gestión de usuarios (User Management)](#grupo-rf-01-gestion-de-usuarios-user-management) 16
-
-[3.1.1 RF-01.1 — Creación de cuentas con rol asignado](#rf-01-1-creacion-de-cuentas-con-rol-asignado) 16
-
-[3.1.2 RF-01.2 — Actualización de datos de la cuenta](#rf-01-2-actualizacion-de-datos-de-la-cuenta) 17
-
-[3.1.3 RF-01.3 — Activación y desactivación de cuentas](#rf-01-3-activacion-y-desactivacion-de-cuentas) 18
-
-[3.1.4 RF-01.4 — Vinculación de estudiantes a la cuenta de un acudiente](#rf-01-4-vinculacion-de-estudiantes-a-la-cuenta-de-un-acudiente) 19
-
-[3.2 Grupo RF-02 — Autenticación (Authentication)](#grupo-rf-02-autenticacion-authentication) 19
-
-[3.2.1 RF-02.1 — Autenticación con credenciales y emisión de token](#rf-02-1-autenticacion-con-credenciales-y-emision-de-token) 20
-
-[3.2.2 RF-02.2 — Cierre de sesión y renovación del token](#rf-02-2-cierre-de-sesion-y-renovacion-del-token) 20
-
-[3.3 Grupo RF-03 — Gestión de rutas escolares, flota y asignaciones (School Route Management)](#grupo-rf-03-gestion-de-rutas-escolares-flota-y-asignaciones-school-route-management) 21
-
-[3.3.1 RF-03.1 — Creación de una ruta con datos, paradas ordenadas y horarios](#rf-03-1-creacion-de-una-ruta-con-datos-paradas-ordenadas-y-horarios) 22
-
-[3.3.2 RF-03.2 — Validación de unicidad de la ruta](#rf-03-2-validacion-de-unicidad-de-la-ruta) 22
-
-[3.3.3 RF-03.3 — Actualización de datos de la ruta](#rf-03-3-actualizacion-de-datos-de-la-ruta) 23
-
-[3.3.4 RF-03.4 — Eliminación de datos de la ruta](#rf-03-4-eliminacion-de-datos-de-la-ruta) 24
-
-[3.3.5 RF-03.5 — Asignación y desasignación de un bus a una ruta](#rf-03-5-asignacion-y-desasignacion-de-un-bus-a-una-ruta) 24
-
-[3.3.6 RF-03.6 — Creación, edición y activación o desactivación de buses](#rf-03-6-creacion-edicion-y-activacion-o-desactivacion-de-buses) 25
-
-[3.3.7 RF-03.7 — Asignación y desasignación de un conductor a un bus](#rf-03-7-asignacion-y-desasignacion-de-un-conductor-a-un-bus) 26
-
-[3.3.8 RF-03.8 — Asignación de estudiantes a una ruta con parada de subida y bajada](#rf-03-8-asignacion-de-estudiantes-a-una-ruta-con-parada-de-subida-y-bajada) 27
-
-[3.4 Grupo RF-04 — Gestión del escaneo QR: control de subida y bajada (QR Scanning Management)](#grupo-rf-04-gestion-del-escaneo-qr-control-de-subida-y-bajada-qr-scanning-management) 27
-
-[3.4.1 RF-04.1 — Generación del código QR individual del estudiante](#rf-04-1-generacion-del-codigo-qr-individual-del-estudiante) 28
-
-[3.4.2 RF-04.2 — Lectura del código QR para registrar la subida](#rf-04-2-lectura-del-codigo-qr-para-registrar-la-subida) 29
-
-[3.4.3 RF-04.3 — Lectura del código QR para registrar la bajada](#rf-04-3-lectura-del-codigo-qr-para-registrar-la-bajada) 29
-
-[3.5 Grupo RF-05 — Notificaciones de bordada (Boarding Notifications)](#grupo-rf-05-notificaciones-de-bordada-boarding-notifications) 30
-
-[3.5.1 RF-05.1 — Detección del evento de subida del estudiante](#rf-05-1-deteccion-del-evento-de-subida-del-estudiante) 30
-
-[3.5.2 RF-05.2 — Notificación automática de subida al acudiente](#rf-05-2-notificacion-automatica-de-subida-al-acudiente) 31
-
-[3.5.3 RF-05.3 — Notificación automática de bajada al acudiente](#rf-05-3-notificacion-automatica-de-bajada-al-acudiente) 32
-
-[3.5.4 RF-05.4 — Alerta por detención prolongada del bus](#rf-05-4-alerta-por-detencion-prolongada-del-bus) 32
-
-[3.6 Grupo RF-06 — Rastreo en tiempo real del bus (Real-Time Bus Tracking)](#grupo-rf-06-rastreo-en-tiempo-real-del-bus-real-time-bus-tracking) 33
-
-[3.6.1 RF-06.1 — Captura continua de la ubicación GPS del bus](#rf-06-1-captura-continua-de-la-ubicacion-gps-del-bus) 33
-
-[3.6.2 RF-06.2 — Visualización de la ubicación en mapa interactivo](#rf-06-2-visualizacion-de-la-ubicacion-en-mapa-interactivo) 34
-
-[3.6.3 RF-06.3 — Alerta por pérdida de señal GPS](#rf-06-3-alerta-por-perdida-de-senal-gps) 35
-
-[3.7 Grupo RF-07 — Gestión de viajes (Trip Management)](#grupo-rf-07-gestion-de-viajes-trip-management) 36
-
-[3.7.1 RF-07.1 — Ciclo de viaje: inicio y finalización](#rf-07-1-ciclo-de-viaje-inicio-y-finalizacion) 36
-
-[3.8 Grupo RF-08 — Incidentes (Incidents)](#grupo-rf-08-incidentes-incidents) 37
-
-[3.8.1 RF-08.1 — Reporte de incidente y notificación automática](#rf-08-1-reporte-de-incidente-y-notificacion-automatica) 37
-
-[3.9 Grupo RF-09 — Consulta de rutas (Route Inquiry)](#grupo-rf-09-consulta-de-rutas-route-inquiry) 38
-
-[3.9.1 RF-09.1 — Consulta por el acudiente de la ruta de su estudiante](#rf-09-1-consulta-por-el-acudiente-de-la-ruta-de-su-estudiante) 38
-
-[3.9.2 RF-09.2 — Consulta por el conductor de su ruta asignada](#rf-09-2-consulta-por-el-conductor-de-su-ruta-asignada) 38
-
-[3.10 Grupo RF-10 — Personalización (Personalization)](#grupo-rf-10-personalizacion-personalization) 39
-
-[3.10.1 RF-10.1 — Personalización de los colores del sistema (tema)](#rf-10-1-personalizacion-de-los-colores-del-sistema-tema) 39
-
-[3.10.2 RF-10.2 — Configuración de la interfaz en al menos cuatro idiomas](#rf-10-2-configuracion-de-la-interfaz-en-al-menos-cuatro-idiomas) 40
-
-[**4 Requisitos no funcionales**](#requisitos-no-funcionales) **42**
-
-[4.1 RNF-01 Rendimiento](#rnf-01-rendimiento) 42
-
-[4.2 RNF-02 Disponibilidad](#rnf-02-disponibilidad) 43
-
-[4.3 RNF-03 Escalabilidad](#rnf-03-escalabilidad) 44
-
-[4.4 RNF-04 Seguridad](#rnf-04-seguridad) 44
-
-[4.5 RNF-05 Observabilidad](#rnf-05-observabilidad) 45
-
-[4.6 RNF-06 Mantenibilidad](#rnf-06-mantenibilidad) 46
-
-[4.7 RNF-07 Portabilidad](#rnf-07-portabilidad) 46
-
-[4.8 RNF-08 Recuperación ante desastres](#rnf-08-recuperacion-ante-desastres) 46
-
-[**5 Requisitos de interfaz**](#requisitos-de-interfaz) **48**
-
-[5.1 Interfaz de usuario](#interfaz-de-usuario) 48
-
-[5.2 Interfaz de hardware](#interfaz-de-hardware) 48
-
-[5.3 Interfaz de software](#interfaz-de-software) 49
-
-[5.4 Interfaz de comunicaciones](#interfaz-de-comunicaciones) 49
-
-[**6 Requisitos de datos**](#requisitos-de-datos) **52**
-
-[6.1 Modelo lógico de datos (resumen)](#modelo-logico-de-datos-resumen) 52
-
-[6.2 Reglas de integridad y validación](#reglas-de-integridad-y-validacion) 53
-
-[6.3 Ciclo de vida y retención de datos](#ciclo-de-vida-y-retencion-de-datos) 54
-
-[6.4 Protección de datos personales](#proteccion-de-datos-personales) 55
-
-[**7 Historias de usuario**](#historias-de-usuario) **56**
-
-[7.1 Épicas](#epicas) 56
-
-[7.2 Historias de usuario por épica](#historias-de-usuario-por-epica) 56
-
-[7.2.1 Épica EP-001 — Subida y bajada mediante QR](#epica-ep-001-subida-y-bajada-mediante-qr) 56
-
-[7.2.2 Épica EP-002 — Notificaciones](#epica-ep-002-notificaciones) 57
-
-[7.2.3 Épica EP-003 — Gestión de rutas y flota](#epica-ep-003-gestion-de-rutas-y-flota) 58
-
-[7.2.4 Épica EP-004 — Gestión de usuarios y familia](#epica-ep-004-gestion-de-usuarios-y-familia) 61
-
-[7.2.5 Épica EP-005 — Seguimiento en vivo](#epica-ep-005-seguimiento-en-vivo) 62
-
-[7.2.6 Épica EP-006 — Incidentes](#epica-ep-006-incidentes) 62
-
-[7.2.7 Épica EP-007 — Interfaz y personalización](#epica-ep-007-interfaz-y-personalizacion) 63
-
-[**8 Criterios de aceptación generales y estrategia de verificación**](#criterios-de-aceptacion-generales-y-estrategia-de-verificacion) **64**
-
-[8.1 Criterios de aceptación generales](#criterios-de-aceptacion-generales) 64
-
-[8.2 Estrategia de verificación](#estrategia-de-verificacion) 64
-
-[8.3 Umbrales de calidad y métricas](#umbrales-de-calidad-y-metricas) 66
-
-[**9 Glosario**](#glosario) **67**
-
-[9.1 Glosario del dominio](#glosario-del-dominio) 67
-
-[9.2 Glosario técnico](#glosario-tecnico) 68
-
-[**10 Anexo: matriz de trazabilidad HU↔RF**](#anexo-matriz-de-trazabilidad-hurf) **70**
-
-[10.1 Matriz de historias de usuario hacia requisitos funcionales](#matriz-de-historias-de-usuario-hacia-requisitos-funcionales) 70
-
-[10.2 Cobertura de requisitos funcionales](#cobertura-de-requisitos-funcionales) 71
-
-# 1 Introducción
+# 1. Introducción
 
 ## 1.1 Propósito
 
@@ -223,23 +62,14 @@ No forman parte del alcance de esta especificación los siguientes elementos, de
 | **Elemento fuera de alcance**                                                               | **Motivo**                                                             |
 | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | Cobros, facturación o pago del servicio de transporte escolar                               | Ajeno al propósito de seguridad y monitoreo                            |
-| ---                                                                                         | ---                                                                    |
 | Mantenimiento mecánico, combustible o taller de la flota                                    | No constituye un flujo de usuario confirmado                           |
-| ---                                                                                         | ---                                                                    |
 | Gestión académica (calificaciones, asistencia, aprendizaje)                                 | La plataforma gestiona transporte, no la vida académica                |
-| ---                                                                                         | ---                                                                    |
 | Transporte público y rutas no escolares                                                     | El dominio se limita al transporte escolar                             |
-| ---                                                                                         | ---                                                                    |
 | Compra, administración o instalación física de dispositivos GPS                             | Responsabilidad externa al software                                    |
-| ---                                                                                         | ---                                                                    |
 | Respuesta de emergencias autónoma o despacho automático                                     | La respuesta humana e institucional es externa                         |
-| ---                                                                                         | ---                                                                    |
 | Identificación biométrica o reconocimiento facial                                           | No requerida para el alcance actual y eleva obligaciones de privacidad |
-| ---                                                                                         | ---                                                                    |
 | Localización regulatoria multinacional                                                      | El contexto inicial es Neiva (Huila), Colombia                         |
-| ---                                                                                         | ---                                                                    |
 | Navegación autónoma del conductor y generación de rutas óptimas por inteligencia artificial | Fuera del alcance del producto actual                                  |
-| ---                                                                                         | ---                                                                    |
 
 El sistema **no ofrece autorregistro**: todas las cuentas de usuario las crea el administrador de la institución. No existe aplicación de escritorio; el acceso se realiza mediante el navegador web y la aplicación móvil.
 
@@ -250,43 +80,24 @@ El sistema **no ofrece autorregistro**: todas las cuentas de usuario las crea el
 | **Término**   | **Definición**                                                                                      |
 | ------------- | --------------------------------------------------------------------------------------------------- |
 | SRS           | _Software Requirements Specification_: especificación de requisitos de software.                    |
-| ---           | ---                                                                                                 |
 | RF            | Requisito funcional: función o comportamiento que el sistema debe observar.                         |
-| ---           | ---                                                                                                 |
 | RNF           | Requisito no funcional: cualidad o restricción medible del sistema.                                 |
-| ---           | ---                                                                                                 |
 | HU            | Historia de usuario: descripción breve de una necesidad desde el punto de vista del rol.            |
-| ---           | ---                                                                                                 |
 | Épica         | Agrupación de historias de usuario relacionadas por un mismo valor de negocio.                      |
-| ---           | ---                                                                                                 |
 | API           | Interfaz de programación de aplicaciones.                                                           |
-| ---           | ---                                                                                                 |
 | REST          | Estilo arquitectónico de intercambio de recursos mediante HTTP.                                     |
-| ---           | ---                                                                                                 |
 | gRPC          | Protocolo de comunicación remota de procedimientos de alta eficiencia.                              |
-| ---           | ---                                                                                                 |
 | JWT           | _JSON Web Token_: token firmado usado para autenticación y autorización.                            |
-| ---           | ---                                                                                                 |
 | RBAC          | Control de acceso basado en roles.                                                                  |
-| ---           | ---                                                                                                 |
 | QR            | Código de respuesta rápida bidimensional.                                                           |
-| ---           | ---                                                                                                 |
 | Bordada       | Evento de subida o bajada de un estudiante registrado en el bus.                                    |
-| ---           | ---                                                                                                 |
 | GPS           | Sistema de posicionamiento global.                                                                  |
-| ---           | ---                                                                                                 |
 | Acudiente     | Adulto responsable de uno o más estudiantes autorizado para consultar su información de transporte. |
-| ---           | ---                                                                                                 |
 | SLO           | Objetivo de nivel de servicio.                                                                      |
-| ---           | ---                                                                                                 |
 | P95 / P99     | Percentil 95 o 99 de una distribución de medidas.                                                   |
-| ---           | ---                                                                                                 |
 | RTO / RPO     | Objetivo de tiempo de recuperación / objetivo de punto de recuperación.                             |
-| ---           | ---                                                                                                 |
 | PII           | Información de identificación personal.                                                             |
-| ---           | ---                                                                                                 |
 | Tasa de error | Porcentaje de solicitudes que terminan en respuesta del servidor.                                   |
-| ---           | ---                                                                                                 |
 
 ## 1.4 Referencias normativas
 
@@ -297,21 +108,14 @@ Las siguientes normas y marcos regulatorios son de aplicación obligatoria o de 
 | **Referencia**                                     | **Objeto**                                                                                    |
 | -------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | IEEE 830-1998                                      | Guía para la elaboración de especificaciones de requisitos de software.                       |
-| ---                                                | ---                                                                                           |
 | ISO/IEC 25010:2011                                 | Modelo de características de calidad de producto de software.                                 |
-| ---                                                | ---                                                                                           |
 | ISO/IEC/IEEE 12207                                 | Procesos del ciclo de vida del software.                                                      |
-| ---                                                | ---                                                                                           |
 | ISO/IEC 29119                                      | Normas de pruebas de software.                                                                |
-| ---                                                | ---                                                                                           |
 | OWASP Top 10                                       | Riesgos críticos de seguridad en aplicaciones web.                                            |
-| ---                                                | ---                                                                                           |
 | Ley 1581 de 2012 y Decreto 1377 de 2013 (Colombia) | Protección de datos personales y habeas data, con tratamiento especial para datos de menores. |
-| ---                                                | ---                                                                                           |
 | Reglamento General de Protección de Datos (GDPR)   | Aplicable si el producto se ofrece en la Unión Europea.                                       |
-| ---                                                | ---                                                                                           |
 
-# 2 Descripción general
+# 2. Descripción general
 
 ## 2.1 Perspectiva y características del producto
 
@@ -359,21 +163,13 @@ La tabla siguiente resume las características del producto y su estado de satis
 | **Característica**   | **Manifestación en el producto**                                                             |
 | -------------------- | -------------------------------------------------------------------------------------------- |
 | Adecuación funcional | Cobertura de los 30 requisitos funcionales de la sección 3.                                  |
-| ---                  | ---                                                                                          |
 | Rendimiento          | Latencia y tiempos de entrega fijados en la sección 4.1.                                     |
-| ---                  | ---                                                                                          |
 | Compatibilidad       | Integración mediante REST, gRPC, eventos y notificación móvil push.                          |
-| ---                  | ---                                                                                          |
 | Usabilidad           | Interfaces por rol, navegación lateral, formularios validados y retroalimentación inmediata. |
-| ---                  | ---                                                                                          |
 | Fiabilidad           | Disponibilidad SLO del 99,9 %, recuperación ante fallas y alertas de pérdida de señal GPS.   |
-| ---                  | ---                                                                                          |
 | Seguridad            | Autenticación JWT RS256, autorización por rol, auditoría y protección de datos personales.   |
-| ---                  | ---                                                                                          |
 | Mantenibilidad       | Cobertura de pruebas, complejidad controlada y migraciones versionadas.                      |
-| ---                  | ---                                                                                          |
 | Portabilidad         | Despliegue contenedorizado independiente del sistema operativo anfitrión.                    |
-| ---                  | ---                                                                                          |
 
 El producto se orienta a tres objetivos: (1) garantizar la trazabilidad en tiempo real de cada trayecto escolar; (2) notificar a los acudientes el estado de subida y bajada de sus estudiantes; (3) ofrecer a la institución un panel de gestión de flota, rutas y usuarios con roles.
 
@@ -383,7 +179,13 @@ El sistema define cinco roles, codificados como valores de enumeración. Cada ro
 
 **Tabla 6**. _Clases de usuario y funciones por rol_
 
-<div class="joplin-table-wrapper"><table><thead><tr><th><p><strong>Rol</strong></p></th><th><p><strong>Denominación</strong></p></th><th><p><strong>Perfil y funciones principales</strong></p></th><th><p><strong>Interfaz</strong></p></th></tr><tr><th><pre><code>SUPER_ADMIN</code></pre></th><th><p>Operador de plataforma</p></th><th><p>Gestiona instituciones, configuración global y auditoría de la plataforma.</p></th><th><p>Web</p></th></tr><tr><th><pre><code>ADMIN</code></pre></th><th><p>Administrador escolar</p></th><th><p>Gestiona sedes, cursos, personas, flota, rutas y reportes de su institución.</p></th><th><p>Web</p></th></tr><tr><th><pre><code>DRIVER</code></pre></th><th><p>Conductor</p></th><th><p>Ejecuta rutas, confirma bordadas mediante escaneo QR y recibe alertas en la aplicación móvil.</p></th><th><p>Móvil</p></th></tr><tr><th><pre><code>PARENT</code></pre></th><th><p>Acudiente</p></th><th><p>Sigue la ruta, recibe notificaciones de subida y bajada y consulta el historial de bordadas.</p></th><th><p>Móvil</p></th></tr><tr><th><pre><code>STUDENT</code></pre></th><th><p>Estudiante</p></th><th><p>Consulta su identificación QR vinculada al perfil para bordar.</p></th><th><p>Móvil</p></th></tr></thead></table></div>
+| **Rol** | **Denominación** | **Perfil y funciones principales** | **Interfaz** |
+| --- | --- | --- | --- |
+| `SUPER_ADMIN` | Operador de plataforma | Gestiona instituciones, configuración global y auditoría de la plataforma. | Web |
+| `ADMIN` | Administrador escolar | Gestiona sedes, cursos, personas, flota, rutas y reportes de su institución. | Web |
+| `DRIVER` | Conductor | Ejecuta rutas, confirma bordadas mediante escaneo QR y recibe alertas en la aplicación móvil. | Móvil |
+| `PARENT` | Acudiente | Sigue la ruta, recibe notificaciones de subida y bajada y consulta el historial de bordadas. | Móvil |
+| `STUDENT` | Estudiante | Consulta su identificación QR vinculada al perfil para bordar. | Móvil |
 
 Los actores externos que interactúan con el sistema, sin ser usuarios autenticados, son el dispositivo GPS embarcado que emite posiciones y el proveedor de notificaciones push. La institución educativa, las familias y los servicios de emergencia permanecen fuera del sistema como partes que actúan sobre la información que este le entrega.
 
@@ -394,25 +196,15 @@ Los actores externos que interactúan con el sistema, sin ser usuarios autentica
 | **Tipo**          | **Restricción**                                                                                                                                                                                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Académica         | El proyecto se desarrolla en el programa de Análisis y Desarrollo de Software, ficha de programación 3145556, del Centro de formación de Neiva (Huila), Servicio Nacional de Aprendizaje.                                               |
-| ---               | ---                                                                                                                                                                                                                                     |
 | Geográfica        | El contexto operativo inicial es Neiva (Huila), Colombia.                                                                                                                                                                               |
-| ---               | ---                                                                                                                                                                                                                                     |
 | Tecnológica       | Frontal web en Angular 21 con Angular Material 3; aplicación móvil en React con Expo; servicios en Java 21 con Spring Boot (identificación y acceso) y en C# con .NET 10 (resto de servicios de dominio).                               |
-| ---               | ---                                                                                                                                                                                                                                     |
 | Arquitectónica    | Estilo microservicios con orientación a eventos detrás de un API Gateway; base de datos relacional única con esquema por servicio; migraciones obligatorias con Liquibase en cada arranque.                                             |
-| ---               | ---                                                                                                                                                                                                                                     |
 | De comunicaciones | Interfaz sincrónica versionada /api/v1 sobre REST/JSON; gRPC en el puerto 5001 para telemetría; eventos en Apache Kafka en modo KRaft (Kafka sin ZooKeeper).                                                                            |
-| ---               | ---                                                                                                                                                                                                                                     |
 | De seguridad      | Autenticación JWT RS256 con token de acceso de 15 minutos y token de actualización de 30 días; llave privada exclusiva del servicio de identificación y acceso; mínimo privilegio por rol; secretos únicamente en variables de entorno. |
-| ---               | ---                                                                                                                                                                                                                                     |
 | Regulatoria       | Cumplimiento de la Ley 1581 de 2012 y el Decreto 1377 de 2013, con tratamiento especial y consentimiento para datos de menores; GDPR si se ofrece el producto en la Unión Europea.                                                      |
-| ---               | ---                                                                                                                                                                                                                                     |
 | De explotación    | Despliegue en contenedores Docker y orquestación mediante Docker Compose; entornos de desarrollo local, pruebas y producción.                                                                                                           |
-| ---               | ---                                                                                                                                                                                                                                     |
 | De idioma         | Interfaz con al menos cuatro idiomas (español, inglés, francés y portugués) y español como idioma principal de la primera versión.                                                                                                      |
-| ---               | ---                                                                                                                                                                                                                                     |
 | De proceso        | Especificación, diseño, construcción, pruebas y despliegue conducidos con metodología ágil; toda modificación de alcance se documenta y aprueba antes de su construcción.                                                               |
-| ---               | ---                                                                                                                                                                                                                                     |
 
 ## 2.4 Supuestos y dependencias
 
@@ -421,33 +213,20 @@ Los actores externos que interactúan con el sistema, sin ser usuarios autentica
 | **#** | **Supuesto o dependencia**                                                                                                | **Tipo**    | **Consecuencia si no se cumple**                                               |
 | ----- | ------------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------ |
 | 1     | Las instituciones y familias proveen datos correctos de estudiantes, acudientes, conductores, vehículos, rutas y paradas. | Supuesto    | Las asignaciones de ruta y las notificaciones de seguridad serían incorrectas. |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 2     | Los usuarios disponen de un navegador web compatible o de un dispositivo móvil con cámara.                                | Supuesto    | Se requeriría un canal asistido o sin conexión.                                |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 3     | SQL Server está disponible para la persistencia del proyecto.                                                             | Supuesto    | Cambiarían la arquitectura de persistencia y el plan de despliegue.            |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 4     | La interfaz de programación expone los datos requeridos por los frontales web y móvil.                                    | Supuesto    | Cambiarían los contratos, los flujos y las fechas de entrega de los frontales. |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 5     | Un proveedor de posicionamiento expone la ubicación y el estado del vehículo cuando el monitoreo está activo.             | Supuesto    | Permanecerían indisponibles las funciones de ubicación en tiempo real.         |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 6     | El envío de notificaciones está disponible mediante el proveedor o servicio configurado.                                  | Supuesto    | Las notificaciones quedarían limitadas a la aplicación o a datos simulados.    |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 7     | Los roles y permisos están definidos de forma coherente entre frontales y servicios.                                      | Supuesto    | Podrían ocurrir accesos no autorizados y paneles inconsistentes.               |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 8     | El despliegue inicial se orienta a Neiva (Huila), Colombia.                                                               | Supuesto    | Deberían revisarse los supuestos de datos, idioma, regulación y operación.     |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 9     | Entorno SQL Server disponible antes de las pruebas integradas.                                                            | Dependencia | No sería posible la verificación integrada.                                    |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 10    | Definición del proveedor de GPS y de su contrato antes del monitoreo en vivo.                                             | Dependencia | Permanecería inactiva la visualización de ubicación en tiempo real.            |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 11    | Definición del servicio de notificación push antes de la producción.                                                      | Dependencia | Las notificaciones no alcanzarían a los dispositivos.                          |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 12    | Datos escolares y de transporte válidos antes de las pruebas de aceptación.                                               | Dependencia | No sería posible validar los flujos de negocio reales.                         |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 | 13    | Contrato de roles y autorización alineado entre los equipos de servicios y de frontales.                                  | Dependencia | Se bloquearía la publicación con control de acceso.                            |
-| ---   | ---                                                                                                                       | ---         | ---                                                                            |
 
-# 3 Requisitos funcionales
+# 3. Requisitos funcionales
 
 Esta sección especifica **30 requisitos funcionales** organizados en **10 grupos funcionales**. Cada requisito indica su identificador, su denominación, una descripción detallada, sus entradas y salidas, sus precondiciones y postcondiciones y las reglas de negocio que lo gobiernan. La prioridad utiliza la escala Alta, Media y Baja según el valor de negocio y la dependencia operativa.
 
@@ -456,25 +235,15 @@ Esta sección especifica **30 requisitos funcionales** organizados en **10 grupo
 | **Grupo** | **Denominación**                                   | **Responsable funcional**                                        | **RF** | **Prioridad dominante** |
 | --------- | -------------------------------------------------- | ---------------------------------------------------------------- | ------ | ----------------------- |
 | RF-01     | Gestión de usuarios                                | Servicio de gestión de usuarios e identificación y acceso        | 4      | Alta                    |
-| ---       | ---                                                | ---                                                              | ---    | ---                     |
 | RF-02     | Autenticación                                      | Servicio de identificación y acceso (IAM)                        | 2      | Alta                    |
-| ---       | ---                                                | ---                                                              | ---    | ---                     |
 | RF-03     | Gestión de rutas escolares, flota y asignaciones   | Servicio de rutas y servicio de flota                            | 8      | Alta                    |
-| ---       | ---                                                | ---                                                              | ---    | ---                     |
 | RF-04     | Gestión del escaneo QR: control de subida y bajada | Servicio de identificación y acceso y servicio de notificaciones | 3      | Alta                    |
-| ---       | ---                                                | ---                                                              | ---    | ---                     |
 | RF-05     | Notificaciones de bordada                          | Servicio de notificaciones                                       | 4      | Alta                    |
-| ---       | ---                                                | ---                                                              | ---    | ---                     |
 | RF-06     | Rastreo en tiempo real del bus                     | Módulo de geolocalización y canal gRPC                           | 3      | Media                   |
-| ---       | ---                                                | ---                                                              | ---    | ---                     |
 | RF-07     | Gestión de viajes                                  | Servicio de rutas                                                | 1      | Media                   |
-| ---       | ---                                                | ---                                                              | ---    | ---                     |
 | RF-08     | Incidentes                                         | Servicio de notificaciones                                       | 1      | Alta                    |
-| ---       | ---                                                | ---                                                              | ---    | ---                     |
 | RF-09     | Consulta de rutas                                  | Servicio de rutas                                                | 2      | Media                   |
-| ---       | ---                                                | ---                                                              | ---    | ---                     |
 | RF-10     | Personalización                                    | Aplicaciones cliente web y móvil                                 | 2      | Baja                    |
-| ---       | ---                                                | ---                                                              | ---    | ---                     |
 
 ## 3.1 Grupo RF-01 — Gestión de usuarios (User Management)
 
@@ -489,13 +258,9 @@ El administrador crea cuentas de estudiantes, conductores, acudientes y administ
 | **Campo**       | **Detalle**                                                                                                                                                                                                                               |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Tipo y número de documento, nombre completo, correo electrónico, teléfono, dirección, fecha de nacimiento y rol a asignar (ADMIN, DRIVER, PARENT, STUDENT); datos académicos del estudiante y vínculo estudiante–acudiente cuando aplica. |
-| ---             | ---                                                                                                                                                                                                                                       |
 | Salidas         | Cuenta creada y activa con el rol asignado; mensaje de error si el correo o el documento ya existen; registro de auditoría de la creación.                                                                                                |
-| ---             | ---                                                                                                                                                                                                                                       |
 | Precondiciones  | El solicitante está autenticado con el rol ADMIN o SUPER_ADMIN y cuenta con el permiso de gestión de usuarios.                                                                                                                            |
-| ---             | ---                                                                                                                                                                                                                                       |
 | Postcondiciones | La cuenta existe, está activa y puede iniciar sesión con la contraseña inicial; el evento de alta del usuario queda publicado para su difusión en el sistema.                                                                             |
-| ---             | ---                                                                                                                                                                                                                                       |
 
 **Reglas de negocio**
 
@@ -513,18 +278,14 @@ El administrador actualiza los datos personales de la cuenta (nombre, documento,
 | **Campo**       | **Detalle**                                                                                       |
 | --------------- | ------------------------------------------------------------------------------------------------- |
 | Entradas        | Identificador de la cuenta y conjunto de campos a modificar.                                      |
-| ---             | ---                                                                                               |
 | Salidas         | Cuenta actualizada con fecha de última modificación; mensaje de error ante conflicto de unicidad. |
-| ---             | ---                                                                                               |
 | Precondiciones  | Cuenta existente y solicitante autenticado con permiso de gestión de usuarios.                    |
-| ---             | ---                                                                                               |
 | Postcondiciones | Los datos vigentes reflejan la última modificación; el evento de actualización queda publicado.   |
-| ---             | ---                                                                                               |
 
 **Reglas de negocio**
 
 - La fecha de creación es inmutable; la fecha de última modificación se actualiza automáticamente.
-- Si el correo o el documento modulado ya pertenecen a otra cuenta, la operación se rechaza sin alterar el registro.
+- Si el correo o el documento modificado ya pertenecen a otra cuenta, la operación se rechaza sin alterar el registro.
 - Los cambios sobre personas se registran en la auditoría de acciones críticas.
 
 ### 3.1.3 RF-01.3 — Activación y desactivación de cuentas
@@ -536,13 +297,9 @@ El administrador activa o desactiva cuentas. La desactivación impide el inicio 
 | **Campo**       | **Detalle**                                                                                    |
 | --------------- | ---------------------------------------------------------------------------------------------- |
 | Entradas        | Identificador de la cuenta y estado objetivo (ACTIVE / INACTIVE).                              |
-| ---             | ---                                                                                            |
 | Salidas         | Estado de la cuenta actualizado; rechazo del inicio de sesión si la cuenta está desactivada.   |
-| ---             | ---                                                                                            |
 | Precondiciones  | Cuenta existente; solicitante autenticado con permiso correspondiente.                         |
-| ---             | ---                                                                                            |
 | Postcondiciones | Una cuenta INACTIVE no puede autenticarse ni ser asignada; su historial permanece consultable. |
-| ---             | ---                                                                                            |
 
 **Reglas de negocio**
 
@@ -559,13 +316,9 @@ El administrador vincula uno o más estudiantes a la cuenta de un acudiente para
 | **Campo**       | **Detalle**                                                                                                |
 | --------------- | ---------------------------------------------------------------------------------------------------------- |
 | Entradas        | Identificador de la cuenta de acudiente y identificadores de los estudiantes a vincular.                   |
-| ---             | ---                                                                                                        |
 | Salidas         | Relación acudiente–estudiante registrada; mensaje de error si el estudiante ya está asociado.              |
-| ---             | ---                                                                                                        |
 | Precondiciones  | Cuentas de acudiente y de estudiante existentes y activas; solicitante con permiso de gestión de usuarios. |
-| ---             | ---                                                                                                        |
 | Postcondiciones | El acudiente visualiza la información y las notificaciones del estudiante vinculado.                       |
-| ---             | ---                                                                                                        |
 
 **Reglas de negocio**
 
@@ -586,13 +339,9 @@ El sistema autentica al usuario con sus credenciales conforme a la política de 
 | **Campo**       | **Detalle**                                                                                                               |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Correo electrónico y contraseña según la política (longitud, mayúsculas, números, símbolos y expiración en días).         |
-| ---             | ---                                                                                                                       |
 | Salidas         | Token de acceso JWT RS256 con vigencia de 15 minutos y claim de rol; error «credenciales inválidas» sin emisión de token. |
-| ---             | ---                                                                                                                       |
 | Precondiciones  | Cuenta creada por el administrador y en estado ACTIVE.                                                                    |
-| ---             | ---                                                                                                                       |
 | Postcondiciones | Sesión iniciada y registrada con dirección IP, fechas y aplicación; eventos de alta de perfil y sesión quedan publicados. |
-| ---             | ---                                                                                                                       |
 
 **Reglas de negocio**
 
@@ -609,13 +358,9 @@ El usuario cierra la sesión y, mientras mantenga vigente su token de actualizac
 | **Campo**       | **Detalle**                                                                                                            |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Token de actualización vigente (30 días) para renovación; token de acceso para el cierre de sesión.                    |
-| ---             | ---                                                                                                                    |
 | Salidas         | Nuevo token de acceso de 15 minutos; sesión cerrada y su registro finalizado.                                          |
-| ---             | ---                                                                                                                    |
 | Precondiciones  | Sesión iniciada previamente y cuenta aún activa.                                                                       |
-| ---             | ---                                                                                                                    |
 | Postcondiciones | El token de acceso anterior queda invalidado tras el cierre; la sesión registrada almacena sus fechas de inicio y fin. |
-| ---             | ---                                                                                                                    |
 
 **Reglas de negocio**
 
@@ -636,13 +381,9 @@ El administrador crea una ruta escolar ingresando sus datos, sus paradas en orde
 | **Campo**       | **Detalle**                                                                                                                                                      |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Nombre y sector de la ruta, sede de pertenencia, paradas con dirección y coordenadas, orden de paradas, día de semana, dirección del trayecto y hora programada. |
-| ---             | ---                                                                                                                                                              |
 | Salidas         | Ruta registrada con sus paradas ordenadas y sus horarios; ruta visible en el listado.                                                                            |
-| ---             | ---                                                                                                                                                              |
 | Precondiciones  | Sede y datos maestros de la institución disponibles; solicitante autenticado como administrador.                                                                 |
-| ---             | ---                                                                                                                                                              |
 | Postcondiciones | La ruta existe en estado utilizable y sus paradas conservan el orden de itinerario.                                                                              |
-| ---             | ---                                                                                                                                                              |
 
 **Reglas de negocio**
 
@@ -659,13 +400,9 @@ Antes de persistir una ruta, el sistema valida que no exista otra ruta con el mi
 | **Campo**       | **Detalle**                                                            |
 | --------------- | ---------------------------------------------------------------------- |
 | Entradas        | Nombre propuesto para la ruta.                                         |
-| ---             | ---                                                                    |
 | Salidas         | Ruta persistida, o mensaje «la ruta ya existe» sin registro duplicado. |
-| ---             | ---                                                                    |
 | Precondiciones  | Solicitud de creación de ruta recibida.                                |
-| ---             | ---                                                                    |
 | Postcondiciones | No existen dos rutas con el mismo nombre.                              |
-| ---             | ---                                                                    |
 
 **Reglas de negocio**
 
@@ -681,13 +418,9 @@ El administrador modifica los datos de una ruta existente, sus paradas y sus hor
 | **Campo**       | **Detalle**                                                                          |
 | --------------- | ------------------------------------------------------------------------------------ |
 | Entradas        | Identificador de la ruta y campos a modificar.                                       |
-| ---             | ---                                                                                  |
 | Salidas         | Ruta actualizada; rechazo si la modificación vulnera unicidad o integridad.          |
-| ---             | ---                                                                                  |
 | Precondiciones  | Ruta existente y solicitante con permiso.                                            |
-| ---             | ---                                                                                  |
 | Postcondiciones | Los cambios quedan vigentes y se reflejan en las consultas de conductor y acudiente. |
-| ---             | ---                                                                                  |
 
 **Reglas de negocio**
 
@@ -703,13 +436,9 @@ El administrador elimina una ruta cuando ya no opera, salvo que exista un viaje 
 | **Campo**       | **Detalle**                                                              |
 | --------------- | ------------------------------------------------------------------------ |
 | Entradas        | Identificador de la ruta a eliminar.                                     |
-| ---             | ---                                                                      |
 | Salidas         | Ruta eliminada, o mensaje de rechazo si hay un viaje activo dependiente. |
-| ---             | ---                                                                      |
 | Precondiciones  | Ruta existente; solicitante con permiso.                                 |
-| ---             | ---                                                                      |
 | Postcondiciones | La ruta desaparece de la operación sin dejar referencias huérfanas.      |
-| ---             | ---                                                                      |
 
 **Reglas de negocio**
 
@@ -725,13 +454,9 @@ El administrador asigna un bus a una ruta y puede desasignarlo, de modo que cada
 | **Campo**       | **Detalle**                                                                                         |
 | --------------- | --------------------------------------------------------------------------------------------------- |
 | Entradas        | Identificadores de la ruta y del bus; acción de asignación o desasignación.                         |
-| ---             | ---                                                                                                 |
 | Salidas         | Relación ruta–bus registrada o retirada; estado del bus actualizado a «en ruta» cuando corresponde. |
-| ---             | ---                                                                                                 |
 | Precondiciones  | Ruta activa y bus activo sin asignación vigente incompatible.                                       |
-| ---             | ---                                                                                                 |
 | Postcondiciones | La ruta tiene como máximo un bus asignado y el bus atiende como máximo una ruta.                    |
-| ---             | ---                                                                                                 |
 
 **Reglas de negocio**
 
@@ -748,13 +473,9 @@ El administrador crea, edita y activa o desactiva buses de la flota, manteniendo
 | **Campo**       | **Detalle**                                                                                  |
 | --------------- | -------------------------------------------------------------------------------------------- |
 | Entradas        | Placa, capacidad, modelo y marca, datos del SOAT, dispositivo GPS asociado y estado inicial. |
-| ---             | ---                                                                                          |
 | Salidas         | Bus registrado con estado disponible; mensaje de error si la placa ya existe.                |
-| ---             | ---                                                                                          |
 | Precondiciones  | Solicitante autenticado con permiso de gestión de flota.                                     |
-| ---             | ---                                                                                          |
 | Postcondiciones | El bus aparece en el listado y es elegible para asignación cuando está activo.               |
-| ---             | ---                                                                                          |
 
 **Reglas de negocio**
 
@@ -771,13 +492,9 @@ El administrador asigna un conductor como responsable de un bus y puede reasigna
 | **Campo**       | **Detalle**                                                                                       |
 | --------------- | ------------------------------------------------------------------------------------------------- |
 | Entradas        | Identificador del bus y del conductor; acción de asignación o desasignación.                      |
-| ---             | ---                                                                                               |
 | Salidas         | Relación conductor–bus registrada con su vigencia; evento de asignación publicado.                |
-| ---             | ---                                                                                               |
 | Precondiciones  | Conductor con cuenta activa y bus existente; solicitante con permiso.                             |
-| ---             | ---                                                                                               |
 | Postcondiciones | El conductor responsable del bus puede consultar en la aplicación las rutas cubiertas por su bus. |
-| ---             | ---                                                                                               |
 
 **Reglas de negocio**
 
@@ -794,13 +511,9 @@ El administrador asigna estudiantes a una ruta indicando la parada de subida y l
 | **Campo**       | **Detalle**                                                                                          |
 | --------------- | ---------------------------------------------------------------------------------------------------- |
 | Entradas        | Identificador de la ruta, identificador del estudiante y paradas de subida y de bajada.              |
-| ---             | ---                                                                                                  |
 | Salidas         | Relación ruta–estudiante registrada; evento de asignación publicado.                                 |
-| ---             | ---                                                                                                  |
 | Precondiciones  | Ruta activa, estudiante con cuenta activa y paradas seleccionadas pertenecientes a la ruta.          |
-| ---             | ---                                                                                                  |
 | Postcondiciones | El acudiente puede consultar la ruta de su estudiante y el flujo de bordada por QR queda habilitado. |
-| ---             | ---                                                                                                  |
 
 **Reglas de negocio**
 
@@ -821,13 +534,9 @@ El sistema genera para cada estudiante un código QR individual con identificado
 | **Campo**       | **Detalle**                                                                                                                     |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Identificador del estudiante con cuenta activa; política de rotación y expiración vigente.                                      |
-| ---             | ---                                                                                                                             |
 | Salidas         | Código QR individual con identificador único y nombre del estudiante para verificación.                                         |
-| ---             | ---                                                                                                                             |
 | Precondiciones  | Estudiante con perfil ACTIVE y sesión autenticada propia.                                                                       |
-| ---             | ---                                                                                                                             |
 | Postcondiciones | El código es consultable mientras esté vigente; al vencer o desactivarse el perfil se informa que el código no está disponible. |
-| ---             | ---                                                                                                                             |
 
 **Reglas de negocio**
 
@@ -844,13 +553,9 @@ Al escanear el código del estudiante, el sistema registra su subida con la hora
 | **Campo**       | **Detalle**                                                                                                                                    |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Código QR escaneado desde la aplicación del conductor, viaje activo y contexto de la ruta.                                                     |
-| ---             | ---                                                                                                                                            |
 | Salidas         | Bordada de subida registrada con fecha y hora y parada; evento de escaneo publicado; rechazo con mensaje «estudiante no asignado a esta ruta». |
-| ---             | ---                                                                                                                                            |
 | Precondiciones  | Conductor autenticado, viaje activo y estudiante asignado a la ruta.                                                                           |
-| ---             | ---                                                                                                                                            |
 | Postcondiciones | Existe una bordada de subida vigente para el estudiante y queda publicado el evento que dispara la notificación al acudiente.                  |
-| ---             | ---                                                                                                                                            |
 
 **Reglas de negocio**
 
@@ -867,13 +572,9 @@ Al escanear el código del estudiante en la parada de destino, el sistema regist
 | **Campo**       | **Detalle**                                                                                                                                           |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Código QR escaneado, viaje activo y bordada de subida vigente del estudiante.                                                                         |
-| ---             | ---                                                                                                                                                   |
 | Salidas         | Bordada de bajada registrada con fecha, hora y ubicación; evento de bajada publicado; rechazo con mensaje «no hay bordada activa para el estudiante». |
-| ---             | ---                                                                                                                                                   |
 | Precondiciones  | Bordada de subida activa del estudiante en el viaje en curso.                                                                                         |
-| ---             | ---                                                                                                                                                   |
 | Postcondiciones | La bordada del estudiante queda cerrada y se publica el evento que notifica al acudiente.                                                             |
-| ---             | ---                                                                                                                                                   |
 
 **Reglas de negocio**
 
@@ -894,13 +595,9 @@ El sistema detecta y registra el evento de subida del estudiante a partir del es
 | **Campo**       | **Detalle**                                                                               |
 | --------------- | ----------------------------------------------------------------------------------------- |
 | Entradas        | Evento de escaneo proveniente del registro de bordada.                                    |
-| ---             | ---                                                                                       |
 | Salidas         | Evento de subida detectado y publicado para su tratamiento asincrónico.                   |
-| ---             | ---                                                                                       |
 | Precondiciones  | Registro de bordada de subida aceptado.                                                   |
-| ---             | ---                                                                                       |
 | Postcondiciones | El evento queda disponible para el envío de notificación y para el historial de bordadas. |
-| ---             | ---                                                                                       |
 
 **Reglas de negocio**
 
@@ -916,13 +613,9 @@ El sistema envía automáticamente, en tiempo real, una notificación al acudien
 | **Campo**       | **Detalle**                                                                                     |
 | --------------- | ----------------------------------------------------------------------------------------------- |
 | Entradas        | Evento de subida, acudientes vinculados al estudiante, plantilla y canal configurado.           |
-| ---             | ---                                                                                             |
 | Salidas         | Notificación entregada al acudiente con hora de subida y parada; registro de estado de entrega. |
-| ---             | ---                                                                                             |
 | Precondiciones  | Acudiente vinculado al estudiante y con dispositivo habilitado para recibir notificaciones.     |
-| ---             | ---                                                                                             |
 | Postcondiciones | La notificación queda registrada con su estado de entrega y su fecha.                           |
-| ---             | ---                                                                                             |
 
 **Reglas de negocio**
 
@@ -939,13 +632,9 @@ El sistema envía automáticamente, en tiempo real, una notificación al acudien
 | **Campo**       | **Detalle**                                                                           |
 | --------------- | ------------------------------------------------------------------------------------- |
 | Entradas        | Evento de bajada, acudientes vinculados, plantilla y canal configurado.               |
-| ---             | ---                                                                                   |
 | Salidas         | Notificación entregada con hora de bajada y ubicación; registro de estado de entrega. |
-| ---             | ---                                                                                   |
 | Precondiciones  | Bajada registrada con éxito y acudiente vinculado.                                    |
-| ---             | ---                                                                                   |
 | Postcondiciones | El acudiente conoce la hora y el lugar en que su estudiante bajó del bus.             |
-| ---             | ---                                                                                   |
 
 **Reglas de negocio**
 
@@ -961,13 +650,9 @@ Cuando el bus permanece detenido más allá del umbral de tiempo configurado, el
 | **Campo**       | **Detalle**                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Entradas        | Flujo de posiciones GPS del bus y umbral de detención configurable por ruta.                                             |
-| ---             | ---                                                                                                                      |
 | Salidas         | Alerta de detención prolongada enviada al acudiente con la ubicación del bus; registro de alerta y de sus destinatarios. |
-| ---             | ---                                                                                                                      |
 | Precondiciones  | Ruta en operación con flujo de posiciones activo y umbral configurado.                                                   |
-| ---             | ---                                                                                                                      |
 | Postcondiciones | El acudiente recibe la alerta con la ubicación; si el bus reanuda la marcha antes del umbral, no se envía alerta.        |
-| ---             | ---                                                                                                                      |
 
 **Reglas de negocio**
 
@@ -988,13 +673,9 @@ El sistema captura de forma continua la posición geográfica del bus durante su
 | **Campo**       | **Detalle**                                                                                                               |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Posiciones emitidas por el dispositivo GPS embarcado (latitud, longitud, velocidad, rumbo, fecha y hora del dispositivo). |
-| ---             | ---                                                                                                                       |
 | Salidas         | Posición persistida con su marca de recepción en el servidor; posición disponible para el seguimiento en vivo.            |
-| ---             | ---                                                                                                                       |
 | Precondiciones  | Dispositivo GPS registrado, con identificador único, y asociado al bus.                                                   |
-| ---             | ---                                                                                                                       |
 | Postcondiciones | La última posición conocida del bus está disponible para su consulta.                                                     |
-| ---             | ---                                                                                                                       |
 
 **Reglas de negocio**
 
@@ -1011,13 +692,9 @@ El sistema muestra la ubicación del bus en un mapa interactivo que se actualiza
 | **Campo**       | **Detalle**                                                                              |
 | --------------- | ---------------------------------------------------------------------------------------- |
 | Entradas        | Posiciones más recientes del bus de la ruta consultada.                                  |
-| ---             | ---                                                                                      |
 | Salidas         | Marcador del bus sobre el mapa con actualización continua.                               |
-| ---             | ---                                                                                      |
 | Precondiciones  | Acudiente autenticado con estudiante asignado a una ruta, o conductor con ruta asignada. |
-| ---             | ---                                                                                      |
 | Postcondiciones | La ubicación se percibe actualizada sin intervención del usuario.                        |
-| ---             | ---                                                                                      |
 
 **Reglas de negocio**
 
@@ -1033,13 +710,9 @@ Ante la pérdida de la señal GPS, el sistema alerta y muestra la última posici
 | **Campo**       | **Detalle**                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Entradas        | Comparación entre la última posición recibida y el umbral de vigencia de señal.                                          |
-| ---             | ---                                                                                                                      |
 | Salidas         | Estado «sin señal» con la última posición conocida; alerta de pérdida de señal dirigida al destinatario correspondiente. |
-| ---             | ---                                                                                                                      |
 | Precondiciones  | Historial de posiciones del dispositivo en operación.                                                                    |
-| ---             | ---                                                                                                                      |
 | Postcondiciones | El usuario distingue entre ubicación vigente y ubicación sin señal.                                                      |
-| ---             | ---                                                                                                                      |
 
 **Reglas de negocio**
 
@@ -1060,13 +733,9 @@ El conductor inicia y finaliza el viaje de su ruta desde la aplicación móvil. 
 | **Campo**       | **Detalle**                                                                                                                                              |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Ruta asignada vigente para el conductor; acción «iniciar viaje» o «finalizar viaje»; hora de cada acción.                                                |
-| ---             | ---                                                                                                                                                      |
 | Salidas         | Viaje iniciado o finalizado con sus marcas de tiempo; eventos de inicio y fin publicados; rechazo con mensaje «ya existe un viaje activo para este bus». |
-| ---             | ---                                                                                                                                                      |
 | Precondiciones  | Conductor autenticado con ruta asignada; para finalizar, viaje activo y estado de bordadas conocido.                                                     |
-| ---             | ---                                                                                                                                                      |
 | Postcondiciones | Existe como máximo un viaje activo por bus; el viaje finalizado deja trazabilidad de su ejecución con bus, conductor e inicio y fin.                     |
-| ---             | ---                                                                                                                                                      |
 
 **Reglas de negocio**
 
@@ -1088,13 +757,9 @@ El conductor reporta un incidente o emergencia durante el viaje indicando tipo, 
 | **Campo**       | **Detalle**                                                                                                                                                      |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Tipo de incidente del catálogo configurable, descripción opcional, viaje activo y ubicación GPS del momento.                                                     |
-| ---             | ---                                                                                                                                                              |
 | Salidas         | Incidente registrado y vinculado al viaje; alerta generada y notificada a la institución y a los acudientes de bordadas activas; rechazo si no hay viaje activo. |
-| ---             | ---                                                                                                                                                              |
 | Precondiciones  | Conductor autenticado con viaje activo; catálogo de tipos de incidente disponible.                                                                               |
-| ---             | ---                                                                                                                                                              |
 | Postcondiciones | Existe trazabilidad del incidente con su tipo, su momento, su ubicación y sus destinatarios notificados.                                                         |
-| ---             | ---                                                                                                                                                              |
 
 **Reglas de negocio**
 
@@ -1117,13 +782,9 @@ El acudiente consulta los detalles de la ruta de su estudiante: bus, conductor, 
 | **Campo**       | **Detalle**                                                                                                                         |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Identificador del estudiante vinculado a la cuenta del acudiente.                                                                   |
-| ---             | ---                                                                                                                                 |
 | Salidas         | Detalle de la ruta: bus, conductor, paradas ordenadas y horarios; mensaje «aún no se ha asignado ruta» cuando no existe asignación. |
-| ---             | ---                                                                                                                                 |
 | Precondiciones  | Acudiente autenticado y estudiante vinculado a su cuenta.                                                                           |
-| ---             | ---                                                                                                                                 |
 | Postcondiciones | El acudiente conoce el itinerario y el vehículo asignados a su estudiante.                                                          |
-| ---             | ---                                                                                                                                 |
 
 **Reglas de negocio**
 
@@ -1139,13 +800,9 @@ El conductor visualiza en la aplicación móvil su ruta asignada con las paradas
 | **Campo**       | **Detalle**                                                                                            |
 | --------------- | ------------------------------------------------------------------------------------------------------ |
 | Entradas        | Identificador del conductor autenticado.                                                               |
-| ---             | ---                                                                                                    |
 | Salidas         | Ruta vigente con paradas ordenadas, horarios y bus; mensaje «sin ruta asignada» cuando no corresponde. |
-| ---             | ---                                                                                                    |
 | Precondiciones  | Conductor autenticado con asignación vigente de bus y ruta.                                            |
-| ---             | ---                                                                                                    |
 | Postcondiciones | El conductor conoce su itinerario antes de iniciar el viaje.                                           |
-| ---             | ---                                                                                                    |
 
 **Reglas de negocio**
 
@@ -1166,13 +823,9 @@ El usuario autenticado selecciona un color de tema que se aplica a todas las pan
 | **Campo**       | **Detalle**                                                                            |
 | --------------- | -------------------------------------------------------------------------------------- |
 | Entradas        | Color de tema elegido por el usuario con cualquier rol.                                |
-| ---             | ---                                                                                    |
 | Salidas         | Tema aplicado en todas las vistas; preferencia persistida en el dispositivo.           |
-| ---             | ---                                                                                    |
 | Precondiciones  | Usuario autenticado con cuenta activa.                                                 |
-| ---             | ---                                                                                    |
 | Postcondiciones | El cambio es visible de inmediato y sobrevive al cierre y reapertura de la aplicación. |
-| ---             | ---                                                                                    |
 
 **Reglas de negocio**
 
@@ -1189,13 +842,9 @@ El usuario selecciona el idioma de la interfaz entre al menos cuatro idiomas sop
 | **Campo**       | **Detalle**                                                                                                                  |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Entradas        | Identificador del idioma elegido entre los soportados (español, inglés, francés y portugués).                                |
-| ---             | ---                                                                                                                          |
 | Salidas         | Etiquetas de la interfaz cargadas desde el diccionario del idioma elegido; idioma predeterminado en ausencia de preferencia. |
-| ---             | ---                                                                                                                          |
 | Precondiciones  | Usuario autenticado; diccionarios de idioma disponibles en la aplicación.                                                    |
-| ---             | ---                                                                                                                          |
 | Postcondiciones | La preferencia de idioma persiste por dispositivo.                                                                           |
-| ---             | ---                                                                                                                          |
 
 **Reglas de negocio**
 
@@ -1203,7 +852,7 @@ El usuario selecciona el idioma de la interfaz entre al menos cuatro idiomas sop
 - Los diccionarios se resuelven en el cliente y la preferencia se almacena por dispositivo.
 - El cambio de idioma no altera los datos almacenados ni los mensajes de negocio ya registrados.
 
-# 4 Requisitos no funcionales
+# 4. Requisitos no funcionales
 
 Los ocho requisitos no funcionales fijan métricas verificables. Toda afirmación de calidad no medida se considera insuficiente: «el sistema debe ser rápido» no es un requisito; «la latencia P95 de los endpoints críticos debe ser inferior a 300 ms bajo 50 solicitudes por segundo» sí lo es.
 
@@ -1212,21 +861,13 @@ Los ocho requisitos no funcionales fijan métricas verificables. Toda afirmació
 | **ID** | **Requisito**               | **Prioridad** | **Validación en integración continua**            |
 | ------ | --------------------------- | ------------- | ------------------------------------------------- |
 | RNF-01 | Rendimiento                 | P1            | Sí, con pruebas de carga en el entorno de pruebas |
-| ---    | ---                         | ---           | ---                                               |
 | RNF-02 | Disponibilidad              | P1            | Sí, comprobaciones de salud                       |
-| ---    | ---                         | ---           | ---                                               |
 | RNF-03 | Escalabilidad               | P2            | Manual, de forma trimestral                       |
-| ---    | ---                         | ---           | ---                                               |
 | RNF-04 | Seguridad                   | P1            | Sí, análisis estático y revisión OWASP            |
-| ---    | ---                         | ---           | ---                                               |
 | RNF-05 | Observabilidad              | P1            | Sí, prueba de humo                                |
-| ---    | ---                         | ---           | ---                                               |
 | RNF-06 | Mantenibilidad              | P2            | Sí, cobertura de pruebas                          |
-| ---    | ---                         | ---           | ---                                               |
 | RNF-07 | Portabilidad                | P2            | Sí, construcción de imagen                        |
-| ---    | ---                         | ---           | ---                                               |
 | RNF-08 | Recuperación ante desastres | P1            | Manual, con simulacros                            |
-| ---    | ---                         | ---           | ---                                               |
 
 ## 4.1 RNF-01 Rendimiento
 
@@ -1235,19 +876,12 @@ Los ocho requisitos no funcionales fijan métricas verificables. Toda afirmació
 | **Métrica**                                            | **Valor objetivo**                      | **Condición de verificación**                                                                |
 | ------------------------------------------------------ | --------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Latencia P95 de endpoints críticos                     | < 300 ms                                | 50 solicitudes por segundo por servicio, en la ventana pico de bordadas de 6:30 a 8:00 a. m. |
-| ---                                                    | ---                                     | ---                                                                                          |
 | Latencia P99 de endpoints críticos                     | < 500 ms                                | Condiciones de ventana pico                                                                  |
-| ---                                                    | ---                                     | ---                                                                                          |
 | Latencia P95 de endpoints no críticos                  | < 1000 ms                               | Carga normal                                                                                 |
-| ---                                                    | ---                                     | ---                                                                                          |
 | Rendimiento mínimo sostenido                           | 50 solicitudes por segundo por servicio | Sin degradación de respuesta                                                                 |
-| ---                                                    | ---                                     | ---                                                                                          |
 | Evento de bordada o bajada → notificación al acudiente | P95 < 5 segundos                        | Extremo a extremo, durante la ventana pico                                                   |
-| ---                                                    | ---                                     | ---                                                                                          |
 | Posición GPS → mapa en vivo                            | P95 < 5 segundos                        | Seguimiento continuo                                                                         |
-| ---                                                    | ---                                     | ---                                                                                          |
 | Tiempo de arranque de un servicio                      | < 30 segundos                           | Arranque en frío                                                                             |
-| ---                                                    | ---                                     | ---                                                                                          |
 
 Endpoints críticos sujetos a la métrica: el registro de bordada por escaneo QR (POST /api/v1/boarding), la consulta de ubicación del bus (GET /api/v1/buses/{busId}/location) y el inicio de sesión (POST /api/v1/auth/login). Las pruebas de carga se ejecutan con herramientas del ecosistema k6, Apache JMeter, Locust o Gatling y se validan en la canalización de integración y despliegue antes de producción.
 
@@ -1258,9 +892,7 @@ Endpoints críticos sujetos a la métrica: el registro de bordada por escaneo QR
 | **Entorno** | **SLO** | **Ventana de mantenimiento**  | **Caída máxima mensual** |
 | ----------- | ------- | ----------------------------- | ------------------------ |
 | Producción  | 99,9 %  | Domingos de 2:00 a 4:00 a. m. | 44 minutos               |
-| ---         | ---     | ---                           | ---                      |
 | Pruebas     | 95 %    | Sin restricción               | 36 horas                 |
-| ---         | ---     | ---                           | ---                      |
 
 El presupuesto de error mensual en producción es de 44 minutos. Si se consume más del 50 % del presupuesto en la primera mitad del mes, se congelan los despliegues de funcionalidades hasta el mes siguiente y se prioriza la estabilidad. Cada servicio expone comprobaciones de salud: verificación de vida (GET /health) que responde mientras el proceso esté activo, y verificación de disponibilidad (GET /health/ready) que responde solo si el servicio puede procesar tráfico con sus dependencias conectadas; en los servicios Java se publica además el punto de salud del actuador (/actuator/health).
 
@@ -1271,13 +903,9 @@ El presupuesto de error mensual en producción es de 44 minutos. Si se consume m
 | **Escenario**                   | **Comportamiento esperado**                                                        |
 | ------------------------------- | ---------------------------------------------------------------------------------- |
 | Crecimiento gradual de la carga | Activación del autoescalado horizontal cuando la utilización de CPU supera el 70 % |
-| ---                             | ---                                                                                |
 | Pico súbito de demanda          | Escalado en menos de 2 minutos                                                     |
-| ---                             | ---                                                                                |
 | Descenso de la carga            | Reducción de instancias sin interrumpir el tráfico activo                          |
-| ---                             | ---                                                                                |
 | Límite de escalado horizontal   | Hasta 10 instancias por servicio                                                   |
-| ---                             | ---                                                                                |
 
 La estrategia es el escalado horizontal de instancias sin estado: ninguna instancia guarda estado en memoria; los datos persistentes residen en SQL Server. La arquitectura soporta hasta 5.000 usuarios concurrentes sin degradación.
 
@@ -1288,21 +916,13 @@ La estrategia es el escalado horizontal de instancias sin estado: ninguna instan
 | **Área**              | **Requisito medible**                                                                                                                                                                           |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Autenticación         | Todo endpoint privado exige token Bearer válido en el encabezado Authorization; token de acceso JWT RS256 con vigencia de 15 minutos y token de actualización de 30 días.                       |
-| ---                   | ---                                                                                                                                                                                             |
 | Autorización          | Control de acceso por rol con permisos explícitos y denegación predeterminada; mínimo privilegio por rol.                                                                                       |
-| ---                   | ---                                                                                                                                                                                             |
 | Transmisión           | HTTPS obligatorio en producción con TLS 1.2 o superior; HTTP únicamente en desarrollo local.                                                                                                    |
-| ---                   | ---                                                                                                                                                                                             |
 | Contraseñas           | Almacenamiento con hash irreversible (bcrypt con coste ≥ 12 o Argon2id); la política fija longitud, mayúsculas, números, símbolos y expiración en días; el hash nunca se registra en bitácoras. |
-| ---                   | ---                                                                                                                                                                                             |
 | Datos personales      | Los datos de identificación personal se cifran en reposo y se minimiza su registro.                                                                                                             |
-| ---                   | ---                                                                                                                                                                                             |
 | Secretos              | Credenciales y llaves únicamente en variables de entorno o gestor de secretos, nunca en el código fuente.                                                                                       |
-| ---                   | ---                                                                                                                                                                                             |
 | Revisión de seguridad | Revisión contra OWASP Top 10 en cada liberación, con análisis estático, escaneo de dependencias y análisis dinámico en pruebas.                                                                 |
-| ---                   | ---                                                                                                                                                                                             |
 | Cumplimiento          | Ley 1581 de 2012 y Decreto 1377 de 2013, con consentimiento y autorización para el tratamiento de datos de menores; GDPR si el producto se ofrece en la Unión Europea.                          |
-| ---                   | ---                                                                                                                                                                                             |
 
 La superficie de confianza se organiza en cuatro zonas: pública (clientes hacia el gateway), de servicios (comunicación interna), de datos (base y caché, sin acceso público) y de administración (restringida por red). Entre servicios, la comunicación gRPC se protege con confianza de red o mutua y con circuito de interrupción; los temas del bus de eventos aplican control de acceso a nivel de tema.
 
@@ -1313,13 +933,9 @@ La superficie de confianza se organiza en cuatro zonas: pública (clientes hacia
 | **Pilar** | **Requisito**                                                                                              | **Herramienta**                                      |
 | --------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | Bitácoras | Formato JSON estructurado con identificador de correlación propagado en todas las trazas de la transacción | Serilog en servicios .NET; Logback en servicios Java |
-| ---       | ---                                                                                                        | ---                                                  |
 | Métricas  | Indicadores de tasa, errores y duración por endpoint                                                       | Prometheus + Grafana                                 |
-| ---       | ---                                                                                                        | ---                                                  |
 | Trazas    | Traza distribuida de extremo a extremo                                                                     | OpenTelemetry + Jaeger                               |
-| ---       | ---                                                                                                        | ---                                                  |
 | Alertas   | Alerta operativa en menos de 5 minutos cuando se viola el objetivo de nivel de servicio                    | Alertmanager o servicio de alerta externo            |
-| ---       | ---                                                                                                        | ---                                                  |
 
 Cada solicitud externa genera un identificador de correlación único que se propaga en sus bitácoras y trazas, lo que permite reconstruir una transacción completa entre cliente, gateway y servicios.
 
@@ -1330,15 +946,10 @@ Cada solicitud externa genera un identificador de correlación único que se pro
 | **Métrica**                  | **Objetivo**                                                                                              |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------- |
 | Cobertura de pruebas         | ≥ 80 % de líneas; ≥ 90 % en la capa de dominio                                                            |
-| ---                          | ---                                                                                                       |
-| Complejidad cicломática      | ≤ 10 por función                                                                                          |
-| ---                          | ---                                                                                                       |
+| Complejidad ciclomática      | ≤ 10 por función                                                                                          |
 | Deuda técnica                | Resolución en menos de un ciclo de desarrollo desde su registro                                           |
-| ---                          | ---                                                                                                       |
 | Tiempo de incorporación      | Un desarrollador nuevo despliega en local en menos de 1 hora siguiendo la guía de preparación del entorno |
-| ---                          | ---                                                                                                       |
 | Tiempo medio de construcción | < 5 minutos en la canalización de integración                                                             |
-| ---                          | ---                                                                                                       |
 
 ## 4.7 RNF-07 Portabilidad
 
@@ -1347,13 +958,9 @@ Cada solicitud externa genera un identificador de correlación único que se pro
 | **Requisito**     | **Detalle**                                                                              |
 | ----------------- | ---------------------------------------------------------------------------------------- |
 | Contenedores      | Todos los servicios se despliegan como imágenes de contenedor                            |
-| ---               | ---                                                                                      |
 | Orquestación      | Las imágenes operan en cualquier entorno con Kubernetes 1.28 o superior                  |
-| ---               | ---                                                                                      |
 | Sistema operativo | Ningún servicio depende del sistema operativo del anfitrión                              |
-| ---               | ---                                                                                      |
 | Configuración     | Las variables de entorno son la única fuente de configuración específica de cada entorno |
-| ---               | ---                                                                                      |
 
 ## 4.8 RNF-08 Recuperación ante desastres
 
@@ -1362,15 +969,11 @@ Cada solicitud externa genera un identificador de correlación único que se pro
 | **Escenario**                         | **RTO**                                       | **RPO**                        |
 | ------------------------------------- | --------------------------------------------- | ------------------------------ |
 | Falla de un servicio                  | < 2 minutos (reinicio automatizado)           | 0 (servicio sin estado)        |
-| ---                                   | ---                                           | ---                            |
 | Falla de la base de datos primaria    | < 5 minutos (conmutación a réplica)           | < 1 segundo (réplica síncrona) |
-| ---                                   | ---                                           | ---                            |
 | Pérdida de una zona de disponibilidad | < 15 minutos                                  | < 5 minutos                    |
-| ---                                   | ---                                           | ---                            |
 | Desastre total de la región           | < 4 horas (recuperación en región secundaria) | < 1 hora                       |
-| ---                                   | ---                                           | ---                            |
 
-# 5 Requisitos de interfaz
+# 5. Requisitos de interfaz
 
 ## 5.1 Interfaz de usuario
 
@@ -1387,15 +990,10 @@ Cada solicitud externa genera un identificador de correlación único que se pro
 | **Componente**            | **Interfaz requerida**                                                                                                                               |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Equipo de escritorio      | Navegador web con soporte de HTML5, CSS y ejecución de scripts; impresora no requerida.                                                              |
-| ---                       | ---                                                                                                                                                  |
 | Dispositivo móvil         | Android o iOS con cámara para el escaneo de códigos QR y soporte de notificaciones push.                                                             |
-| ---                       | ---                                                                                                                                                  |
 | Dispositivo GPS embarcado | Emisor de posiciones geográficas por conexión TCP persistente hacia el componente de geolocalización, con identificador de dispositivo único (IMEI). |
-| ---                       | ---                                                                                                                                                  |
 | Servidor                  | Instancia de SQL Server accesible por el puerto 1433 dentro de la red de servicios; no expuesta públicamente.                                        |
-| ---                       | ---                                                                                                                                                  |
 | Red                       | Conexión a internet estable para clientes; conectividad de datos para la recepción de posiciones y el envío de notificaciones.                       |
-| ---                       | ---                                                                                                                                                  |
 
 ## 5.3 Interfaz de software
 
@@ -1404,21 +1002,13 @@ Cada solicitud externa genera un identificador de correlación único que se pro
 | **Software**                     | **Interacción requerida**                                                                         |
 | -------------------------------- | ------------------------------------------------------------------------------------------------- |
 | SQL Server 2022                  | Persistencia relacional con esquema por servicio y migraciones versionadas.                       |
-| ---                              | ---                                                                                               |
 | Apache Kafka 4.1.0 (KRaft)       | Publicación y consumo de eventos de dominio en el puerto 9092.                                    |
-| ---                              | ---                                                                                               |
 | API Gateway (Kong OSS)           | Terminación TLS, límite de tasa, CORS y ruteo hacia los servicios.                                |
-| ---                              | ---                                                                                               |
 | Liquibase                        | Aplicación determinista de cambios de esquema en cada arranque de servicio.                       |
-| ---                              | ---                                                                                               |
 | Aplicación web Angular 21        | Consumo exclusivo de la interfaz REST versionada a través del gateway.                            |
-| ---                              | ---                                                                                               |
 | Aplicación móvil React + Expo    | Consumo de la interfaz REST, registro de token de notificación y acceso a la cámara.              |
-| ---                              | ---                                                                                               |
 | Servicio de mapas                | Representación del mapa interactivo y de la ubicación del bus en tiempo real.                     |
-| ---                              | ---                                                                                               |
 | Proveedor de notificaciones push | Entrega de avisos en los dispositivos móviles, identificados por token de dispositivo por perfil. |
-| ---                              | ---                                                                                               |
 
 ## 5.4 Interfaz de comunicaciones
 
@@ -1430,7 +1020,14 @@ Cada solicitud externa genera un identificador de correlación único que se pro
 
 **Tabla 51**. _Temas del bus de eventos y sus participantes_
 
-<div class="joplin-table-wrapper"><table><thead><tr><th><p><strong>Tema</strong></p></th><th><p><strong>Productor</strong></p></th><th><p><strong>Consumidor</strong></p></th><th><p><strong>Uso</strong></p></th></tr><tr><th><pre><code>student.created</code></pre></th><th><p>Servicio de gestión de usuarios</p></th><th><p>Servicios suscritos</p></th><th><p>Alta de estudiante en el ecosistema</p></th></tr><tr><th><pre><code>driver.created</code></pre></th><th><p>Servicio de gestión de usuarios</p></th><th><p>Servicios suscritos</p></th><th><p>Alta de conductor</p></th></tr><tr><th><pre><code>admin.created</code></pre></th><th><p>Servicio de gestión de usuarios</p></th><th><p>Servicios suscritos</p></th><th><p>Alta de administrador</p></th></tr><tr><th><pre><code>parent.created</code></pre></th><th><p>Servicio de gestión de usuarios</p></th><th><p>Servicios suscritos</p></th><th><p>Alta de acudiente</p></th></tr><tr><th><pre><code>profile.created</code></pre></th><th><p>Servicio de identificación y acceso</p></th><th><p>Servicios suscritos</p></th><th><p>Alta de perfil de autenticación</p></th></tr><tr><th><pre><code>student.scanned</code></pre></th><th><p>Servicio de identificación y acceso</p></th><th><p>Servicio de notificaciones</p></th><th><p>Escaneo QR que dispara la notificación y el registro de bordada</p></th></tr></thead></table></div>
+| **Tema** | **Productor** | **Consumidor** | **Uso** |
+| --- | --- | --- | --- |
+| `student.created` | Servicio de gestión de usuarios | Servicios suscritos | Alta de estudiante en el ecosistema |
+| `driver.created` | Servicio de gestión de usuarios | Servicios suscritos | Alta de conductor |
+| `admin.created` | Servicio de gestión de usuarios | Servicios suscritos | Alta de administrador |
+| `parent.created` | Servicio de gestión de usuarios | Servicios suscritos | Alta de acudiente |
+| `profile.created` | Servicio de identificación y acceso | Servicios suscritos | Alta de perfil de autenticación |
+| `student.scanned` | Servicio de identificación y acceso | Servicio de notificaciones | Escaneo QR que dispara la notificación y el registro de bordada |
 
 Adicionalmente, los servicios emiten eventos de dominio internos —alta y actualización de rutas, asignación de bus y conductor, inicio y fin de viaje, subida y bajada, creación de alertas— que se tratan de forma asincrónica e idempotente dentro del modelo orientado a eventos.
 
@@ -1441,25 +1038,32 @@ Adicionalmente, los servicios emiten eventos de dominio internos —alta y actua
 | **Recurso de comunicación** | **Puerto** | **Propósito**                        |
 | --------------------------- | ---------- | ------------------------------------ |
 | API Gateway (Kong)          | 8000       | Punto de entrada público de clientes |
-| ---                         | ---        | ---                                  |
 | Servicios de negocio        | 8080       | Interfaz REST interna de servicios   |
-| ---                         | ---        | ---                                  |
 | SQL Server                  | 1433       | Persistencia relacional              |
-| ---                         | ---        | ---                                  |
 | Apache Kafka                | 9092       | Bus de eventos                       |
-| ---                         | ---        | ---                                  |
 | gRPC                        | 5001       | Telemetría de geolocalización        |
-| ---                         | ---        | ---                                  |
 
-# 6 Requisitos de datos
+# 6. Requisitos de datos
 
 ## 6.1 Modelo lógico de datos (resumen)
 
-El software administra **38 tablas** distribuidas en **11 esquemas**, uno por servicio. Un único instancia relacional concentra la información con aislamiento lógico por esquema; ningún servicio accede directamente al esquema de otro y, cuando necesita sus datos, los obtiene mediante interfaz o evento.
+El software administra **38 tablas** distribuidas en **11 esquemas**, uno por servicio. Una única instancia relacional concentra la información con aislamiento lógico por esquema; ningún servicio accede directamente al esquema de otro y, cuando necesita sus datos, los obtiene mediante interfaz o evento.
 
 **Tabla 53**. _Esquemas de base de datos y su contenido clave_
 
-<div class="joplin-table-wrapper"><table><thead><tr><th><p><strong>Esquema</strong></p></th><th><p><strong>Tablas y contenido clave</strong></p></th></tr><tr><th><pre><code>Iam</code></pre></th><th><p>Profile (persona, sede, hash de contraseña y rol), Role, Permissions, PermissionsRole, SessionProfile</p></th></tr><tr><th><pre><code>UserManagement</code></pre></th><th><p>Person (nombre, identificación tipo y número, correo, teléfono, dirección, fecha de nacimiento), Family, FamilyMember (relación acudiente–estudiante), DriverLicense (número y vencimiento)</p></th></tr><tr><th><pre><code>School</code></pre></th><th><p>School (ciudad, logotipo, datos de contacto, tema), SchoolCampus, Course, SchoolAdmin</p></th></tr><tr><th><pre><code>Geographic</code></pre></th><th><p>City (nombre y país)</p></th></tr><tr><th><pre><code>Fleet</code></pre></th><th><p>Bus (placa, capacidad, SOAT, dispositivo GPS, modelo), Brand, Model, DriverAssignemts (conductor–bus con vigencia)</p></th></tr><tr><th><pre><code>Route</code></pre></th><th><p>Route (sede, sector, horario), Stop (coordenadas con precisión de siete decimales), RouteStop (orden), RouteBusAssignments, RouteStudentAssignments, RouteSchedule (día de semana, dirección y hora), RouteExecution (ejecución real: bus, conductor, inicio y fin)</p></th></tr><tr><th><pre><code>Gps</code></pre></th><th><p>GpsDevice (IMEI, última conexión, estado), GpsLocation (latitud, longitud, velocidad, rumbo, fecha y hora)</p></th></tr><tr><th><pre><code>Notification</code></pre></th><th><p>Boarding (bordada con tipo y fecha y hora), Alert, AlertType (nivel de urgencia), AlertRecipient (lectura), DeviceToken (token de notificación por perfil)</p></th></tr><tr><th><pre><code>Exceptional</code></pre></th><th><p>ExceptionalDriverUsage (uso de bus por terceros con motivo), ExceptionalRouteUsage (desvío de ruta con motivo y ventana)</p></th></tr><tr><th><pre><code>Settings</code></pre></th><th><p>PasswordPolicies, SecuritySettings (parámetro y valor)</p></th></tr><tr><th><pre><code>Audit</code></pre></th><th><p>Audit (acción, fecha, descripción, IP y aplicación), LogErrors (tipo, descripción, IP y fecha)</p></th></tr></thead></table></div>
+| **Esquema** | **Tablas y contenido clave** |
+| --- | --- |
+| `Iam` | Profile (persona, sede, hash de contraseña y rol), Role, Permissions, PermissionsRole, SessionProfile |
+| `UserManagement` | Person (nombre, identificación tipo y número, correo, teléfono, dirección, fecha de nacimiento), Family, FamilyMember (relación acudiente–estudiante), DriverLicense (número y vencimiento) |
+| `School` | School (ciudad, logotipo, datos de contacto, tema), SchoolCampus, Course, SchoolAdmin |
+| `Geographic` | City (nombre y país) |
+| `Fleet` | Bus (placa, capacidad, SOAT, dispositivo GPS, modelo), Brand, Model, DriverAssignemts (conductor–bus con vigencia) |
+| `Route` | Route (sede, sector, horario), Stop (coordenadas con precisión de siete decimales), RouteStop (orden), RouteBusAssignments, RouteStudentAssignments, RouteSchedule (día de semana, dirección y hora), RouteExecution (ejecución real: bus, conductor, inicio y fin) |
+| `Gps` | GpsDevice (IMEI, última conexión, estado), GpsLocation (latitud, longitud, velocidad, rumbo, fecha y hora) |
+| `Notification` | Boarding (bordada con tipo y fecha y hora), Alert, AlertType (nivel de urgencia), AlertRecipient (lectura), DeviceToken (token de notificación por perfil) |
+| `Exceptional` | ExceptionalDriverUsage (uso de bus por terceros con motivo), ExceptionalRouteUsage (desvío de ruta con motivo y ventana) |
+| `Settings` | PasswordPolicies, SecuritySettings (parámetro y valor) |
+| `Audit` | Audit (acción, fecha, descripción, IP y aplicación), LogErrors (tipo, descripción, IP y fecha) |
 
 ## 6.2 Reglas de integridad y validación
 
@@ -1468,27 +1072,16 @@ El software administra **38 tablas** distribuidas en **11 esquemas**, uno por se
 | **#** | **Regla**                                                                                                                                                  |
 | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1     | Las llaves primarias se implementan como identificadores únicos, salvo los catálogos de tipo pequeño y los contadores de auditoría.                        |
-| ---   | ---                                                                                                                                                        |
 | 2     | Toda columna de referencia externa sigue la convención de nombre de la entidad referenciada más el sufijo de identificación.                               |
-| ---   | ---                                                                                                                                                        |
 | 3     | Las fechas se almacenan con precisión de fecha y hora y en horario coordinado universal; no se almacena hora local sin desplazamiento.                     |
-| ---   | ---                                                                                                                                                        |
 | 4     | El número de documento de una persona es único; la placa de un bus es única; el identificador IMEI de un dispositivo GPS es único.                         |
-| ---   | ---                                                                                                                                                        |
 | 5     | Una ruta pertenece a una sede; un bus pertenece a una institución; una parada pertenece a una ruta o a su institución de referencia.                       |
-| ---   | ---                                                                                                                                                        |
 | 6     | Un bus se asigna a una sola ruta a la vez; un conductor es responsable de un solo bus a la vez; un estudiante mantiene una sola ruta activa.               |
-| ---   | ---                                                                                                                                                        |
 | 7     | Una bordada referencia obligatoriamente estudiante, bus y parada, y su tipo solo admite subida o bajada.                                                   |
-| ---   | ---                                                                                                                                                        |
 | 8     | Una posición geográfica referencia un dispositivo registrado; la latitud está entre −90 y 90, la longitud entre −180 y 180 y la velocidad no es negativa.  |
-| ---   | ---                                                                                                                                                        |
 | 9     | No existen referencias físicas cruzadas entre esquemas: los cruces se resuelven por identificador o código en la aplicación y su consistencia es eventual. |
-| ---   | ---                                                                                                                                                        |
 | 10    | Las columnas de filtro y de unión disponen de índice; las series temporales se indexan por dispositivo y fecha descendente.                                |
-| ---   | ---                                                                                                                                                        |
 | 11    | La unicidad de negocio se refuerza con restricciones únicas y las reglas de rango con restricciones de verificación.                                       |
-| ---   | ---                                                                                                                                                        |
 
 ## 6.3 Ciclo de vida y retención de datos
 
@@ -1506,19 +1099,13 @@ El software administra **38 tablas** distribuidas en **11 esquemas**, uno por se
 | **Requisito**     | **Detalle**                                                                                                                                                        |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Clasificación     | Correo, nombre, número de documento, vínculos familiares y ubicación en vivo se tratan como información sensible.                                                  |
-| ---               | ---                                                                                                                                                                |
 | Minimización      | La información personal se registra en bitácoras solo en la medida necesaria para la operación y la auditoría.                                                     |
-| ---               | ---                                                                                                                                                                |
 | Cifrado           | Los datos de identificación personal se cifran en reposo y viajan cifrados mediante TLS.                                                                           |
-| ---               | ---                                                                                                                                                                |
 | Control de acceso | La consulta se restringe por rol y por ámbito institucional: el acudiente solo accede a sus estudiantes vinculados y el administrador al ámbito de su institución. |
-| ---               | ---                                                                                                                                                                |
 | Consentimiento    | El tratamiento de datos de menores exige consentimiento y autorización expresa del acudiente.                                                                      |
-| ---               | ---                                                                                                                                                                |
 | Trazabilidad      | Toda acción crítica sobre datos personales queda registrada con quién, qué, cuándo, dirección IP y aplicación.                                                     |
-| ---               | ---                                                                                                                                                                |
 
-# 7 Historias de usuario
+# 7. Historias de usuario
 
 ## 7.1 Épicas
 
@@ -1529,19 +1116,12 @@ El backlog del producto se organiza en **7 épicas** que agrupan **20 historias 
 | **Épica** | **Denominación**              | **Descripción**                                                                   | **HU** |
 | --------- | ----------------------------- | --------------------------------------------------------------------------------- | ------ |
 | EP-001    | Subida y bajada mediante QR   | Registra la subida y la bajada del estudiante mediante el escaneo de su código QR | 3      |
-| ---       | ---                           | ---                                                                               | ---    |
 | EP-002    | Notificaciones                | Notifica al acudiente la subida y la bajada y las alertas de la ruta              | 2      |
-| ---       | ---                           | ---                                                                               | ---    |
 | EP-003    | Gestión de rutas y flota      | Administra rutas, buses, paradas y asignaciones de conductor y estudiantes        | 8      |
-| ---       | ---                           | ---                                                                               | ---    |
 | EP-004    | Gestión de usuarios y familia | Administra usuarios y vincula estudiantes a la cuenta del acudiente               | 3      |
-| ---       | ---                           | ---                                                                               | ---    |
 | EP-005    | Seguimiento en vivo           | Muestra la ubicación del bus en el mapa en tiempo real                            | 1      |
-| ---       | ---                           | ---                                                                               | ---    |
 | EP-006    | Incidentes                    | Reporta y notifica los incidentes ocurridos durante el viaje                      | 1      |
-| ---       | ---                           | ---                                                                               | ---    |
 | EP-007    | Interfaz y personalización    | Personaliza el tema de colores y el idioma de la interfaz                         | 2      |
-| ---       | ---                           | ---                                                                               | ---    |
 
 ## 7.2 Historias de usuario por épica
 
@@ -1549,37 +1129,61 @@ El backlog del producto se organiza en **7 épicas** que agrupan **20 historias 
 
 **Tabla 57**. _Historias de usuario de la épica EP-001_
 
-<div class="joplin-table-wrapper"><table><thead><tr><th><p><strong>HU</strong></p></th><th><p><strong>Título</strong></p></th><th><p><strong>Rol</strong></p></th><th><p><strong>Plataforma</strong></p></th><th><p><strong>Prioridad</strong></p></th><th><p><strong>Criterios de aceptación (resumidos)</strong></p></th></tr><tr><th><p>HU-QR-001</p></th><th><p>El conductor escanea el código QR del estudiante para registrar su subida</p></th><th><pre><code>DRIVER</code></pre></th><th><p>Móvil</p></th><th><p>Alta</p></th><th><p>Con estudiante asignado a la ruta y con parada registrada, el escaneo registra la subida con hora y parada y publica el evento de subida; si el estudiante pertenece a otra ruta, se rechaza con mensaje «estudiante no asignado a esta ruta».</p></th></tr><tr><th><p>HU-QR-002</p></th><th><p>El conductor escanea el código QR del estudiante para registrar su bajada</p></th><th><pre><code>DRIVER</code></pre></th><th><p>Móvil</p></th><th><p>Alta</p></th><th><p>Con bordada de subida activa en el viaje, el escaneo registra la bajada con hora y ubicación y publica el evento de bajada; sin bordada activa, se rechaza con mensaje «no hay bordada activa para el estudiante».</p></th></tr><tr><th><p>HU-QR-004</p></th><th><p>El estudiante consulta su código QR personal en la aplicación móvil</p></th><th><pre><code>STUDENT</code></pre></th><th><p>Móvil</p></th><th><p>Media</p></th><th><p>Con cuenta activa, la sección muestra el código con identificador único y el nombre del estudiante para verificación; si el código está vencido o la cuenta está desactivada, informa que el código no está disponible.</p></th></tr></thead></table></div>
+| **HU** | **Título** | **Rol** | **Plataforma** | **Prioridad** | **Criterios de aceptación (resumidos)** |
+| --- | --- | --- | --- | --- | --- |
+| HU-QR-001 | El conductor escanea el código QR del estudiante para registrar su subida | `DRIVER` | Móvil | Alta | Con estudiante asignado a la ruta y con parada registrada, el escaneo registra la subida con hora y parada y publica el evento de subida; si el estudiante pertenece a otra ruta, se rechaza con mensaje «estudiante no asignado a esta ruta». |
+| HU-QR-002 | El conductor escanea el código QR del estudiante para registrar su bajada | `DRIVER` | Móvil | Alta | Con bordada de subida activa en el viaje, el escaneo registra la bajada con hora y ubicación y publica el evento de bajada; sin bordada activa, se rechaza con mensaje «no hay bordada activa para el estudiante». |
+| HU-QR-004 | El estudiante consulta su código QR personal en la aplicación móvil | `STUDENT` | Móvil | Media | Con cuenta activa, la sección muestra el código con identificador único y el nombre del estudiante para verificación; si el código está vencido o la cuenta está desactivada, informa que el código no está disponible. |
 
 ### 7.2.2 Épica EP-002 — Notificaciones
 
 **Tabla 58**. _Historias de usuario de la épica EP-002_
 
-<div class="joplin-table-wrapper"><table><thead><tr><th><p><strong>HU</strong></p></th><th><p><strong>Título</strong></p></th><th><p><strong>Rol</strong></p></th><th><p><strong>Plataforma</strong></p></th><th><p><strong>Prioridad</strong></p></th><th><p><strong>Criterios de aceptación (resumidos)</strong></p></th></tr><tr><th><p>HU-NOTIF-001</p></th><th><p>Notificaciones en tiempo real de subida y bajada al acudiente</p></th><th><pre><code>PARENT</code></pre></th><th><p>Móvil</p></th><th><p>Alta</p></th><th><p>Al escanear la subida, el acudiente recibe de inmediato la hora y la parada; al escanear la bajada, recibe la hora y la ubicación del descenso.</p></th></tr><tr><th><p>HU-NOTIF-005</p></th><th><p>Alerta cuando el bus permanece detenido más de lo permitido</p></th><th><pre><code>PARENT</code></pre></th><th><p>Móvil</p></th><th><p>Media</p></th><th><p>Al superar el umbral de detención configurado se envía la alerta con la ubicación del bus; si el bus reanuda la marcha dentro del umbral, no se envía ninguna alerta.</p></th></tr></thead></table></div>
+| **HU** | **Título** | **Rol** | **Plataforma** | **Prioridad** | **Criterios de aceptación (resumidos)** |
+| --- | --- | --- | --- | --- | --- |
+| HU-NOTIF-001 | Notificaciones en tiempo real de subida y bajada al acudiente | `PARENT` | Móvil | Alta | Al escanear la subida, el acudiente recibe de inmediato la hora y la parada; al escanear la bajada, recibe la hora y la ubicación del descenso. |
+| HU-NOTIF-005 | Alerta cuando el bus permanece detenido más de lo permitido | `PARENT` | Móvil | Media | Al superar el umbral de detención configurado se envía la alerta con la ubicación del bus; si el bus reanuda la marcha dentro del umbral, no se envía ninguna alerta. |
 
 ### 7.2.3 Épica EP-003 — Gestión de rutas y flota
 
 **Tabla 59**. _Historias de usuario de la épica EP-003_
 
-<div class="joplin-table-wrapper"><table><thead><tr><th><p><strong>HU</strong></p></th><th><p><strong>Título</strong></p></th><th><p><strong>Rol</strong></p></th><th><p><strong>Plataforma</strong></p></th><th><p><strong>Prioridad</strong></p></th><th><p><strong>Criterios de aceptación (resumidos)</strong></p></th></tr><tr><th><p>HU-ROUTE-001</p></th><th><p>El administrador crea y gestiona rutas escolares con paradas y horarios</p></th><th><pre><code>ADMIN</code></pre></th><th><p>Web</p></th><th><p>Alta</p></th><th><p>La ruta se registra con paradas ordenadas y horarios y aparece en el listado; un nombre duplicado se rechaza con mensaje «la ruta ya existe».</p></th></tr><tr><th><p>HU-ROUTE-002</p></th><th><p>El conductor consulta su ruta asignada con paradas y horarios</p></th><th><pre><code>DRIVER</code></pre></th><th><p>Móvil</p></th><th><p>Alta</p></th><th><p>Con ruta asignada y activa, la vista muestra paradas ordenadas, horarios y el bus; sin ruta asignada, informa «sin ruta asignada».</p></th></tr><tr><th><p>HU-ROUTE-003</p></th><th><p>El conductor inicia y finaliza el viaje de su ruta</p></th><th><pre><code>DRIVER</code></pre></th><th><p>Móvil</p></th><th><p>Media</p></th><th><p>El inicio marca el viaje activo y publica el evento correspondiente; el fin valida que no haya bajadas pendientes; un segundo inicio concurrente se rechaza con mensaje «ya existe un viaje activo para este bus».</p></th></tr><tr><th><p>HU-ROUTE-004</p></th><th><p>El acudiente consulta los detalles de la ruta de su hijo</p></th><th><pre><code>PARENT</code></pre></th><th><p>Móvil</p></th><th><p>Media</p></th><th><p>Con estudiante vinculado y con ruta asignada, la vista muestra bus, conductor, paradas y horarios; sin ruta asignada, informa «aún no se ha asignado ruta».</p></th></tr><tr><th><p>HU-ROUTE-005</p></th><th><p>El administrador asigna un bus a una ruta</p></th><th><pre><code>ADMIN</code></pre></th><th><p>Web</p></th><th><p>Media</p></th><th><p>El bus se vincula a la ruta y el estado del bus pasa a «en ruta»; si la ruta ya tiene bus activo, se rechaza con mensaje «la ruta ya tiene un bus asignado».</p></th></tr><tr><th><p>HU-ROUTE-008</p></th><th><p>El administrador asigna estudiantes a una ruta con su parada de subida y bajada</p></th><th><pre><code>ADMIN</code></pre></th><th><p>Web</p></th><th><p>Alta</p></th><th><p>El estudiante queda vinculado a la ruta y el acudiente puede consultarla; una parada ajena a la ruta se rechaza con mensaje «la parada no pertenece a esta ruta».</p></th></tr><tr><th><p>HU-FLEET-001</p></th><th><p>El administrador gestiona la flota de buses</p></th><th><pre><code>ADMIN</code></pre></th><th><p>Web</p></th><th><p>Media</p></th><th><p>El bus se registra con estado disponible y aparece en el listado; una placa repetida se rechaza con mensaje «la placa ya existe».</p></th></tr><tr><th><p>HU-BUS-002</p></th><th><p>El administrador asigna y desasigna un conductor a un bus</p></th><th><pre><code>ADMIN</code></pre></th><th><p>Web</p></th><th><p>Alta</p></th><th><p>El conductor queda registrado como responsable del bus y ve las rutas de su bus en la aplicación; si ya es responsable de otro bus, se rechaza con mensaje «conductor ya asignado a un bus».</p></th></tr></thead></table></div>
+| **HU** | **Título** | **Rol** | **Plataforma** | **Prioridad** | **Criterios de aceptación (resumidos)** |
+| --- | --- | --- | --- | --- | --- |
+| HU-ROUTE-001 | El administrador crea y gestiona rutas escolares con paradas y horarios | `ADMIN` | Web | Alta | La ruta se registra con paradas ordenadas y horarios y aparece en el listado; un nombre duplicado se rechaza con mensaje «la ruta ya existe». |
+| HU-ROUTE-002 | El conductor consulta su ruta asignada con paradas y horarios | `DRIVER` | Móvil | Alta | Con ruta asignada y activa, la vista muestra paradas ordenadas, horarios y el bus; sin ruta asignada, informa «sin ruta asignada». |
+| HU-ROUTE-003 | El conductor inicia y finaliza el viaje de su ruta | `DRIVER` | Móvil | Media | El inicio marca el viaje activo y publica el evento correspondiente; el fin valida que no haya bajadas pendientes; un segundo inicio concurrente se rechaza con mensaje «ya existe un viaje activo para este bus». |
+| HU-ROUTE-004 | El acudiente consulta los detalles de la ruta de su hijo | `PARENT` | Móvil | Media | Con estudiante vinculado y con ruta asignada, la vista muestra bus, conductor, paradas y horarios; sin ruta asignada, informa «aún no se ha asignado ruta». |
+| HU-ROUTE-005 | El administrador asigna un bus a una ruta | `ADMIN` | Web | Media | El bus se vincula a la ruta y el estado del bus pasa a «en ruta»; si la ruta ya tiene bus activo, se rechaza con mensaje «la ruta ya tiene un bus asignado». |
+| HU-ROUTE-008 | El administrador asigna estudiantes a una ruta con su parada de subida y bajada | `ADMIN` | Web | Alta | El estudiante queda vinculado a la ruta y el acudiente puede consultarla; una parada ajena a la ruta se rechaza con mensaje «la parada no pertenece a esta ruta». |
+| HU-FLEET-001 | El administrador gestiona la flota de buses | `ADMIN` | Web | Media | El bus se registra con estado disponible y aparece en el listado; una placa repetida se rechaza con mensaje «la placa ya existe». |
+| HU-BUS-002 | El administrador asigna y desasigna un conductor a un bus | `ADMIN` | Web | Alta | El conductor queda registrado como responsable del bus y ve las rutas de su bus en la aplicación; si ya es responsable de otro bus, se rechaza con mensaje «conductor ya asignado a un bus». |
 
 ### 7.2.4 Épica EP-004 — Gestión de usuarios y familia
 
 **Tabla 60**. _Historias de usuario de la épica EP-004_
 
-<div class="joplin-table-wrapper"><table><thead><tr><th><p><strong>HU</strong></p></th><th><p><strong>Título</strong></p></th><th><p><strong>Rol</strong></p></th><th><p><strong>Plataforma</strong></p></th><th><p><strong>Prioridad</strong></p></th><th><p><strong>Criterios de aceptación (resumidos)</strong></p></th></tr><tr><th><p>HU-IAM-001</p></th><th><p>Inicio de sesión, cuentas y roles (control de acceso por rol)</p></th><th><p>Todos los roles</p></th><th><p>Web y móvil</p></th><th><p>Alta</p></th><th><p>Con credenciales válidas y cuenta activa, el sistema emite el token y concede acceso limitado a las funciones del rol; con credenciales incorrectas o cuenta desactivada, rechaza con mensaje «credenciales inválidas» y no emite token.</p></th></tr><tr><th><p>HU-USER-003</p></th><th><p>El administrador vincula estudiantes a la cuenta de un acudiente</p></th><th><pre><code>ADMIN</code></pre></th><th><p>Web</p></th><th><p>Alta</p></th><th><p>El estudiante queda vinculado y el acudiente consulta su información y notificaciones; un estudiante ya vinculado a otro acudiente se rechaza con mensaje «estudiante ya asociado».</p></th></tr><tr><th><p>HU-USER-004</p></th><th><p>El administrador gestiona las cuentas del ecosistema escolar</p></th><th><pre><code>ADMIN</code></pre></th><th><p>Web</p></th><th><p>Alta</p></th><th><p>La cuenta se crea con el rol correspondiente y aparece en el listado; al desactivar una cuenta, esta deja de acceder al sistema y el usuario queda indisponible para asignaciones.</p></th></tr></thead></table></div>
+| **HU** | **Título** | **Rol** | **Plataforma** | **Prioridad** | **Criterios de aceptación (resumidos)** |
+| --- | --- | --- | --- | --- | --- |
+| HU-IAM-001 | Inicio de sesión, cuentas y roles (control de acceso por rol) | Todos los roles | Web y móvil | Alta | Con credenciales válidas y cuenta activa, el sistema emite el token y concede acceso limitado a las funciones del rol; con credenciales incorrectas o cuenta desactivada, rechaza con mensaje «credenciales inválidas» y no emite token. |
+| HU-USER-003 | El administrador vincula estudiantes a la cuenta de un acudiente | `ADMIN` | Web | Alta | El estudiante queda vinculado y el acudiente consulta su información y notificaciones; un estudiante ya vinculado a otro acudiente se rechaza con mensaje «estudiante ya asociado». |
+| HU-USER-004 | El administrador gestiona las cuentas del ecosistema escolar | `ADMIN` | Web | Alta | La cuenta se crea con el rol correspondiente y aparece en el listado; al desactivar una cuenta, esta deja de acceder al sistema y el usuario queda indisponible para asignaciones. |
 
 ### 7.2.5 Épica EP-005 — Seguimiento en vivo
 
 **Tabla 61**. _Historias de usuario de la épica EP-005_
 
-<div class="joplin-table-wrapper"><table><thead><tr><th><p><strong>HU</strong></p></th><th><p><strong>Título</strong></p></th><th><p><strong>Rol</strong></p></th><th><p><strong>Plataforma</strong></p></th><th><p><strong>Prioridad</strong></p></th><th><p><strong>Criterios de aceptación (resumidos)</strong></p></th></tr><tr><th><p>HU-GPS-002</p></th><th><p>Ubicación del bus en el mapa en tiempo real</p></th><th><pre><code>PARENT</code></pre></th><th><p>Móvil</p></th><th><p>Media</p></th><th><p>Con estudiante asignado a una ruta, la vista muestra la ubicación actualizada sin refresco manual; ante pérdida de señal GPS, muestra la última posición conocida con marcador de «sin señal».</p></th></tr></thead></table></div>
+| **HU** | **Título** | **Rol** | **Plataforma** | **Prioridad** | **Criterios de aceptación (resumidos)** |
+| --- | --- | --- | --- | --- | --- |
+| HU-GPS-002 | Ubicación del bus en el mapa en tiempo real | `PARENT` | Móvil | Media | Con estudiante asignado a una ruta, la vista muestra la ubicación actualizada sin refresco manual; ante pérdida de señal GPS, muestra la última posición conocida con marcador de «sin señal». |
 
 ### 7.2.6 Épica EP-006 — Incidentes
 
 **Tabla 62**. _Historias de usuario de la épica EP-006_
 
-<div class="joplin-table-wrapper"><table><thead><tr><th><p><strong>HU</strong></p></th><th><p><strong>Título</strong></p></th><th><p><strong>Rol</strong></p></th><th><p><strong>Plataforma</strong></p></th><th><p><strong>Prioridad</strong></p></th><th><p><strong>Criterios de aceptación (resumidos)</strong></p></th></tr><tr><th><p>HU-INCIDENT-001</p></th><th><p>El conductor reporta un incidente o emergencia durante el viaje</p></th><th><pre><code>DRIVER</code></pre></th><th><p>Móvil</p></th><th><p>Media</p></th><th><p>Con viaje activo, el reporte registra tipo, descripción opcional, viaje y ubicación, y notifica a la institución y a los acudientes de los estudiantes a bordo; sin viaje activo, el campo viaje es obligatorio y se rechaza el reporte.</p></th></tr></thead></table></div>
+| **HU** | **Título** | **Rol** | **Plataforma** | **Prioridad** | **Criterios de aceptación (resumidos)** |
+| --- | --- | --- | --- | --- | --- |
+| HU-INCIDENT-001 | El conductor reporta un incidente o emergencia durante el viaje | `DRIVER` | Móvil | Media | Con viaje activo, el reporte registra tipo, descripción opcional, viaje y ubicación, y notifica a la institución y a los acudientes de los estudiantes a bordo; sin viaje activo, el campo viaje es obligatorio y se rechaza el reporte. |
 
 ### 7.2.7 Épica EP-007 — Interfaz y personalización
 
@@ -1588,11 +1192,9 @@ El backlog del producto se organiza en **7 épicas** que agrupan **20 historias 
 | **HU**    | **Título**                                                      | **Rol**         | **Plataforma** | **Prioridad** | **Criterios de aceptación (resumidos)**                                                                                                          |
 | --------- | --------------------------------------------------------------- | --------------- | -------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | HU-UI-001 | El usuario personaliza los colores del tema de la aplicación    | Todos los roles | Web y móvil    | Baja          | El cambio de color se aplica a todas las pantallas y se conserva al cerrar y reabrir la aplicación.                                              |
-| ---       | ---                                                             | ---             | ---            | ---           | ---                                                                                                                                              |
 | HU-UI-002 | El usuario elige el idioma de la interfaz entre al menos cuatro | Todos los roles | Web y móvil    | Baja          | Al elegir un idioma soportado, las etiquetas se cargan desde su diccionario; sin preferencia guardada, la interfaz usa el idioma predeterminado. |
-| ---       | ---                                                             | ---             | ---            | ---           | ---                                                                                                                                              |
 
-# 8 Criterios de aceptación generales y estrategia de verificación
+# 8. Criterios de aceptación generales y estrategia de verificación
 
 ## 8.1 Criterios de aceptación generales
 
@@ -1603,25 +1205,15 @@ Un incremento del software se considera aceptado cuando cumple, de forma conjunt
 | **#** | **Criterio**                                                                                                                                           |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1     | Toda función entregada está trazada al menos a un requisito funcional de la sección 3 y a una historia de usuario del anexo.                           |
-| ---   | ---                                                                                                                                                    |
 | 2     | Los criterios de aceptación de la historia de usuario se verifican en formato Given/When/Then, con resultado observable y reproducible.                |
-| ---   | ---                                                                                                                                                    |
 | 3     | Las reglas de negocio de cada requisito se cumplen también en los escenarios de error, no solo en el camino feliz.                                     |
-| ---   | ---                                                                                                                                                    |
 | 4     | Las validaciones de entrada rechazan datos inválidos con mensaje claro y sin perder la información digitada.                                           |
-| ---   | ---                                                                                                                                                    |
 | 5     | Todo endpoint privado exige token válido y aplica el control de acceso por rol; sin permiso explícito, la operación se deniega.                        |
-| ---   | ---                                                                                                                                                    |
 | 6     | Las acciones críticas quedan registradas en auditoría con quién, qué, cuándo, dirección IP y aplicación.                                               |
-| ---   | ---                                                                                                                                                    |
 | 7     | La interfaz conserva el contraste, la navegación por teclado y la presentación responsive exigidos por el diseño.                                      |
-| ---   | ---                                                                                                                                                    |
 | 8     | Las pruebas no utilizan datos personales reales: los registros de prueba usan datos ficticios y credenciales marcadas como &lt;PASSWORD_DE_PRUEBA&gt;. |
-| ---   | ---                                                                                                                                                    |
 | 9     | No se reduce la cobertura de pruebas existente: el código añadido incrementa o conserva la cobertura global.                                           |
-| ---   | ---                                                                                                                                                    |
 | 10    | La documentación de interfaz y de datos se actualiza en la misma entrega cuando cambia el contrato o el significado de un campo.                       |
-| ---   | ---                                                                                                                                                    |
 
 ## 8.2 Estrategia de verificación
 
@@ -1632,17 +1224,11 @@ La verificación se organiza en niveles complementarios, con mayor volumen en la
 | **Nivel**            | **Objetivo**                                                 | **Alcance típico**                                                               | **Herramientas**                                                                                                     |
 | -------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Unitaria             | Probar la lógica de negocio de forma aislada                 | Agregados, objetos de valor, servicios de dominio y casos de uso                 | JUnit 5 con Mockito en Java; xUnit en .NET; Jest y Vitest en Angular; Jest con React Native Testing Library en móvil |
-| ---                  | ---                                                          | ---                                                                              | ---                                                                                                                  |
 | De integración       | Verificar adaptadores contra sistemas reales                 | Capa de persistencia contra base de datos, publicadores contra el bus de eventos | Entornos de prueba contenedorizados con pruebas de integración de base y de API                                      |
-| ---                  | ---                                                          | ---                                                                              | ---                                                                                                                  |
 | De contrato          | Confirmar que la implementación cumple la interfaz publicada | Interfaz HTTP frente al contrato de servicio                                     | Validadores de contrato y verificación del esquema publicado                                                         |
-| ---                  | ---                                                          | ---                                                                              | ---                                                                                                                  |
 | De extremo a extremo | Validar flujos completos como los experimenta el usuario     | Inicio de sesión, gestión de rutas, bordada y consulta del acudiente             | Playwright y Cypress para interfaz web; k6 para pruebas de extremo a extremo de interfaz                             |
-| ---                  | ---                                                          | ---                                                                              | ---                                                                                                                  |
 | Rendimiento          | Confirmar los objetivos de la sección 4.1                    | Endpoints críticos bajo carga sostenida                                          | k6, con fallo si la latencia P95 supera 300 ms o la tasa de error supera el 1 %                                      |
-| ---                  | ---                                                          | ---                                                                              | ---                                                                                                                  |
 | Regresión y humo     | Proteger lo ya funcionando tras cada cambio                  | Flujos críticos y comprobación de salud de los servicios                         | Conjunto de regresión en cada entrega y prueba de humo en el entorno de pruebas                                      |
-| ---                  | ---                                                          | ---                                                                              | ---                                                                                                                  |
 
 Las pruebas unitarias se ejecutan en cada entrega de código; las de integración y contrato en la canalización; las de extremo a extremo y de rendimiento en el entorno de pruebas, antes de la publicación en producción. Los defectos se registran con severidad y trazabilidad hacia el requisito funcional que los origina, y su cierre exige la prueba que lo reproduce.
 
@@ -1653,23 +1239,15 @@ Las pruebas unitarias se ejecutan en cada entrega de código; las de integració
 | **Métrica**                        | **Umbral**                                  | **Momento de medición**                                          |
 | ---------------------------------- | ------------------------------------------- | ---------------------------------------------------------------- |
 | Cobertura de líneas de prueba      | ≥ 80 % global; ≥ 90 % en la capa de dominio | En cada entrega; una entrega que reduzca la cobertura se rechaza |
-| ---                                | ---                                         | ---                                                              |
 | Cobertura de ramas                 | ≥ 75 % global; ≥ 85 % en la capa de dominio | En cada entrega                                                  |
-| ---                                | ---                                         | ---                                                              |
 | Latencia P95 de endpoints críticos | < 300 ms                                    | Prueba de carga en el entorno de pruebas                         |
-| ---                                | ---                                         | ---                                                              |
 | Tasa de error bajo carga           | < 1 %                                       | Prueba de carga en el entorno de pruebas                         |
-| ---                                | ---                                         | ---                                                              |
 | Tiempo medio de construcción       | < 5 minutos                                 | Canalización de integración                                      |
-| ---                                | ---                                         | ---                                                              |
-| Complejidad cicломática            | ≤ 10 por función                            | Análisis estático                                                |
-| ---                                | ---                                         | ---                                                              |
+| Complejidad ciclomática            | ≤ 10 por función                            | Análisis estático                                                |
 | Revisión OWASP Top 10              | Sin hallazgos críticos ni altos pendientes  | Cada liberación                                                  |
-| ---                                | ---                                         | ---                                                              |
 | Disponibilidad                     | SLO 99,9 % mensual                          | Monitoreo del entorno de producción                              |
-| ---                                | ---                                         | ---                                                              |
 
-# 9 Glosario
+# 9. Glosario
 
 ## 9.1 Glosario del dominio
 
@@ -1678,45 +1256,25 @@ Las pruebas unitarias se ejecutan en cada entrega de código; las de integració
 | **Término**            | **Definición**                                                                                                            |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Acudiente              | Adulto responsable de uno o más estudiantes, autorizado para consultar su información de transporte.                      |
-| ---                    | ---                                                                                                                       |
 | Alerta                 | Comunicación de alta prioridad generada por un evento o condición operativa, con tipo, nivel de urgencia y destinatarios. |
-| ---                    | ---                                                                                                                       |
 | Asignación de ruta     | Relación que vincula una ruta con un estudiante, un bus, un conductor o una parada.                                       |
-| ---                    | ---                                                                                                                       |
 | Bordada                | Registro del evento de subida o de bajada de un estudiante en el bus, con su fecha y hora.                                |
-| ---                    | ---                                                                                                                       |
 | Bus                    | Vehículo autorizado para el transporte escolar, identificado por su placa y su capacidad.                                 |
-| ---                    | ---                                                                                                                       |
 | Conducto de desvío     | Condición en la que el vehículo se aparta del trayecto previsto; evento de seguridad sujeto a monitoreo.                  |
-| ---                    | ---                                                                                                                       |
 | Conductor              | Persona responsable de operar un bus y la ruta asignados.                                                                 |
-| ---                    | ---                                                                                                                       |
 | Desfase                | Condición en la que el vehículo circula con retraso frente a la programación.                                             |
-| ---                    | ---                                                                                                                       |
 | Escuela                | Institución educativa titular del servicio de transporte, con sedes y cursos.                                             |
-| ---                    | ---                                                                                                                       |
 | Estudiante             | Menor transportado, asociado a una familia, una ruta y una parada; sus datos requieren protección reforzada.              |
-| ---                    | ---                                                                                                                       |
 | Familia                | Estructura de vínculo entre los estudiantes y su acudiente o adultos responsables.                                        |
-| ---                    | ---                                                                                                                       |
 | Incidente              | Evento operativo o de seguridad que afecta vehículo, ruta, conductor, estudiante o parada.                                |
-| ---                    | ---                                                                                                                       |
 | Monitoreo              | Observación del progreso de la ruta, el estado del vehículo, su ubicación y los eventos operativos.                       |
-| ---                    | ---                                                                                                                       |
 | Notificación           | Mensaje dirigido al usuario sobre un evento relevante del trayecto.                                                       |
-| ---                    | ---                                                                                                                       |
 | Parada                 | Ubicación física donde los estudiantes suben o bajan del bus.                                                             |
-| ---                    | ---                                                                                                                       |
 | Ruta                   | Trayecto escolar planificado que une la institución con sus paradas, con vehículos y estudiantes asignados.               |
-| ---                    | ---                                                                                                                       |
 | Sede                   | Locación física de una institución, base de la pertenencia de rutas, buses y perfiles.                                    |
-| ---                    | ---                                                                                                                       |
 | Trazabilidad           | Capacidad de saber qué ocurrió, cuándo y en relación con qué usuario, vehículo, ruta o evento.                            |
-| ---                    | ---                                                                                                                       |
 | Ubicación del vehículo | Posición geográfica actual o última conocida de un bus.                                                                   |
-| ---                    | ---                                                                                                                       |
 | Viaje                  | Ejecución real de una ruta, con bus, conductor, hora de inicio y hora de fin.                                             |
-| ---                    | ---                                                                                                                       |
 
 ## 9.2 Glosario técnico
 
@@ -1725,47 +1283,27 @@ Las pruebas unitarias se ejecutan en cada entrega de código; las de integració
 | **Término**             | **Definición**                                                                                            |
 | ----------------------- | --------------------------------------------------------------------------------------------------------- |
 | API Gateway             | Punto único de entrada que aplica TLS, límite de tasa, CORS, autenticación y ruteo hacia los servicios.   |
-| ---                     | ---                                                                                                       |
 | Bearer token            | Credencial transportada en el encabezado Authorization de cada solicitud privada.                         |
-| ---                     | ---                                                                                                       |
 | Baja lógica             | Desactivación de un registro mediante estado, sin eliminación física.                                     |
-| ---                     | ---                                                                                                       |
-| Cerdito de correlación  | Dato técnico: identificador único que se propaga por bitácoras y trazas de una misma transacción.         |
-| ---                     | ---                                                                                                       |
+| Identificador de correlación  | Dato técnico: identificador único que se propaga por bitácoras y trazas de una misma transacción.         |
 | Esquema por servicio    | Patrón en el que cada servicio posee su propio esquema dentro de una base de datos compartida.            |
-| ---                     | ---                                                                                                       |
 | Evento de dominio       | Hecho de negocio relevante publicado para su tratamiento por otros componentes.                           |
-| ---                     | ---                                                                                                       |
 | gRPC                    | Protocolo de comunicación sincrónica de baja latencia usado para la telemetría de posicionamiento.        |
-| ---                     | ---                                                                                                       |
 | Hash de contraseña      | Representación irreversible de la contraseña; nunca se almacena ni se registra el valor original.         |
-| ---                     | ---                                                                                                       |
 | Interruptor de circuito | Mecanismo que aísla un dependiente fallido y evita su llamada continuada.                                 |
-| ---                     | ---                                                                                                       |
 | Kafka (KRaft)           | Bus de eventos en modo de operación nativo, sin servicio de coordinación externo.                         |
-| ---                     | ---                                                                                                       |
 | Liquibase               | Herramienta de migración de base de datos con cambios versionados y orden determinista.                   |
-| ---                     | ---                                                                                                       |
 | Mínimo privilegio       | Principio según el cual cada rol recibe únicamente los permisos que necesita.                             |
-| ---                     | ---                                                                                                       |
 | Payload                 | Conjunto de datos transportado por una solicitud o un mensaje.                                            |
-| ---                     | ---                                                                                                       |
 | Punto de salud          | Endpoint que informa si el servicio está vivo y si puede recibir tráfico.                                 |
-| ---                     | ---                                                                                                       |
 | Rate limit              | Límite de solicitudes por intervalo aplicado en el punto de entrada.                                      |
-| ---                     | ---                                                                                                       |
 | RS256                   | Algoritmo de firma de token con par de llaves; solo el servicio de identificación posee la llave privada. |
-| ---                     | ---                                                                                                       |
 | SLO                     | Objetivo de nivel de servicio, como la disponibilidad mensual del 99,9 %.                                 |
-| ---                     | ---                                                                                                       |
 | Token de actualización  | Credencial de larga vigencia que permite renovar el token de acceso sin repetir credenciales.             |
-| ---                     | ---                                                                                                       |
 | Tópico                  | Canal lógico del bus de eventos agrupador de mensajes de un mismo tipo.                                   |
-| ---                     | ---                                                                                                       |
 | Umbral de detención     | Tiempo máximo configurado de inmovilización del bus antes de generar una alerta.                          |
-| ---                     | ---                                                                                                       |
 
-# 10 Anexo: matriz de trazabilidad HU↔RF
+# 10. Anexo: matriz de trazabilidad HU↔RF
 
 ## 10.1 Matriz de historias de usuario hacia requisitos funcionales
 
@@ -1774,45 +1312,25 @@ Las pruebas unitarias se ejecutan en cada entrega de código; las de integració
 | **#** | **HU**          | **Épica** | **RF implementadas**               | **Grupo funcional** |
 | ----- | --------------- | --------- | ---------------------------------- | ------------------- |
 | 1     | HU-IAM-001      | EP-004    | RF-02.1, RF-02.2                   | RF-02               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 2     | HU-USER-004     | EP-004    | RF-01.1, RF-01.2, RF-01.3          | RF-01               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 3     | HU-USER-003     | EP-004    | RF-01.4                            | RF-01               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 4     | HU-ROUTE-001    | EP-003    | RF-03.1, RF-03.2, RF-03.3, RF-03.4 | RF-03               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 5     | HU-FLEET-001    | EP-003    | RF-03.6                            | RF-03               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 6     | HU-ROUTE-005    | EP-003    | RF-03.5                            | RF-03               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 7     | HU-BUS-002      | EP-003    | RF-03.7                            | RF-03               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 8     | HU-ROUTE-008    | EP-003    | RF-03.8                            | RF-03               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 9     | HU-QR-004       | EP-001    | RF-04.1                            | RF-04               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 10    | HU-QR-001       | EP-001    | RF-04.2, RF-05.1                   | RF-04, RF-05        |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 11    | HU-QR-002       | EP-001    | RF-04.3                            | RF-04               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 12    | HU-NOTIF-001    | EP-002    | RF-05.2, RF-05.3                   | RF-05               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 13    | HU-NOTIF-005    | EP-002    | RF-05.4                            | RF-05               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 14    | HU-GPS-002      | EP-005    | RF-06.1, RF-06.2, RF-06.3          | RF-06               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 15    | HU-ROUTE-003    | EP-003    | RF-07.1                            | RF-07               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 16    | HU-INCIDENT-001 | EP-006    | RF-08.1                            | RF-08               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 17    | HU-ROUTE-004    | EP-003    | RF-09.1                            | RF-09               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 18    | HU-ROUTE-002    | EP-003    | RF-09.2                            | RF-09               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 19    | HU-UI-001       | EP-007    | RF-10.1                            | RF-10               |
-| ---   | ---             | ---       | ---                                | ---                 |
 | 20    | HU-UI-002       | EP-007    | RF-10.2                            | RF-10               |
-| ---   | ---             | ---       | ---                                | ---                 |
 
 ## 10.2 Cobertura de requisitos funcionales
 
@@ -1821,26 +1339,26 @@ Las pruebas unitarias se ejecutan en cada entrega de código; las de integració
 | **Grupo**                         | **RF del grupo** | **RF trazadas** | **Historias que las cubren**                                       |
 | --------------------------------- | ---------------- | --------------- | ------------------------------------------------------------------ |
 | RF-01 Gestión de usuarios         | 4                | 4               | HU-USER-004, HU-USER-003                                           |
-| ---                               | ---              | ---             | ---                                                                |
 | RF-02 Autenticación               | 2                | 2               | HU-IAM-001                                                         |
-| ---                               | ---              | ---             | ---                                                                |
 | RF-03 Rutas, flota y asignaciones | 8                | 8               | HU-ROUTE-001, HU-ROUTE-005, HU-BUS-002, HU-ROUTE-008, HU-FLEET-001 |
-| ---                               | ---              | ---             | ---                                                                |
 | RF-04 Escaneo QR                  | 3                | 3               | HU-QR-004, HU-QR-001, HU-QR-002                                    |
-| ---                               | ---              | ---             | ---                                                                |
 | RF-05 Notificaciones de bordada   | 4                | 4               | HU-QR-001, HU-NOTIF-001, HU-NOTIF-005                              |
-| ---                               | ---              | ---             | ---                                                                |
 | RF-06 Rastreo en tiempo real      | 3                | 3               | HU-GPS-002                                                         |
-| ---                               | ---              | ---             | ---                                                                |
 | RF-07 Gestión de viajes           | 1                | 1               | HU-ROUTE-003                                                       |
-| ---                               | ---              | ---             | ---                                                                |
 | RF-08 Incidentes                  | 1                | 1               | HU-INCIDENT-001                                                    |
-| ---                               | ---              | ---             | ---                                                                |
 | RF-09 Consulta de rutas           | 2                | 2               | HU-ROUTE-004, HU-ROUTE-002                                         |
-| ---                               | ---              | ---             | ---                                                                |
 | RF-10 Personalización             | 2                | 2               | HU-UI-001, HU-UI-002                                               |
-| ---                               | ---              | ---             | ---                                                                |
 | **Total**                         | **30**           | **30**          | **20 historias de usuario en 7 épicas**                            |
-| ---                               | ---              | ---             | ---                                                                |
 
 Cada una de las 20 historias de usuario se verifica mediante criterios de aceptación en formato Given/When/Then y al menos un caso de prueba asociado; todo requisito funcional sin historia o sin caso de prueba correspondiente se considera una brecha de trazabilidad y se gestiona antes de su cierre.
+
+# 11. Referencias
+
+- Congreso de la República de Colombia. (2012). *Ley 1581 de 2012: Por la cual se dictan disposiciones generales para la protección de datos personales*. Diario Oficial.
+- European Parliament and Council of the European Union. (2016). *Regulation (EU) 2016/679 on the protection of natural persons with regard to the processing of personal data and on the free movement of such data (General Data Protection Regulation)*. Official Journal of the European Union.
+- IEEE. (1998). *IEEE recommended practice for software requirements specifications* (IEEE Std 830-1998). Institute of Electrical and Electronics Engineers.
+- International Organization for Standardization. (2011). *Systems and software engineering — Systems and software quality requirements and evaluation (SQuaRE) — System and software quality models* (ISO/IEC 25010:2011). ISO.
+- International Organization for Standardization. (2017). *Systems and software engineering — Software life cycle processes* (ISO/IEC/IEEE 12207:2017). ISO.
+- International Organization for Standardization. (2022). *Software and systems engineering — Software testing* (ISO/IEC/IEEE 29119:2022). ISO.
+- OWASP Foundation. (2021). *OWASP Top 10: 2021 — The ten most critical web application security risks*. https://owasp.org/Top10/
+- Presidencia de la República de Colombia. (2013). *Decreto 1377 de 2013, por el cual se reglamenta la Ley 1581 de 2012*. Diario Oficial.

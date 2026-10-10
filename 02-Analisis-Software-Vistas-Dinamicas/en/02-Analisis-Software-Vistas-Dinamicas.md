@@ -1,1412 +1,2133 @@
+# Software Analysis: Dynamic Views
 
-**Análisis del Software: Vistas Dinámicas**
+**Guardian Escolar**
 
-Guardian Escolar
+*Analysis of the dynamic views of the Guardian Escolar system — safe school transportation platform*
 
-Software para la creación de la aplicación "Guardian Escolar"
+**Project team members:**
 
-Johan Smith Santamaria Fernández  
-Sharik Dayanna Rojas Ibarra  
-Juan Pablo Chala Ramírez
+- Juan Pablo Chala Ramírez
+- Johan Smith Santamaria Fernández
+- Sharik Dayanna Rojas Ibarra
 
-SENA — Servicio Nacional de Aprendizaje  
-Ficha de programación 3145556  
-Centro de formación de Neiva (Huila)
+**Program:** Technology in Software Analysis and Development
+**Cohort (Ficha):** 3145556
+**Training center:** La Industria, La Empresa y Los Servicios (SENA)
+**Location:** Neiva, Huila, Colombia
+**Date:** October 2026
 
-Instructor: José de Jesús Motta Vargas  
-Neiva, 6 de octubre de 2026
+---
 
-# Control de versiones
+## Table of contents
 
-**Tabla 1**. Control de versiones del documento
+1. [Introduction](#1-introduction)
+2. [General system description](#2-general-system-description)
+3. [Use-case model](#3-use-case-model)
+4. [Sequence diagrams](#4-sequence-diagrams)
+5. [Activity diagrams](#5-activity-diagrams)
+6. [State diagrams](#6-state-diagrams)
+7. [Data flow model](#7-data-flow-model)
+8. [Process logic description](#8-process-logic-description)
+9. [Event, error, and exception handling](#9-event-error-and-exception-handling)
+10. [Concurrency and communication aspects](#10-concurrency-and-communication-aspects)
+11. [Prototypes and screen flow](#11-prototypes-and-screen-flow)
+12. [Traceability matrix](#12-traceability-matrix)
+13. [Annexes](#13-annexes)
+14. [References](#14-references)
 
-| Versión | Fecha      | Autor                   | Descripción del cambio        |
-| ------- | ---------- | ----------------------- | ----------------------------- |
-| 1.0     | 06/10/2026 | Equipo Guardian Escolar | Versión inicial del documento |
+---
 
-**Tabla de contenido**
-
-Presione F9 (o clic derecho → Actualizar campo) para generar el índice.
-
-# 1 Introduction
+# 1. Introduction
 
 ## 1.1 Purpose
 
-El presente documento especifica las **vistas dinámicas** del software Guardian Escolar: aquellas descripciones del sistema que representan el comportamiento a lo largo del tiempo mediante intercambios de mensajes entre participantes, secuencias de acciones con puntos de decisión y ciclos de vida de los elementos persistentes. Guardian Escolar es una plataforma web y móvil para el monitoreo y la seguridad del transporte escolar, con geolocalización GPS, escaneo QR de subida y bajada de estudiantes, notificaciones y alertas en tiempo real.
+This document describes the **dynamic views** of the Guardian Escolar system, a platform created to manage, monitor, and improve the safety of school transportation in the municipality of Neiva (Huila, Colombia). The dynamic view complements the static view (domain and class model) by describing **how** the system behaves over time: who interacts with each use case, in which order operations are executed, how data is transformed among the services, which events are generated, and how the platform reacts to errors, exceptions, and concurrency conditions.
 
-Las vistas dinámicas complementan las vistas estáticas del sistema (requisitos, modelo de datos y arquitectura) al responder tres preguntas de análisis: qué mensajes intercambian los participantes y en qué orden; qué reglas y decisiones gobiernan un proceso de negocio; y en qué estados puede encontrarse cada entidad y qué transiciones lo provocan.
+The purpose of this document is:
 
-## 1.2 Alcance
-
-El alcance de la modelización dinámica comprende:
-
-- Los **casos de uso generales** de la plataforma con sus actores, requisitos funcionales e historias de usuario asociadas.
-- Los **diagramas de secuencia** de los flujos críticos: autenticación, alta de usuarios con eventos, administración institucional, asignaciones de transporte, planificación de rutas, ejecución de trayectos, control de bordadas mediante QR, telemetría GPS y entrega de alertas.
-- Los **diagramas de actividad** de los procesos de negocio con reglas de validación, incluido el flujo de usos excepcionales y el procedimiento de auditoría.
-- Las **máquinas de estados** de los objetos con ciclo de vida relevante: sesión de usuario, ejecución de ruta, alerta, trayecto del estudiante, dispositivo GPS y perfil de acceso.
-
-Quedan fuera de alcance las vistas estáticas (estructura de clases, modelo de datos detallado e interfaces gráficas), así como los procedimientos de instalación y operación, que se tratan por separado.
-
-## 1.3 Notación UML empleada
-
-La notación se limita a los tres tipos de diagramas de comportamiento definidos en el lenguaje unificado de modelado (UML 2.5), empleados con la siguiente intención:
-
-**Tabla 2**. Tipos de diagrama y elementos de la notación empleada
-
-| Tipo de diagrama | Elementos empleados                                                                                                                          | Uso en el documento                                                                |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Secuencia        | Participantes, lifelines, flechas de mensaje numeradas y respuestas                                                                          | Flujo de mensajes cliente–gateway–servicios–broker                                 |
-| Actividad        | Swimlanes (carriles de responsabilidad), nodos de actividad, nodos de decisión y bifurcación, nodos inicial y final, guardas entre corchetes | Procesos de negocio con reglas de validación                                       |
-| Estados          | Estados, transiciones etiquetadas con evento y guarda, estado inicial y final                                                                | Ciclo de vida de sesiones, ejecuciones, alertas, bordadas, dispositivos y perfiles |
-
-Los diagramas se presentan en notación gráfica ASCII. La numeración de los mensajes de cada secuencia corresponde exactamente a las filas de su tabla de mensajes.
-
-## 1.4 Convención de diagramas y mensajes
-
-- **Participantes**: se emplean nombres funcionales de rol o de componente. La puerta de enlace se representa siempre como el punto de entrada único de los clientes.
-- **Tipos de mensaje**: REST (síncrono cliente–gateway–servicio), gRPC (comunicación síncrona entre servicios, canal persistente en el puerto 5001), evento (mensajería asíncrona en el broker de eventos, con entrega al menos una vez) y push (notificación al dispositivo móvil).
-- **Guardas**: expresiones entre corchetes, por ejemplo \[guarda: perfil ACTIVE\]; si la guarda no se cumple, la transición no se ejecuta y se describe el resultado de error en las notas de excepción.
-- **Estados y valores de enumeración**: se escriben en mayúsculas (ACTIVE, INACTIVE, ON_BOARD, OFF_BOARD), coherentes con los valores del modelo de datos.
-- **Contrato de respuesta**: JSON con códigos HTTP estándar; los errores emplean una estructura consistente con marcas de tiempo, mensaje y detalle.
-- **Identificadores**: RF-nn.mm designa un requisito dentro del grupo RF-nn; HU-XXX-nnn designa una historia de usuario; EP-nnn designa una épica; UC-nn, SEQ-nn, ACT-nn y EST-nn designan los artefactos de este documento.
-
-## 1.5 Participantes recurrentes
-
-**Tabla 3**. Participantes recurrentes y tecnologías asociadas
-
-| Participante                    | Función en los diagramas                                          | Tecnología                                      |
-| ------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------- |
-| Aplicación web                  | Cliente administrativo: formularios, tablas y tablero             | Angular 21 con Angular Material 3               |
-| Aplicación móvil (conductor)    | Ruta del día, escáner QR, reporte de incidentes                   | React + Expo                                    |
-| Aplicación móvil (acudiente)    | Seguimiento de ruta, notificaciones, historial                    | React + Expo                                    |
-| Aplicación móvil (estudiante)   | Visualización del código QR personal                              | React + Expo                                    |
-| API Gateway                | Termina TLS, limita tráfico, valida el token e inyecta identidad  | Kong OSS, puerto 8000                           |
-| Servicios de dominio            | Lógica de negocio y esquema propio de datos                       | Java 21 (IAM) y C#/.NET 10 (resto), puerto 8080 |
-| Event Broker               | Publicación y suscripción de eventos, entrega al menos una vez    | Apache Kafka 4.1.0 (KRaft), puerto 9092         |
-| Canal gRPC                      | Consultas síncronas entre servicios y telemetría de baja latencia | gRPC, puerto 5001                               |
-| Base de datos relacional        | Persistencia con esquema por servicio                             | SQL Server 2022, puerto 1433                    |
-| Servicio de notificaciones push | Entrega de avisos a los dispositivos móvil                        | Notificaciones Expo (DeviceToken)               |
-| GPS Device                 | Emisión periódica de posición a bordo del bus                     | Dispositivo embarcado con IMEI registrado       |
-
-# 2 General Use Case Diagram
-
-## 2.1 General Description
-
-Los actores primarios corresponden a los cinco roles del sistema (SUPER_ADMIN, ADMIN, DRIVER, PARENT, STUDENT); los actores secundarios son los componentes técnicos que prestan un servicio al caso de uso (puerta de enlace, servicios de dominio, broker de eventos y proveedor de notificaciones). No existe autorregistro de usuarios: el administrador crea todas las cuentas y el servicio de identificación y acceso se limita a autenticarlas.
-
-La tabla siguiente resume la vista de casos de uso del sistema: cada fila es un caso de uso (UC), cada columna un actor, y la marca ● indica participación primaria o secundaria del actor en ese caso.
-
-## 2.2 Matriz de casos de uso
-
-**Tabla 4**. Matriz de casos de uso y actores participantes
-
-| ID    | Caso de uso                                                         | SUPER_ADMIN | ADMIN | DRIVER | PARENT | STUDENT | RF asociados                       | HU                   |
-| ----- | ------------------------------------------------------------------- | ----------- | ----- | ------ | ------ | ------- | ---------------------------------- | -------------------- |
-| UC-01 | Autenticarse, renovar token y cerrar sesión                         | ●           | ●     | ●      | ●      | ●       | RF-02.1, RF-02.2                   | HU-IAM-001           |
-| UC-02 | Gestionar cuentas de usuarios (crear, editar, activar o desactivar) |             | ●     |        |        |         | RF-01.1, RF-01.2, RF-01.3          | HU-USER-004          |
-| UC-03 | Vincular estudiantes a la cuenta de un acudiente                    |             | ●     |        |        |         | RF-01.4                            | HU-USER-003          |
-| UC-04 | Administrar institución, sedes y cursos                             | ●           | ●     |        |        |         | —                                  | —                    |
-| UC-05 | Registrar y administrar la flota de buses                           |             | ●     |        |        |         | RF-03.6                            | HU-FLEET-001         |
-| UC-06 | Asignar y desasignar un conductor a un bus                          |             | ●     |        |        |         | RF-03.7                            | HU-BUS-002           |
-| UC-07 | Crear, editar y eliminar rutas con paradas ordenadas                |             | ●     |        |        |         | RF-03.1, RF-03.2, RF-03.3, RF-03.4 | HU-ROUTE-001         |
-| UC-08 | Asignar un bus a una ruta                                           |             | ●     |        |        |         | RF-03.5                            | HU-ROUTE-005         |
-| UC-09 | Asignar estudiantes a una ruta con su parada de subida y bajada     |             | ●     |        |        |         | RF-03.8                            | HU-ROUTE-008         |
-| UC-10 | Programar la ruta (día de la semana, dirección y hora de inicio)    |             | ●     |        |        |         | RF-03.1                            | HU-ROUTE-001         |
-| UC-11 | Iniciar y finalizar la ejecución de la ruta                         |             |       | ●      |        |         | RF-07.1                            | HU-ROUTE-003         |
-| UC-12 | Registrar la subida del estudiante mediante escaneo QR              |             |       | ●      |        |         | RF-04.2, RF-05.1                   | HU-QR-001            |
-| UC-13 | Registrar la bajada del estudiante mediante escaneo QR              |             |       | ●      |        |         | RF-04.3                            | HU-QR-002            |
-| UC-14 | Visualizar el código QR personal                                    |             |       |        |        | ●       | RF-04.1                            | HU-QR-004            |
-| UC-15 | Recibir notificación de subida y bajada                             |             |       |        | ●      |         | RF-05.2, RF-05.3                   | HU-NOTIF-001         |
-| UC-16 | Recibir alerta por detención prolongada del bus                     |             |       |        | ●      |         | RF-05.4                            | HU-NOTIF-005         |
-| UC-17 | Reportar un incidente durante el trayecto                           |             |       | ●      |        |         | RF-08.1                            | HU-INCIDENT-001      |
-| UC-18 | Consultar la ruta asignada con paradas y horarios (conductor)       |             |       | ●      |        |         | RF-09.2                            | HU-ROUTE-002         |
-| UC-19 | Consultar la ruta del estudiante (acudiente)                        |             |       |        | ●      |         | RF-09.1                            | HU-ROUTE-004         |
-| UC-20 | Seguir la ubicación del bus en el mapa                              |             | ●     |        | ●      |         | RF-06.1, RF-06.2, RF-06.3          | HU-GPS-002           |
-| UC-21 | Registrar y validar un uso excepcional de ruta o bus                |             | ●     | ●      |        |         | —                                  | —                    |
-| UC-22 | Auditar acciones críticas y consultar el registro                   | ●           | ●     |        |        |         | —                                  | —                    |
-| UC-23 | Personalizar el tema de colores y el idioma de la interfaz          | ●           | ●     | ●      | ●      | ●       | RF-10.1, RF-10.2                   | HU-UI-001, HU-UI-002 |
-
-Los casos sin requisito formal asociado (UC-04, UC-21 y UC-22) cubren capacidades de soporte requeridas por el dominio: los datos maestros institucionales que las rutas y la flota necesitan como referencia, el registro de usos fuera del patrón operativo autorizado y la trazabilidad de acciones críticas exigida por el control de la plataforma.
-
-## 2.3 Relaciones entre casos de uso
-
-**Tabla 5**. Relaciones de inclusión y extensión entre casos de uso
-
-| Relación  | Caso base                           | Caso asociado                         | Naturaleza                                               |
-| --------- | ----------------------------------- | ------------------------------------- | -------------------------------------------------------- |
-| Inclusión | UC-11 Iniciar y finalizar ejecución | UC-01 Autenticarse                    | Toda operación exige un token vigente                    |
-| Inclusión | UC-12 y UC-13 Escaneo QR            | UC-11 Iniciar ejecución               | El escaneo requiere una ejecución de ruta activa         |
-| Extensión | UC-20 Seguimiento en mapa           | UC-16 Alerta por detención prolongada | La alerta se dispara cuando se excede el umbral          |
-| Extensión | UC-11 Ejecución de ruta             | UC-17 Reporte de incidente            | El incidente solo puede ocurrir durante el trayecto      |
-| Inclusión | UC-08 Asignar bus a ruta            | UC-06 Asignar conductor a bus         | La cobertura de la ruta deriva del conductor del bus     |
-| Extensión | UC-02 Gestión de cuentas            | UC-22 Auditoría                       | La desactivación de cuentas genera registro de auditoría |
-
-# 3 Sequence Diagrams
-
-Los diagramas de esta sección representan los flujos de mensajes entre clientes, puerta de enlace, servicios de dominio y broker de eventos. Cada diagrama se acompaña de su tabla de mensajes paso a paso y de las notas de excepción que describen los resultados alternativos y de error.
-
-## 3.1 SEQ-01 — Login and Token Renewal
-
-Aplicación web API Gateway Servicio IAM Esquema Iam
-
-| | | |
-
-|-- 1. POST /api/v1/auth/login ------------->| |
-
-| |-- 2. reenvío y límite de tráfico ------>|
-
-| | |-- 3. verifica hash|
-
-| | | y estado \[ |
-
-| | | guarda: ACTIVE\]|
-
-| |<-- 4. 200 {accessToken, refreshToken} --|
-
-|<-- 5. par de tokens (access 15 min / refresh 30 días) --------|
-
-| | | |
-
-|-- 6. POST /api/v1/auth/refresh ----------->| |
-
-| |-- 7. reenvío ------------------------->|
-
-| | |-- 8. rota refresh |
-
-| | | \[guarda: vigente\]
-
-| |<-- 9. 200 nuevo par de tokens ---------|
-
-|<-- 10. tokens renovados --------------------------------------|
-
-| | | |
-
-|-- 11. POST /api/v1/auth/logout ----------->| |
-
-| | |-- 12. revoca jti |
-
-| | | y sesión |
-
-|<-- 13. 204 sin contenido -------------------------------------|
-
-**Figura 1**. Diagrama de secuencia de inicio de sesión y renovación del token
-
-**Tabla 6**. Mensajes del diagrama de secuencia de inicio de sesión y renovación del token
-
-| Nº  | Emisor                              | Receptor                            | Tipo    | Descripción                                                                                  |
-| --- | ----------------------------------- | ----------------------------------- | ------- | -------------------------------------------------------------------------------------------- |
-| 1   | Aplicación web                      | API Gateway                    | REST    | Envío de credenciales (correo electrónico y clave) al recurso de autenticación.              |
-| 2   | API Gateway                    | Servicio de identificación y acceso | REST    | Aplicación del límite de intentos por dirección IP y reenvío del recurso público.            |
-| 3   | Servicio de identificación y acceso | Esquema Iam                         | Interno | Verification del hash de la clave de acceso y del estado del perfil.                         |
-| 4   | Servicio de identificación y acceso | API Gateway                    | REST    | Devolución del par de tokens firmado con RS256; solo el servicio IAM posee la llave privada. |
-| 5   | API Gateway                    | Aplicación web                      | REST    | Entrega del access token (15 minutos) y del refresh token (30 días).                         |
-| 6   | Aplicación web                      | API Gateway                    | REST    | Solicitud de renovación con el token de refresco.                                            |
-| 7   | API Gateway                    | Servicio de identificación y acceso | REST    | Reenvío de la solicitud de renovación.                                                       |
-| 8   | Servicio de identificación y acceso | Esquema Iam                         | Interno | Rotación del refresh token de uso único y actualización de SessionProfile.                   |
-| 9   | Servicio de identificación y acceso | API Gateway                    | REST    | Devolución del nuevo par de tokens.                                                          |
-| 10  | API Gateway                    | Aplicación web                      | REST    | Entrega de los tokens renovados al cliente.                                                  |
-| 11  | Aplicación web                      | API Gateway                    | REST    | Cierre de sesión del usuario.                                                                |
-| 12  | Servicio de identificación y acceso | Esquema Iam                         | Interno | Incorporación del identificador del access token a la lista negra y revocación de la sesión. |
-| 13  | Servicio de identificación y acceso | Aplicación web                      | REST    | Confirmación del cierre sin cuerpo de respuesta.                                             |
-
-Notas de excepción:
-
-- Credenciales inválidas: respuesta 401 con mensaje genérico que no revela si la cuenta existe.
-- Renovación con refresh token ya usado: respuesta 401 y revocación de toda la familia de sesiones por posible robo.
-- Perfil en estado INACTIVE: el inicio de sesión se rechaza y las sesiones existentes se revocan.
-- Superado el límite de intentos de autenticación desde una misma dirección: la puerta de enlace responde 429 sin invocar al servicio.
-
-## 3.2 SEQ-02 — Alta de usuario con evento \*.created
-
-Aplicación web API Gateway Gestión de usuarios Broker Servicio IAM
-
-| | | | |
-
-|-- 1. POST /api/v1/persons {datos, rol} -------------->| |
-
-| |-- 2. validación de permiso -------->| |
-
-| | |-- 3. gRPC: ¿ | |
-
-| | | identificación | |
-
-| | | duplicada? ----|----------->|
-
-| | |<-- 4. resultado | |
-
-| | |-- 5. INSERT Person |
-
-| |<-- 6. 201 Created -------------------| |
-
-|<-- 7. confirmación del alta ---------------------------| |
-
-| | |-- 8. evento: student.created |
-
-| | |---------------->| |
-
-| | | |-- 9. consume (grupo iam)
-
-| | | |--> 10. crea Profile + hash
-
-| | | |--> 11. evento profile.created
-
-**Figura 2**. Diagrama de secuencia de alta de usuario con eventos
-
-**Tabla 7**. Mensajes del diagrama de secuencia de alta de usuario con eventos
-
-| Nº  | Emisor                              | Receptor                            | Tipo    | Descripción                                                                                                                            |
-| --- | ----------------------------------- | ----------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Aplicación web                      | Servicio de gestión de usuarios     | REST    | Alta de una persona con sus datos y el rol asignado (student, driver, parent o admin).                                                 |
-| 2   | API Gateway                    | Servicio de gestión de usuarios     | REST    | Validación de permisos e inyección de los encabezados de identidad.                                                                    |
-| 3   | Servicio de gestión de usuarios     | Servicio de identificación y acceso | gRPC    | Verification de que no exista un perfil con el mismo número de identificación.                                                         |
-| 4   | Servicio de identificación y acceso | Servicio de gestión de usuarios     | gRPC    | Respuesta sobre la existencia de la identificación.                                                                                    |
-| 5   | Servicio de gestión de usuarios     | Esquema UserManagement              | Interno | Persistencia de la persona.                                                                                                            |
-| 6   | Servicio de gestión de usuarios     | API Gateway                    | REST    | Devolución del recurso creado.                                                                                                         |
-| 7   | API Gateway                    | Aplicación web                      | REST    | Confirmación del alta visible en la lista de cuentas.                                                                                  |
-| 8   | Servicio de gestión de usuarios     | Event Broker                   | evento  | Publicación de student.created, driver.created, admin.created o parent.created según el rol, con la clave de ordenamiento por entidad. |
-| 9   | Event Broker                   | Servicio de identificación y acceso | evento  | Entrega del mensaje al grupo de consumo de identificación.                                                                             |
-| 10  | Servicio de identificación y acceso | Esquema Iam                         | Interno | Creación del perfil con hash de la clave de acceso, rol y estado ACTIVE (consumo idempotente).                                         |
-| 11  | Servicio de identificación y acceso | Event Broker                   | evento  | Publicación de profile.created como confirmación del alta de credenciales.                                                             |
-
-Notas de excepción:
-
-- Número de identificación duplicado: rechazo con código 422 y sin publicación de eventos.
-- Rol no permitido para el solicitante: respuesta 403 por denegación por defecto.
-- Fallo del broker: el alta se confirma solo cuando el evento queda comprometido; la publicación se realiza de forma atómica respecto a la transacción de persistencia y se reintenta en caso de indisponibilidad.
-- Desactivación posterior de la cuenta (RF-01.3): bloquea el acceso y la posibilidad de asignaciones sin eliminar el registro de la persona.
-
-## 3.3 SEQ-03 — Branch and Course Creation
-
-Aplicación web API Gateway Gestión escolar Esquema School Transporte
-
-| | | | |
-
-|-- 1. POST /api/v1/schools --------------------------------->| |
-
-| |-- 2. valida SUPER_ADMIN ----------------->| |
-
-| | |-- 3. INSERT School | |
-
-|<-- 4. 201 institución registrada ----------------------------| |
-
-|-- 5. POST /api/v1/campuses {sede, ciudad} ------------------>| |
-
-| |-- 6. valida ADMIN ------------------------>| |
-
-| | |-- 7. INSERT SchoolCampus
-
-|<-- 8. 201 sede creada ---------------------------------------| |
-
-|-- 9. POST /api/v1/courses {sede, nombre} ------------------->| |
-
-| | |-- 10. INSERT Course | |
-
-|<-- 11. 201 curso creado -------------------------------------| |
-
-| | |-- 12. evento SchoolCreated
-
-| | |------------------------>|----------->
-
-**Figura 3**. Diagrama de secuencia de creación de sede y curso
-
-**Tabla 8**. Mensajes del diagrama de secuencia de creación de sede y curso
-
-| Nº  | Emisor                      | Receptor                    | Tipo    | Descripción                                                                                                                   |
-| --- | --------------------------- | --------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Aplicación web              | Servicio de gestión escolar | REST    | Registro de la institución educativa con sus datos de contacto y tema.                                                        |
-| 2   | API Gateway            | Servicio de gestión escolar | REST    | Validación del rol SUPER_ADMIN requerido para el recurso.                                                                     |
-| 3   | Servicio de gestión escolar | Esquema School              | Interno | Persistencia de la institución.                                                                                               |
-| 4   | Servicio de gestión escolar | Aplicación web              | REST    | Confirmación de la creación.                                                                                                  |
-| 5   | Aplicación web              | Servicio de gestión escolar | REST    | Alta de una sede asociada a la institución y a una ciudad.                                                                    |
-| 6   | API Gateway            | Servicio de gestión escolar | REST    | Validación del rol ADMIN y del alcance de la institución.                                                                     |
-| 7   | Servicio de gestión escolar | Esquema School              | Interno | Persistencia de la sede.                                                                                                      |
-| 8   | Servicio de gestión escolar | Aplicación web              | REST    | Confirmación de la sede creada.                                                                                               |
-| 9   | Aplicación web              | Servicio de gestión escolar | REST    | Alta de un curso asociado a la sede.                                                                                          |
-| 10  | Servicio de gestión escolar | Esquema School              | Interno | Persistencia del curso.                                                                                                       |
-| 11  | Servicio de gestión escolar | Aplicación web              | REST    | Confirmación del curso creado.                                                                                                |
-| 12  | Servicio de gestión escolar | Contextos de transporte     | evento  | Difusión del evento de dominio SchoolCreated para que los contextos de rutas y flota actualicen su referencia de institución. |
-
-Notas de excepción:
-
-- Ciudad de destino inexistente: rechazo con código 404 en la creación de la sede.
-- Sede o curso fuera del alcance de la institución del solicitante: respuesta 403.
-- Duplicidad de nombre de curso en la misma sede: rechazo con código 422.
-- El evento de alta institucional es de corta difusión y no interrumpe el flujo principal si algún consumidor no está disponible.
-
-## 3.4 SEQ-04 — Driver–Bus–Route Assignment
-
-Aplicación web API Gateway Servicio flota Servicio rutas Esquema Fleet
-
-| | | | |
-
-|-- 1. POST /api/v1/buses/{id}/driver {perfil} ----------->| |
-
-| |-- 2. valida ADMIN y permiso ----------->| |
-
-| | |-- 3. \[guarda: sin | |
-
-| | | asignación vigente|
-
-| | |-- 4. INSERT DriverAssignemts
-
-|<-- 5. 201 conductor responsable del bus ------------------| |
-
-| | | | |
-
-|-- 6. POST /api/v1/routes/{id}/bus {busId} -------------->| |
-
-| |-- 7. valida ADMIN ---------------------->| |
-
-| | |<-- 8. gRPC: vigencia del bus y de su conductor
-
-| | |-- 9. bus y conductor ACTIVE |
-
-| | | \[guarda: ruta sin bus y bus sin ruta\]
-
-| | |-- 10. INSERT RouteBusAssignments |
-
-|<-- 11. 201 bus asignado a la ruta ------------------------| |
-
-**Figura 4**. Diagrama de secuencia de asignación de conductor, bus y ruta
-
-**Tabla 9**. Mensajes del diagrama de secuencia de asignación de conductor, bus y ruta
-
-| Nº  | Emisor            | Receptor          | Tipo    | Descripción                                                                                           |
-| --- | ----------------- | ----------------- | ------- | ----------------------------------------------------------------------------------------------------- |
-| 1   | Aplicación web    | Servicio de flota | REST    | Asignación de un conductor a un bus con vigencia de la asignación.                                    |
-| 2   | API Gateway  | Servicio de flota | REST    | Validación del rol ADMIN y del permiso de administración de flota.                                    |
-| 3   | Servicio de flota | Servicio de flota | Interno | Evaluación de la guarda de unicidad: el conductor no puede responder a otro bus de forma concurrente. |
-| 4   | Servicio de flota | Esquema Fleet     | Interno | Persistencia de la asignación conductor–bus.                                                          |
-| 5   | Servicio de flota | Aplicación web    | REST    | Confirmación del conductor responsable.                                                               |
-| 6   | Aplicación web    | Servicio de rutas | REST    | Asignación del bus a la ruta.                                                                         |
-| 7   | API Gateway  | Servicio de rutas | REST    | Validación del rol ADMIN y del permiso sobre rutas.                                                   |
-| 8   | Servicio de rutas | Servicio de flota | gRPC    | Consulta de vigencia del bus, de su conductor y de su estado operativo.                               |
-| 9   | Servicio de flota | Servicio de rutas | gRPC    | Respuesta con la condición del bus y del conductor.                                                   |
-| 10  | Servicio de rutas | Esquema Route     | Interno | Persistencia de la asignación ruta–bus (un bus por ruta y una ruta por bus).                          |
-| 11  | Servicio de rutas | Aplicación web    | REST    | Confirmación de la asignación; la cobertura de la ruta se deriva del bus y su conductor.              |
-
-Notas de excepción:
-
-- Bus ya asignado a otra ruta: rechazo con mensaje «La ruta ya tiene un bus asignado» y código 422.
-- Conductor ya responsable de otro bus: rechazo con mensaje «El conductor ya está asignado a un bus».
-- Bus o conductor en estado INACTIVE: rechazo de la asignación; la desactivación impide nuevas asignaciones.
-- Fallo del canal gRPC: la asignación no se realiza; el servicio aplica tiempo de espera y cortacircuitos antes de responder con error 503.
-- La desasignación de bus a ruta es un requisito del grupo RF-03 y su operación complementaria debe estar disponible en el mismo recurso.
-
-## 3.5 SEQ-05 — Route Planning and Scheduling
-
-Aplicación web API Gateway Servicio rutas Esquema Route Transporte
-
-| | | | |
-
-|-- 1. POST /api/v1/routes {sede, sector, nombre} -------->| |
-
-| |-- 2. valida ADMIN ---------------------->| |
-
-| | |-- 3. \[guarda: nombre único, RF-03.2\]
-
-| | |-- 4. INSERT Route | |
-
-|<-- 5. 201 ruta creada -------------------------------------| |
-
-|-- 6. POST /api/v1/routes/{id}/stops \[orden del itinerario\]
-
-| | |-- 7. INSERT RouteStop (orden) |
-
-|<-- 8. paradas registradas --------------------------------| |
-
-|-- 9. registro de programación: día, dirección y hora ----->| |
-
-| | |-- 10. INSERT RouteSchedule |
-
-|<-- 11. 201 programación registrada ------------------------| |
-
-| | |-- 12. eventos RouteCreated y RouteStopAdded
-
-| | |--------------------->|--------------->|
-
-**Figura 5**. Diagrama de secuencia de planificación y programación de ruta
-
-**Tabla 10**. Mensajes del diagrama de secuencia de planificación y programación de ruta
-
-| Nº  | Emisor            | Receptor                | Tipo    | Descripción                                                                                           |
-| --- | ----------------- | ----------------------- | ------- | ----------------------------------------------------------------------------------------------------- |
-| 1   | Aplicación web    | Servicio de rutas       | REST    | Creación de la ruta con sus datos de cabecera.                                                        |
-| 2   | API Gateway  | Servicio de rutas       | REST    | Validación del rol ADMIN y del permiso de creación de rutas.                                          |
-| 3   | Servicio de rutas | Servicio de rutas       | Interno | Evaluación de la guarda de unicidad de nombre antes de persistir.                                     |
-| 4   | Servicio de rutas | Esquema Route           | Interno | Persistencia de la ruta.                                                                              |
-| 5   | Servicio de rutas | Aplicación web          | REST    | Confirmación de la ruta creada.                                                                       |
-| 6   | Aplicación web    | Servicio de rutas       | REST    | Registro de las paradas con su orden de itinerario.                                                   |
-| 7   | Servicio de rutas | Esquema Route           | Interno | Persistencia de la asociación ruta–parada con el orden indicado.                                      |
-| 8   | Servicio de rutas | Aplicación web          | REST    | Confirmación de las paradas ordenadas.                                                                |
-| 9   | Aplicación web    | Servicio de rutas       | REST    | Registro de la programación semanal: día de la semana, dirección y hora de inicio.                    |
-| 10  | Servicio de rutas | Esquema Route           | Interno | Persistencia de la programación asociada a la asignación de bus.                                      |
-| 11  | Servicio de rutas | Aplicación web          | REST    | Confirmación de la programación registrada.                                                           |
-| 12  | Servicio de rutas | Contextos de transporte | evento  | Difusión de RouteCreated y RouteStopAdded para los consumidores de flota, geolocalización y bordadas. |
-
-Notas de excepción:
-
-- Nombre de ruta duplicado: rechazo con mensaje «La ruta ya existe» y código 422 (RF-03.2).
-- Parada que no pertenece al ámbito de la institución: rechazo con código 400.
-- Programación sin bus asignado: la ruta queda planificada y la programación se completa después de la asignación.
-- Eliminación de la ruta con una ejecución activa: bloqueada conforme a RF-03.4.
-- Fallo de alguno de los consumidores de eventos: no afecta la creación de la ruta; la recuperación se realiza por reintentos y reproceso.
-
-## 3.6 SEQ-06 — Route Execution Start and Completion
-
-Móvil conductor API Gateway Servicio rutas Servicio flota Notificaciones
-
-| | | | |
-
-|-- 1. POST /api/v1/executions {ruta, bus, hora} --------->| |
-
-| |-- 2. valida DRIVER ------------------->| |
-
-| | |-- 3. gRPC: bus y conductor válidos ->|
-
-| | |<-- 4. condición del bus -----------|
-
-| | |-- 5. \[guarda: sin viaje activo para el bus\]
-
-| | |-- 6. INSERT RouteExecution (inicio)
-
-|<-- 7. 201 ejecución iniciada ----------------------------| |
-
-| | | | |
-
-| ... registro de bordadas durante el trayecto ... | |
-
-| | | | |
-
-|-- 8. cierre de la ejecución (fin del trayecto) --------->| |
-
-| |-- 9. valida DRIVER ------------------->| |
-
-| | |-- 10. \[guarda: sin bordadas de |
-
-| | | bajada pendientes, RF-07.2\] |
-
-| | |-- 11. UPDATE fin en RouteExecution |
-
-|<-- 12. 200 trayecto finalizado --------------------------| |
-
-| | |-- 13. evento del ciclo del viaje --->|
-
-**Figura 6**. Diagrama de secuencia de inicio y finalización de la ejecución de la ruta
-
-**Tabla 11**. Mensajes del diagrama de secuencia de inicio y finalización de la ejecución de la ruta
-
-| Nº  | Emisor                       | Receptor                     | Tipo    | Descripción                                                                                  |
-| --- | ---------------------------- | ---------------------------- | ------- | -------------------------------------------------------------------------------------------- |
-| 1   | Aplicación móvil (conductor) | Servicio de rutas            | REST    | Inicio del trayecto con la ruta, el bus y la hora de partida.                                |
-| 2   | API Gateway             | Servicio de rutas            | REST    | Validación del rol DRIVER y de la asignación vigente.                                        |
-| 3   | Servicio de rutas            | Servicio de flota            | gRPC    | Verification de que el bus y el conductor respondan a la ruta.                               |
-| 4   | Servicio de flota            | Servicio de rutas            | gRPC    | Devolución de la condición operativa.                                                        |
-| 5   | Servicio de rutas            | Servicio de rutas            | Interno | Evaluación de la guarda de unicidad: un solo viaje activo por bus (RF-07.1).                 |
-| 6   | Servicio de rutas            | Esquema Route                | Interno | Persistencia de la ejecución con fecha y hora de inicio.                                     |
-| 7   | Servicio de rutas            | Aplicación móvil (conductor) | REST    | Confirmación del inicio; la aplicación muestra la ruta en curso.                             |
-| 8   | Aplicación móvil (conductor) | Servicio de rutas            | REST    | Solicitud de finalización del trayecto.                                                      |
-| 9   | API Gateway             | Servicio de rutas            | REST    | Validación del rol DRIVER.                                                                   |
-| 10  | Servicio de rutas            | Servicio de rutas            | Interno | Evaluación de la guarda de bordadas pendientes (RF-07.2).                                    |
-| 11  | Servicio de rutas            | Esquema Route                | Interno | Actualización de la fecha y hora de fin de la ejecución.                                     |
-| 12  | Servicio de rutas            | Aplicación móvil (conductor) | REST    | Confirmación del cierre del trayecto.                                                        |
-| 13  | Servicio de rutas            | Notificación y auditoría     | evento  | Difusión del ciclo de vida del viaje para que los consumidores cierren sus flujos asociados. |
-
-Notas de excepción:
-
-- Solicitud de inicio con otro viaje activo para el bus: rechazo con mensaje «Ya existe un viaje activo para este bus» y código 422.
-- Finalización con bordadas de bajada pendientes: rechazo con código 422 e indicación de los estudiantes sin baja registrada.
-- Conductor sin bus asignado o con asignación vencida: respuesta 403.
-- Pérdida de conectividad durante el trayecto: la aplicación conserva la operación pendiente y reintenta al recuperar el enlace.
-
-## 3.7 SEQ-07 — Pickup/Drop-off QR Scanning (student.scanned)
-
-Móvil conductor API Gateway Notificaciones Servicio rutas Broker Móvil acudiente
-
-| | | | | |
-
-|-- 1. POST /api/v1/boarding {qr, tipo, ruta, parada} ------>| |
-
-| |-- 2. valida DRIVER y JWT ----------------->| |
-
-| | |-- 3. gRPC: estudiante | |
-
-| | | asignado a la ruta y | |
-
-| | | ejecución activa ---->| |
-
-| | |<-- 4. resultado ---------| |
-
-| | |-- 5. \[guarda: subida: asignado; |
-
-| | | bajada: bordada ON_BOARD activa\] |
-
-| | |-- 6. evento student.scanned |
-
-| | |--------------------------->| |
-
-| | | | |-- 7. consume
-
-| | | | |-- 8. INSERT Boarding
-
-| | | | |-- 9. crea aviso al acudiente
-
-| | | | |-------------->|
-
-|<-- 10. 201 bordada registrada -----| | | |
-
-**Figura 7**. Diagrama de secuencia de escaneo QR de subida y bajada
-
-**Tabla 12**. Mensajes del diagrama de secuencia de escaneo QR de subida y bajada
-
-| Nº  | Emisor                       | Receptor                     | Tipo    | Descripción                                                                                        |
-| --- | ---------------------------- | ---------------------------- | ------- | -------------------------------------------------------------------------------------------------- |
-| 1   | Aplicación móvil (conductor) | Servicio de notificaciones   | REST    | Envío del código escaneado con el tipo de movimiento (ON_BOARD u OFF_BOARD), la ruta y la parada.  |
-| 2   | API Gateway             | Servicio de notificaciones   | REST    | Validación del token del conductor.                                                                |
-| 3   | Servicio de notificaciones   | Servicio de rutas            | gRPC    | Verification de que el estudiante esté asignado a la ruta y de que exista una ejecución activa.    |
-| 4   | Servicio de rutas            | Servicio de notificaciones   | gRPC    | Respuesta con la condición de asignación y de viaje.                                               |
-| 5   | Servicio de notificaciones   | Servicio de notificaciones   | Interno | Evaluación de las guardas de subida y de bajada antes de aceptar el movimiento.                    |
-| 6   | Servicio de notificaciones   | Event Broker            | evento  | Publicación de student.scanned con la identidad del estudiante y el tipo de movimiento.            |
-| 7   | Event Broker            | Servicio de notificaciones   | evento  | Entrega del mensaje al grupo de consumo de escaneos.                                               |
-| 8   | Servicio de notificaciones   | Esquema Notification         | Interno | Registro de la bordada con fecha, hora y parada (ON_BOARD u OFF_BOARD).                            |
-| 9   | Servicio de notificaciones   | Aplicación móvil (acudiente) | push    | Entrega de la notificación de subida o bajada con la hora y la parada, usando el token registrado. |
-| 10  | Servicio de notificaciones   | Aplicación móvil (conductor) | REST    | Confirmación del movimiento registrado en la aplicación del conductor.                             |
-
-Notas de excepción:
-
-- Estudiante asignado a otra ruta: rechazo con mensaje «El estudiante no está asignado a esta ruta» y código 422.
-- Bajada sin bordada activa en el trayecto: rechazo con mensaje «No existe bordada activa para el estudiante».
-- Escaneo sin ejecución de ruta activa: rechazo con código 409; el flujo exige haber iniciado el trayecto.
-- Código vencido o perfil del estudiante INACTIVE: respuesta con la indicación de que el código no está disponible.
-- Escaneo repetido: el consumo idempotente del evento evita bordadas duplicadas.
-- Intermitencia de red: la aplicación almacena el escaneo en una cola local y reintenta sin perder el orden.
-
-## 3.8 SEQ-08 — GPS Position Reception via gRPC
-
-GPS Device Canal gRPC :5001 Geolocalización Esquema Gps Notificaciones Web acudiente
-
-| | | | | |
-
-|-- 1. transmisión de posición {imei, lat, lon, velocidad, rumbo, marca de tiempo}
-
-|------------------>| | | | |
-
-| |-- 2. reenvío ---------------------->| | |
-
-| | |-- 3. \[guarda: IMEI registrado y ACTIVE\] |
-
-| | |-- 4. INSERT GpsLocation | |
-
-| | |-- 5. UPDATE última conexión | |
-
-| | |-- 6. evento GpsLocationReceived | |
-
-| | |---------------------------------->|------------->|
-
-| | | | |-- 7. \[guarda: parada prolongada\]
-
-|<-- 8. canal abierto (confirmación de trama) --------------| | |
-
-| | | | | |
-
-| | |<-- 9. GET /api/v1/locations (última posición) ---|
-
-| | |-- 10. 200 posición y marca de disponibilidad -----|
-
-**Figura 8**. Diagrama de secuencia de recepción de posición GPS mediante gRPC
-
-**Tabla 13**. Mensajes del diagrama de secuencia de recepción de posición GPS mediante gRPC
-
-| Nº  | Emisor                      | Receptor                    | Tipo    | Descripción                                                                                |
-| --- | --------------------------- | --------------------------- | ------- | ------------------------------------------------------------------------------------------ |
-| 1   | GPS Device             | Canal gRPC                  | gRPC    | Envío continuo de la posición del bus por el canal persistente de baja latencia.           |
-| 2   | Canal gRPC                  | Servicio de geolocalización | gRPC    | Reenvío de la trama al servicio responsable del esquema de geolocalización.                |
-| 3   | Servicio de geolocalización | Servicio de geolocalización | Interno | Evaluación de la guarda de dispositivo registrado y activo.                                |
-| 4   | Servicio de geolocalización | Esquema Gps                 | Interno | Persistencia de la posición con latitud, longitud, velocidad, rumbo y marca de tiempo.     |
-| 5   | Servicio de geolocalización | Esquema Gps                 | Interno | Actualización de la última conexión del dispositivo.                                       |
-| 6   | Servicio de geolocalización | Suscriptores                | evento  | Difusión de GpsLocationReceived hacia notificaciones y tableros de seguimiento.            |
-| 7   | Servicio de notificaciones  | Servicio de notificaciones  | Interno | Evaluación de la detención prolongada con el umbral configurado.                           |
-| 8   | Servicio de geolocalización | GPS Device             | gRPC    | Confirmación de recepción de la trama para el control del enlace.                          |
-| 9   | Aplicación web (acudiente)  | Servicio de geolocalización | REST    | Consulta de la última posición de la ruta, sin necesidad de refresco manual en el cliente. |
-| 10  | Servicio de geolocalización | Aplicación web (acudiente)  | REST    | Devolución de la posición con la marca de disponibilidad de la señal.                      |
-
-Notas de excepción:
-
-- IMEI no registrado o dispositivo INACTIVE: la muestra se rechaza y se registra el intento.
-- Ausencia de posiciones durante el umbral configurado: se emite el evento de pérdida de señal y la aplicación muestra la última posición conocida con la marca «sin señal» (RF-06.3).
-- Interrupción del canal: el dispositivo reintenta la conexión; el servicio conserva la última conexión registrada para calcular la disponibilidad.
-- Volumen alto de muestras: la difusión de posiciones es optativa y se destina a modelos de lectura, de modo que no se acoplen consumidores en la ruta síncrona principal.
-
-## 3.9 SEQ-09 — Alert Generation and Push Notification Delivery
-
-Disparador Notificaciones Esquema Notification Broker Móvil acudiente Auditoría
-
-| | | | | |
-
-|-- 1. condición: detención prolongada, incidente o pérdida de señal
-
-|---------------->| | | | |
-
-| |-- 2. INSERT Alert con AlertType y nivel de urgencia |
-
-| |-- 3. INSERT AlertRecipient por cada destinatario |
-
-| |-- 4. evento AlertCreated ------------------>| |
-
-| | | | |-- 5. consume |
-
-| |-- 6. push con la alerta y su ubicación --------------------->|
-
-| | | | |--> 7. el acudiente lee
-
-| |<-- 8. PATCH /api/v1/alerts/{id}/status (lectura) ------------|
-
-| |-- 9. actualiza lectura y atencimiento |
-
-| | | | | |-- 10. registro de la acción
-
-**Figura 9**. Diagrama de secuencia de generación y entrega de alerta con notificación push
-
-**Tabla 14**. Mensajes del diagrama de secuencia de generación y entrega de alerta con notificación push
-
-| Nº  | Emisor                       | Receptor                     | Tipo    | Descripción                                                                                        |
-| --- | ---------------------------- | ---------------------------- | ------- | -------------------------------------------------------------------------------------------------- |
-| 1   | Disparador                   | Servicio de notificaciones   | evento  | Llegada de la condición de negocio: detención prolongada, reporte de incidente o pérdida de señal. |
-| 2   | Servicio de notificaciones   | Esquema Notification         | Interno | Creación de la alerta con su tipo y su nivel de urgencia.                                          |
-| 3   | Servicio de notificaciones   | Esquema Notification         | Interno | Creación de un registro de destinatario por cada perfil notificado.                                |
-| 4   | Servicio de notificaciones   | Event Broker            | evento  | Difusión de AlertCreated hacia los consumidores suscritos.                                         |
-| 5   | Event Broker            | Servicio de auditoría        | evento  | Consumo del evento para dejar constancia de la acción.                                             |
-| 6   | Servicio de notificaciones   | Aplicación móvil (acudiente) | push    | Entrega del aviso con la ubicación del bus, usando el token registrado en el dispositivo.          |
-| 7   | Aplicación móvil (acudiente) | Servicio de notificaciones   | Interno | Registro de la lectura del destinatario con su fecha y hora.                                       |
-| 8   | Aplicación móvil (acudiente) | Servicio de notificaciones   | REST    | Confirmación del estado de la alerta desde la aplicación.                                          |
-| 9   | Servicio de notificaciones   | Esquema Notification         | Interno | Actualización de la lectura y del momento de atencimiento de la alerta.                            |
-| 10  | Servicio de auditoría        | Esquema Audit                | Interno | Registro de la acción con fecha, descripción, dirección IP y aplicación de origen.                 |
-
-Notas de excepción:
-
-- Reporte de incidente por el conductor: se envía al recurso de alertas con tipo, descripción opcional y ubicación, y la notificación alcanza a la institución y a los acudientes de los estudiantes a bordo (RF-08.1).
-- Acudiente sin token de notificación registrado: la alerta queda como pendiente de entrega y se completa al registrarse el dispositivo.
-- Fallo del proveedor de notificaciones: se aplica reintento con espera creciente y se registra el error para su seguimiento.
-- Alerta no leída dentro del plazo: permanece en estado pendiente de atención y es visible en el tablero administrativo.
-
-# 4 Activity Diagrams
-
-Los diagramas de actividad describen procesos de negocio completos, con los carriles de responsabilidad de cada participante, los puntos de decisión y las guardas que condicionan el avance del flujo.
-
-## 4.1 ACT-01 — Student Pickup/Drop-off Process with Validations
-
-| Conductor (app móvil) | Servicio de notificaciones | Servicio de rutas | Acudiente |
-
-|---|---|---|---|
-
-| (inicio) | | | |
-
-| O | | | |
-
-| \[1\] escanear código | | | |
-
-| | | | | |
-
-| +---------> \[2\] ¿ejecución activa? ---- no ----> \[X\] rechazo 409 | |
-
-| | | sí | | |
-
-| | v | | |
-
-| | \[3\] consulta gRPC <------------+ | |
-
-| | | | |
-
-| | \[4\] ¿estudiante asignado? -- no --> \[X\] rechazo | |
-
-| | | sí | |
-
-| | v | |
-
-| | \[5\] ¿tipo de movimiento? | |
-
-| | / \\ | |
-
-| | ON_BOARD OFF_BOARD | |
-
-| | | | | |
-
-| | | \[6\] ¿bordada activa? -- no --> \[X\] rechazo
-
-| | | | sí | |
-
-| | \[7\] publicar student.scanned | |
-
-| | \[8\] registrar bordada (fecha, hora, parada) | |
-
-| +--------+-------------> \[9\] entregar notificación --->|
-
-| | | (push) |
-
-| v v |
-
-| \[10\] (fin) (fin) |
-
-**Figura 10**. Diagrama de actividad de subida y bajada de estudiantes con validaciones
-
-**Tabla 15**. Elementos del diagrama de actividad de subida y bajada de estudiantes
-
-| Nº  | Elemento                          | Tipo       | Responsable                | Condición o resultado                                                            |
-| --- | --------------------------------- | ---------- | -------------------------- | -------------------------------------------------------------------------------- |
-| 1   | Escaneo del código del estudiante | Actividad  | Conductor                  | Punto de entrada del proceso en la aplicación móvil.                             |
-| 2   | ¿Ejecución de ruta activa?        | Decisión   | Servicio de notificaciones | Guarda: existe un trayecto en curso; en caso negativo se responde con error 409. |
-| 3   | Consulta de asignación            | Actividad  | Servicio de rutas          | Verification por gRPC de la asignación del estudiante a la ruta.                 |
-| 4   | ¿Estudiante asignado a la ruta?   | Decisión   | Servicio de notificaciones | Guarda de RF-04.2; en caso negativo se rechaza con código 422.                   |
-| 5   | ¿Tipo de movimiento?              | Decisión   | Servicio de notificaciones | bifurcación hacia subida (ON_BOARD) o bajada (OFF_BOARD).                        |
-| 6   | ¿Bordada activa?                  | Decisión   | Servicio de notificaciones | Guarda de RF-04.3: solo se registra la bajada si existe subida activa.           |
-| 7   | Publicación del evento            | Actividad  | Servicio de notificaciones | Emisión de student.scanned en el broker de eventos.                              |
-| 8   | Registro de la bordada            | Actividad  | Servicio de notificaciones | Persistencia con fecha, hora y parada en el esquema de notificaciones.           |
-| 9   | Entrega de la notificación        | Actividad  | Servicio de notificaciones | Aviso push al acudiente con hora y parada.                                       |
-| 10  | Fin del proceso                   | Nodo final | —                          | El conductor observa la confirmación del movimiento.                             |
-
-## 4.2 ACT-02 — Alert Handling Process
-
-| Sistema / Disparador | Servicio de notificaciones | Proveedor push | Acudiente | Tablero administrativo |
-
-|----------------------|----------------------------|----------------|-----------|------------------------|
-
-| (inicio) | | | | |
-
-| O | | | | |
-
-| | | | | | |
-
-| \[1\] condición | | | | |
-
-| +--------------> \[2\] crear alerta y destinatarios| | | |
-
-| | \[3\] difundir AlertCreated | | | |
-
-| | \[4\] entregar aviso -------->| | | |
-
-| | | ¿entregado?| | | |
-
-| | +-- no --> \[5\] reintento con espera | | |
-
-| | | sí | | | |
-
-| | +-------------------------------------> \[6\] lectura
-
-| | | | | |
-
-| | <------- \[7\] marcar leída y atendida --------+ | |
-
-| | | |
-
-| | +--> \[8\] registro en auditoría ----------------->|
-
-| | |
-
-| | \[9\] ¿urgencia alta sin atención? -- sí --> \[10\] escalar |
-
-| | (fin)
-
-**Figura 11**. Diagrama de actividad de atención de una alerta
-
-| Nº | Elemento | Tipo | Responsable | Condición o resultado | | 1 | Condición de disparo | Actividad | Sistema | Detención prolongada, incidente reportado o pérdida de señal. | | 2 | Creación de la alerta | Actividad | Servicio de notificaciones | Registra el tipo de alerta, el nivel de urgencia y los destinatarios. | | 3 | Difusión del evento | Actividad | Servicio de notificaciones | Publicación de AlertCreated para los suscriptores. | | 4 | Entrega del aviso | Actividad | Proveedor de notificaciones | Envío mediante el token registrado en el dispositivo del acudiente. | | 5 | Reintento de entrega | Actividad | Servicio de notificaciones | Se aplica cuando el proveedor no confirma la entrega. | | 6 | Lectura por el acudiente | Actividad | Acudiente | La aplicación registra la fecha y hora de lectura del destinatario. | | 7 | Marca de atención | Actividad | Servicio de notificaciones | Actualiza la lectura y el momento en que la alerta fue atendida. | | 8 | Registro de auditoría | Actividad | Servicio de auditoría | Deja constancia de la acción con fecha, IP y aplicación de origen. | | 9 | ¿Urgencia alta sin atención? | Decisión | Servicio de notificaciones | Guarda: el nivel de urgencia del tipo de alerta supera el umbral de escalamiento. | | 10 | Escalamiento | Actividad | Tablero administrativo | La alerta pendiente se muestra al administrador para su gestión. |
-
-## 4.3 ACT-03 — User Creation and Edition with Events
-
-| Administrador (web) | Gestión de usuarios | Broker | Servicio IAM | Esquema Iam |
-
-|---------------------|---------------------|--------|--------------|-------------|
-
-| (inicio) | | | | |
-
-| O | | | | |
-
-| \[1\] formulario | | | | |
-
-| | | | | | |
-
-| \[2\] enviar datos -->| | | | |
-
-| | \[3\] validar datos | | | |
-
-| | | | | | |
-
-| | \[4\] ¿identificación | | | |
-
-| | duplicada? -- sí --> \[X\] rechazo 422 | |
-
-| | | no | | | |
-
-| | \[5\] persistir persona| | | |
-
-| | | | | | |
-
-| | \[6\] publicar \*.created ---->| | |
-
-| | | | \[7\] consumir (grupo iam) |
-
-| | | | |--> \[8\] crear Profile + hash |
-
-| | | | |--> \[9\] publicar profile.created
-
-| <--- \[10\] 201 alta confirmada <-------------+--------+--------------| |
-
-| \[11\] editar cuenta --> \[12\] PUT /api/v1/persons/{id} (sin nuevo evento de alta) |
-
-| | | | | |
-
-| \[13\] desactivar ----> \[14\] PATCH /api/v1/profiles/{id}/status --> \[15\] revocar sesiones
-
-**Figura 12**. Diagrama de actividad de alta y edición de usuario con eventos
-
-**Tabla 16**. Elementos del diagrama de actividad de alta y edición de usuarios con eventos
-
-| Nº      | Elemento                   | Tipo      | Responsable                                         | Condición o resultado                                                       |
-| ------- | -------------------------- | --------- | --------------------------------------------------- | --------------------------------------------------------------------------- |
-| 1       | Captura del formulario     | Actividad | Administrador                                       | Datos de la persona, el rol y la vinculación familiar.                      |
-| 2       | Envío del alta             | Actividad | Administrador                                       | Envío al recurso de personas.                                               |
-| 3       | Validación de datos        | Actividad | Servicio de gestión de usuarios                     | Formato de correo, número de identificación y teléfono.                     |
-| 4       | ¿Identificación duplicada? | Decisión  | Servicio de gestión de usuarios                     | Guarda de unicidad de documento; en caso afirmativo se rechaza.             |
-| 5       | Persistencia de la persona | Actividad | Servicio de gestión de usuarios                     | Registro en el esquema de gestión de usuarios.                              |
-| 6       | Publicación del evento     | Actividad | Servicio de gestión de usuarios                     | Emisión de student.created, driver.created, admin.created o parent.created. |
-| 7       | Consumo del evento         | Actividad | Servicio de identificación y acceso                 | Grupo de consumo con procesamiento idempotente.                             |
-| 8       | Creación del perfil        | Actividad | Servicio de identificación y acceso                 | Hash de la clave de acceso, rol y estado ACTIVE.                            |
-| 9       | Confirmación del perfil    | Actividad | Servicio de identificación y acceso                 | Publicación de profile.created.                                             |
-| 10      | Alta confirmada            | Actividad | Administrador                                       | Respuesta 201 visible en la lista de cuentas.                               |
-| 11 y 12 | Edición de la cuenta       | Actividad | Administrador y servicio de gestión de usuarios     | Actualización de datos sin reemitir el evento de alta.                      |
-| 13 a 15 | Desactivación de la cuenta | Actividad | Administrador y servicio de identificación y acceso | Guarda: el perfil pasa a INACTIVE y sus sesiones se revocan (RF-01.3).      |
-
-## 4.4 ACT-04 — Exceptional Route or Bus Usage
-
-| Solicitante (web) | Usos excepcionales | Servicio rutas | Servicio flota | Notificaciones / Auditoría |
-
-|-------------------|--------------------|----------------|----------------|----------------------------|
-
-| (inicio) | | | | |
-
-| O | | | | |
-
-| \[1\] registrar uso | | | | |
-
-| | con motivo y ventana de tiempo | | | |
-
-| +-------------> \[2\] validar datos | | | |
-
-| | | | | | |
-
-| | \[3\] consulta gRPC ---> \[4\] ¿ruta existente? -- no --> \[X\] rechazo
-
-| | | | | sí | | |
-
-| | \[5\] consulta gRPC -----------------> \[6\] ¿bus y conductor
-
-| | | | | asignados? -- no --> \[X\] rechazo
-
-| | | | | | sí | |
-
-| | \[7\] persistir uso excepcional | | |
-
-| | | | | | |
-
-| | \[8\] difundir evento de excepción ---------------------------> \[9\] alerta y registro
-
-| | | | | | |
-
-| | \[10\] ¿ventana vencida? -- sí --> \[11\] cierre del uso (fin)
-
-| | | no |
-
-| | +----> permanece vigente hasta el cierre |
-
-**Figura 13**. Diagrama de actividad de uso excepcional de ruta o bus
-
-**Tabla 17**. Elementos del diagrama de actividad de uso excepcional de ruta o bus
-
-| Nº    | Elemento                    | Tipo                 | Responsable                    | Condición o resultado                                                            |
-| ----- | --------------------------- | -------------------- | ------------------------------ | -------------------------------------------------------------------------------- |
-| 1     | Registro de la solicitud    | Actividad            | Solicitante                    | Indica el motivo y la ventana de tiempo del uso fuera del patrón operativo.      |
-| 2     | Validación de datos         | Actividad            | Servicio de usos excepcionales | Verification de formato y de la ventana indicada.                                |
-| 3 y 4 | Consulta de la ruta         | Actividad y decisión | Servicio de rutas              | Guarda: la ruta debe existir y estar activa.                                     |
-| 5 y 6 | Consulta de bus y conductor | Actividad y decisión | Servicio de flota              | Guarda: el bus debe estar activo y el conductor debe ser su responsable vigente. |
-| 7     | Persistencia del uso        | Actividad            | Servicio de usos excepcionales | Registro del uso de bus por terceros o del desvío de ruta con su motivo.         |
-| 8     | Difusión del evento         | Actividad            | Servicio de usos excepcionales | Emisión del evento de dominio de excepción detectada.                            |
-| 9     | Alerta y registro           | Actividad            | Notificaciones y auditoría     | Generación de la alerta correspondiente y constancia de la acción.               |
-| 10    | ¿Ventana vencida?           | Decisión             | Servicio de usos excepcionales | Guarda: comparación entre la ventana declarada y la hora actual.                 |
-| 11    | Cierre del uso              | Actividad            | Servicio de usos excepcionales | Finalización del uso excepcional registrado.                                     |
-
-## 4.5 ACT-05 — Critical Actions Audit Procedure
-
-| Cualquier servicio | Event Broker | Servicio de auditoría | Esquema Audit | SUPER_ADMIN (web) |
-
-|--------------------|-------------------|-----------------------|---------------|-------------------|
-
-| (inicio) | | | | |
-
-| O | | | | |
-
-| \[1\] acción crítica | | | | |
-
-| | (autenticación, alta o baja de | | | |
-
-| | cuentas, cambio de rol, borrado)| | | |
-
-| | | | | | |
-
-| +--> \[2\] emitir evento de dominio ->| | | |
-
-| | | | | | |
-
-| | +--> \[3\] consumir de forma asíncrona ------>| | |
-
-| | | \[4\] validar payload | | |
-
-| | | \[5\] INSERT registro --+ | |
-
-| | | | (acción, fecha, IP, aplicación) | |
-
-| | | +--> \[6\] consulta paginada <------|
-
-| | | | | \[7\] filtrar por |
-
-| | | | | fecha, rol y tipo |
-
-| | | \[8\] ¿fallo de consumo? -- sí --> \[9\] reintento e idempotencia
-
-| | | | no | |
-
-| | | (fin) | |
-
-**Figura 14**. Diagrama de actividad de auditoría de acciones críticas
-
-**Tabla 18**. Elementos del diagrama de actividad de auditoría de acciones críticas
-
-| Nº    | Elemento                  | Tipo      | Responsable           | Condición o resultado                                                |
-| ----- | ------------------------- | --------- | --------------------- | -------------------------------------------------------------------- |
-| 1     | Acción crítica            | Actividad | Cualquier servicio    | Hecho del dominio que exige trazabilidad.                            |
-| 2     | Emisión del evento        | Actividad | Servicio de origen    | Publicación del evento de dominio correspondiente.                   |
-| 3     | Consumo asíncrono         | Actividad | Servicio de auditoría | El registro nunca bloquea la ruta principal de negocio.              |
-| 4     | Validación del contenido  | Actividad | Servicio de auditoría | Verification de los campos obligatorios del evento.                  |
-| 5     | Persistencia del registro | Actividad | Servicio de auditoría | Escritura con acción, fecha, descripción, dirección IP y aplicación. |
-| 6 y 7 | Consulta del registro     | Actividad | SUPER_ADMIN           | Consulta paginada con filtros por fecha, rol y tipo de acción.       |
-| 8     | ¿Fallo de consumo?        | Decisión  | Servicio de auditoría | Guarda: el mensaje no fue procesado.                                 |
-| 9     | Reintento                 | Actividad | Servicio de auditoría | Reproceso con identificador de evento para garantizar idempotencia.  |
-
-# 5 State Machine Diagrams
-
-Las máquinas de estados siguientes describen el ciclo de vida de los objetos persistentes. Cada transición se etiqueta con el evento que la provoca y se condiciona por una guarda cuando la regla de negocio lo exige.
-
-## 5.1 EST-01 — User Session
-
-+-----------------+
-
-| SIN AUTENTICAR |
-
-+--------+--------+
-
-|
-
-login \[guarda: perfil ACTIVE\]
-
-|
-
-v
-
-+--------------------------+
-
-| ACTIVA |<-----+
-
-+--+--------+--------+-----+ |
-
-| | | |
-
-| logout | | desactivación expiración con
-
-| | | del perfil refresh vigente
-
-v | v (rotación)
-
-+---------+ | +----------+ +---------+
-
-| CERRADA | | | REVOCADA | | VENCIDA |
-
-+----+----+ | +----------+ +----+----+
-
-| | | |
-
-+----------+--------+------------------+
-
-|
-
-nuevo login \[guarda: perfil ACTIVE\] -> ACTIVA
-
-**Figura 15**. Máquina de estados de la sesión de usuario
-
-**Tabla 19**. Transiciones de la máquina de estados de la sesión de usuario
-
-| Estado         | Evento                                                            | Guarda                                   | Acción                                                                          | Destino        |
-| -------------- | ----------------------------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------- | -------------- |
-| SIN AUTENTICAR | Solicitud de inicio de sesión                                     | Perfil ACTIVE y credenciales válidas     | Emisión del par de tokens (access 15 min, refresh 30 días) y registro de sesión | ACTIVA         |
-| SIN AUTENTICAR | Solicitud de inicio de sesión                                     | Perfil INACTIVE o credenciales inválidas | Respuesta 401 sin revelar el motivo                                             | SIN AUTENTICAR |
-| ACTIVA         | Expiración del access token                                       | Refresh token vigente (hasta 30 días)    | Rotación del refresh y emisión de un nuevo access token                         | ACTIVA         |
-| ACTIVA         | Expiración del access token                                       | Refresh token vencido o reutilizado      | Revocación de la familia de sesiones                                            | VENCIDA        |
-| ACTIVA         | Cierre de sesión                                                  | —                                        | Incorporación del jti a la lista negra y revocación de la sesión                | CERRADA        |
-| ACTIVA         | Desactivación del perfil o restablecimiento de la clave de acceso | —                                        | Revocación inmediata de todas las sesiones                                      | REVOCADA       |
-| VENCIDA        | Solicitud de inicio de sesión                                     | Perfil ACTIVE                            | Emisión de un nuevo par de tokens                                               | ACTIVA         |
-| CERRADA        | Solicitud de inicio de sesión                                     | Perfil ACTIVE                            | Emisión de un nuevo par de tokens                                               | ACTIVA         |
-| REVOCADA       | Reactivación del perfil y nuevo inicio                            | Perfil en estado ACTIVE                  | Emisión de un nuevo par de tokens                                               | ACTIVA         |
-
-## 5.2 EST-02 — Route Execution
-
-+---------------+
-
-+-->| PROGRAMADA |
-
-| +-------+-------+
-
-| |
-
-| inicio de trayecto
-
-| \[guarda: sin viaje activo para el bus\]
-
-| |
-
-| v
-
-| +------------------+
-
-| | EN EJECUCIÓN |<----+ registro de bordadas
-
-| +--------+---------+ +---------------------------------+
-
-| |
-
-| | fin de trayecto
-
-| | \[guarda: sin bordadas de bajada pendientes\]
-
-| |
-
-| v
-
-| +------------------+
-
-| | FINALIZADA |
-
-| +--------+---------+
-
-| |
-
-+------------+ nueva programación de la ruta
-
-v
-
-(fin)
-
-**Figura 16**. Máquina de estados de la ejecución de la ruta
-
-**Tabla 20**. Transiciones de la máquina de estados de la ejecución de la ruta
-
-| Estado       | Evento                               | Guarda                                                | Acción                                                                            | Destino      |
-| ------------ | ------------------------------------ | ----------------------------------------------------- | --------------------------------------------------------------------------------- | ------------ |
-| PROGRAMADA   | Inicio del trayecto por el conductor | No existe otra ejecución activa para el bus (RF-07.1) | Persistencia de la ejecución con hora de inicio y notificación a los consumidores | EN EJECUCIÓN |
-| PROGRAMADA   | Inicio del trayecto por el conductor | Ya existe un viaje activo para el bus                 | Respuesta de rechazo «Ya existe un viaje activo para este bus»                    | PROGRAMADA   |
-| EN EJECUCIÓN | Escaneo de subida o bajada           | Ejecución activa y asignación válida del estudiante   | Registro de la bordada y notificación al acudiente                                | EN EJECUCIÓN |
-| EN EJECUCIÓN | Fin de trayecto                      | Sin bordadas de bajada pendientes (RF-07.2)           | Registro de la fecha y hora de fin y difusión del ciclo del viaje                 | FINALIZADA   |
-| EN EJECUCIÓN | Fin de trayecto                      | Existencia de bordadas de bajada pendientes           | Respuesta de rechazo con el detalle de los estudiantes pendientes                 | EN EJECUCIÓN |
-| FINALIZADA   | Nueva programación de la ruta        | La ruta permanece activa                              | Generación de una nueva ejecución programada                                      | PROGRAMADA   |
-
-## 5.3 EST-03 — Alerta
-
-+-------------+
-
-+-->| GENERADA |<---------------------+
-
-| +------+------+ |
-
-| | |
-
-| | entrega push aceptada | reintento de entrega
-
-| | \[guarda: token registrado\] | (espera creciente)
-
-| v |
-
-| +--------------+ |
-
-| | ENTREGADA | |
-
-| +------+-------+ |
-
-| | |
-
-| | lectura y atención |
-
-| | por el destinatario |
-
-| v |
-
-| +--------------+ fallo ---------+
-
-| | ATENDIDA |--------------------> (fin)
-
-| +--------------+
-
-**Figura 17**. Máquina de estados de la alerta
-
-**Tabla 21**. Transiciones de la máquina de estados de la alerta
-
-| Estado    | Evento                                 | Guarda                                                | Acción                                                                      | Destino   |
-| --------- | -------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------- | --------- |
-| GENERADA  | Condición de negocio detectada         | —                                                     | Creación de la alerta con su tipo, su nivel de urgencia y sus destinatarios | GENERADA  |
-| GENERADA  | Solicitud de entrega push              | El destinatario tiene token de dispositivo registrado | Envío del aviso con la ubicación del bus                                    | ENTREGADA |
-| GENERADA  | Solicitud de entrega push              | Sin token registrado o fallo del proveedor            | Dejar la alerta como pendiente de entrega y programar el reintento          | GENERADA  |
-| ENTREGADA | Lectura confirmada por el destinatario | —                                                     | Registro de la fecha y hora de lectura del destinatario                     | ATENDIDA  |
-| ENTREGADA | Atención por parte de la institución   | —                                                     | Registro del momento de atencimiento de la alerta                           | ATENDIDA  |
-| ATENDIDA  | Cierre del proceso                     | —                                                     | Conservación del historial para la consulta y la auditoría                  | ATENDIDA  |
-
-## 5.4 EST-04 — Student Trip (Boarding Event)
-
-+---------------+
-
-+-->| SIN BORDADA |
-
-| +-------+-------+
-
-| |
-
-| escaneo ON_BOARD
-
-| \[guarda: asignado a la ruta y ejecución activa\]
-
-| |
-
-| v
-
-| +---------------+
-
-| | A BORDO |
-
-| +-------+-------+
-
-| |
-
-| escaneo OFF_BOARD
-
-| \[guarda: bordada activa en la ejecución\]
-
-| |
-
-| v
-
-| +---------------+
-
-| | BAJADO |
-
-| +-------+-------+
-
-| |
-
-+-----------+ inicio de una nueva ejecución
-
-v
-
-(fin)
-
-**Figura 18**. Máquina de estados del trayecto del estudiante
-
-**Tabla 22**. Transiciones de la máquina de estados del trayecto del estudiante
-
-| Estado      | Evento                                   | Guarda                                                              | Acción                                                                       | Destino     |
-| ----------- | ---------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ----------- |
-| SIN BORDADA | Escaneo de subida (ON_BOARD)             | El estudiante está asignado a la ruta y existe una ejecución activa | Registro de la bordada con fecha, hora y parada; notificación al acudiente   | A BORDO     |
-| SIN BORDADA | Escaneo de subida (ON_BOARD)             | El estudiante pertenece a otra ruta o no hay trayecto activo        | Respuesta de rechazo sin registro                                            | SIN BORDADA |
-| A BORDO     | Escaneo repetido de subida               | Ya existe bordada activa del mismo estudiante                       | Consumo idempotente del evento: no se genera un registro duplicado           | A BORDO     |
-| A BORDO     | Escaneo de bajada (OFF_BOARD)            | Existe la bordada activa del estudiante en la ejecución             | Registro de la bajada con fecha, hora y ubicación; notificación al acudiente | BAJADO      |
-| BAJADO      | Inicio de una nueva ejecución de la ruta | —                                                                   | Reinicio del trayecto para el siguiente servicio                             | SIN BORDADA |
-
-## 5.5 EST-05 — GPS Device
-
-+-----------------+
-
-+-->| REGISTRADO |
-
-| +--------+--------+
-
-| |
-
-| primera posición recibida por gRPC
-
-| |
-
-| v
-
-| +-----------------+
-
-| | EN LÍNEA |<-------------------+
-
-| +--------+--------+ |
-
-| | |
-
-| | nueva posición | posición recibida
-
-| | (actualiza la conexión) | tras una interrupción
-
-| +--> EN LÍNEA |
-
-| | |
-
-| umbral sin posiciones excedido |
-
-| (evento de pérdida de señal) |
-
-| | |
-
-| v |
-
-| +-----------------+ |
-
-| | SIN SEÑAL |-------------------+
-
-| +--------+--------+
-
-| |
-
-| desactivación lógica del dispositivo (baja lógica)
-
-| |
-
-| v
-
-| +-----------------+
-
-| | INACTIVO |--> REGISTRADO (reactivación)
-
-| +-----------------+
-
-|
-
-+---- conservación del registro histórico y de las posiciones
-
-**Figura 19**. Máquina de estados del dispositivo GPS
-
-**Tabla 23**. Transiciones de la máquina de estados del dispositivo GPS
-
-| Estado               | Evento                              | Guarda                                                  | Acción                                                                              | Destino    |
-| -------------------- | ----------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------- | ---------- |
-| REGISTRADO           | Primera posición recibida           | IMEI registrado y perfil de dispositivo ACTIVE          | Persistencia de la posición y actualización de la última conexión                   | EN LÍNEA   |
-| REGISTRADO           | Posición recibida                   | IMEI desconocido o dispositivo inactivo                 | Rechazo de la muestra y registro del intento                                        | REGISTRADO |
-| EN LÍNEA             | Nueva posición                      | Canal gRPC disponible                                   | Actualización del historial de posiciones y de la marca de última conexión          | EN LÍNEA   |
-| EN LÍNEA             | Expiración del umbral de posiciones | Ninguna posición recibida dentro del umbral configurado | Emisión del evento de pérdida de señal y marca «sin señal» en la consulta (RF-06.3) | SIN SEÑAL  |
-| SIN SEÑAL            | Posición recibida                   | —                                                       | Reanudación del historial y levantamiento de la marca                               | EN LÍNEA   |
-| EN LÍNEA o SIN SEÑAL | Desactivación del dispositivo       | Baja lógica del dispositivo                             | Suspensión de la ingesta de posiciones sin borrar el historial                      | INACTIVO   |
-| INACTIVO             | Reactivación del dispositivo        | Dispositivo ACTIVE nuevamente                           | Reanudación de la recepción de posiciones                                           | REGISTRADO |
-
-## 5.6 EST-06 — Access Profile (ACTIVE/INACTIVE)
-
-+--------------------------------------+
-
-| ACTIVE |
-
-+---+-------------------+--------------+
-
-| |
-
-| desactivación | inicio de sesión
-
-| por el | y uso de la plataforma
-
-| administrador |
-
-| \[guarda: revoca |
-
-| sesiones\] v
-
-| (operación válida)
-
-v
-
-+--------------+ reactivación
-
-| INACTIVE |----------------------------------> ACTIVE
-
-+------+-------+
-
-|
-
-| persistencia del registro
-
-| (baja lógica, sin borrado físico)
-
-v
-
-(fin)
-
-**Figura 20**. Máquina de estados del perfil de acceso
-
-**Tabla 24**. Transiciones de la máquina de estados del perfil de acceso
-
-| Estado              | Evento                                             | Guarda                                       | Acción                                                                | Destino  |
-| ------------------- | -------------------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------- | -------- |
-| Creación del perfil | Alta de usuario confirmada por el evento de perfil | Datos válidos y sin identificación duplicada | Asignación de rol, hash de la clave de acceso y estado ACTIVE         | ACTIVE   |
-| ACTIVE              | Desactivación por el administrador                 | Revocación de todas las sesiones vigentes    | Bloqueo del acceso y de nuevas asignaciones (RF-01.3)                 | INACTIVE |
-| ACTIVE              | Inicio de sesión y operación                       | Perfil ACTIVE y token vigente                | Emisión o renovación de tokens y ejecución de la operación solicitada | ACTIVE   |
-| INACTIVE            | Intento de inicio de sesión                        | —                                            | Respuesta 401 con mensaje genérico                                    | INACTIVE |
-| INACTIVE            | Reactivación por el administrador                  | Datos de la cuenta íntegros                  | Restablecimiento de la capacidad de autenticación                     | ACTIVE   |
-| INACTIVE            | Eliminación lógica definitiva                      | Conservación del registro histórico          | Mantenimiento del registro sin borrado físico para auditoría          | INACTIVE |
-
-# 6 Trazabilidad dinámica ↔ RF/HU
-
-La tabla siguiente vincula cada artefacto dinámico con los requisitos funcionales e historias de usuario que modela, de modo que toda vista dinámica quede justificada y todo requisito con comportamiento relevante aparezca representado.
-
-**Tabla 25**. Trazabilidad de los artefactos dinámicos con requisitos e historias de usuario
-
-| Artefacto                        | Denominación                                         | RF                                 | HU                   | Épica  |
-| -------------------------------- | ---------------------------------------------------- | ---------------------------------- | -------------------- | ------ |
-| UC-01 / SEQ-01                   | Autenticación, renovación y cierre de sesión         | RF-02.1, RF-02.2                   | HU-IAM-001           | EP-004 |
-| UC-02 / SEQ-02 / ACT-03 / EST-06 | Alta y edición de cuentas con eventos                | RF-01.1, RF-01.2, RF-01.3          | HU-USER-004          | EP-004 |
-| UC-03 / SEQ-02                   | Vinculación de estudiantes al acudiente              | RF-01.4                            | HU-USER-003          | EP-004 |
-| UC-04 / SEQ-03                   | Administración de institución, sedes y cursos        | —                                  | —                    | —      |
-| UC-05                            | Administración de la flota de buses                  | RF-03.6                            | HU-FLEET-001         | EP-003 |
-| UC-06 / SEQ-04                   | Asignación de conductor al bus                       | RF-03.7                            | HU-BUS-002           | EP-003 |
-| UC-07 / SEQ-05                   | Creación y gestión de rutas con paradas              | RF-03.1, RF-03.2, RF-03.3, RF-03.4 | HU-ROUTE-001         | EP-003 |
-| UC-08 / SEQ-04                   | Asignación de bus a la ruta                          | RF-03.5                            | HU-ROUTE-005         | EP-003 |
-| UC-09                            | Asignación de estudiantes a la ruta con paradas      | RF-03.8                            | HU-ROUTE-008         | EP-003 |
-| UC-10 / SEQ-05                   | Programación semanal de la ruta                      | RF-03.1                            | HU-ROUTE-001         | EP-003 |
-| UC-11 / SEQ-06 / EST-02          | Inicio y fin de la ejecución de la ruta              | RF-07.1                            | HU-ROUTE-003         | EP-003 |
-| UC-12 / SEQ-07 / ACT-01 / EST-04 | Registro de subida por escaneo QR                    | RF-04.2, RF-05.1                   | HU-QR-001            | EP-001 |
-| UC-13 / SEQ-07 / ACT-01 / EST-04 | Registro de bajada por escaneo QR                    | RF-04.3                            | HU-QR-002            | EP-001 |
-| UC-14                            | Visualización del código QR personal                 | RF-04.1                            | HU-QR-004            | EP-001 |
-| UC-15 / SEQ-07                   | Notificación de subida y bajada al acudiente         | RF-05.2, RF-05.3                   | HU-NOTIF-001         | EP-002 |
-| UC-16 / SEQ-09 / ACT-02 / EST-03 | Alerta por detención prolongada                      | RF-05.4                            | HU-NOTIF-005         | EP-002 |
-| UC-17 / SEQ-09                   | Reporte de incidente y notificación automática       | RF-08.1                            | HU-INCIDENT-001      | EP-006 |
-| UC-18                            | Consulta de la ruta asignada por el conductor        | RF-09.2                            | HU-ROUTE-002         | EP-003 |
-| UC-19                            | Consulta de la ruta del estudiante por el acudiente  | RF-09.1                            | HU-ROUTE-004         | EP-003 |
-| UC-20 / SEQ-08 / EST-05          | Captura, consulta y visualización de la posición GPS | RF-06.1, RF-06.2, RF-06.3          | HU-GPS-002           | EP-005 |
-| UC-21 / ACT-04                   | Exceptional Route or Bus Usage                        | —                                  | —                    | —      |
-| UC-22 / ACT-05                   | Auditoría de acciones críticas                       | —                                  | —                    | —      |
-| UC-23                            | Personalización de tema e idioma                     | RF-10.1, RF-10.2                   | HU-UI-001, HU-UI-002 | EP-007 |
-
-## 6.1 Cobertura por grupo de requisitos
-
-**Tabla 26**. Cobertura de los grupos de requisitos funcionales por artefactos dinámicos
-
-| Grupo RF                          | Requisitos del grupo | Artefactos dinámicos que lo modelan | Cobertura                                                                         |
-| --------------------------------- | -------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
-| RF-01 Gestión de usuarios         | 4                    | SEQ-02, ACT-03, EST-06              | Completa                                                                          |
-| RF-02 Autenticación               | 2                    | SEQ-01, EST-01                      | Completa                                                                          |
-| RF-03 Rutas, flota y asignaciones | 8                    | SEQ-03, SEQ-04, SEQ-05              | Completa                                                                          |
-| RF-04 Escaneo QR                  | 3                    | SEQ-07, ACT-01, EST-04              | Completa                                                                          |
-| RF-05 Notificaciones de bordada   | 4                    | SEQ-07, SEQ-09, ACT-02, EST-03      | Completa                                                                          |
-| RF-06 Rastreo en tiempo real      | 3                    | SEQ-08, EST-05                      | Completa                                                                          |
-| RF-07 Gestión de viajes           | 1                    | SEQ-06, EST-02                      | Completa                                                                          |
-| RF-08 Incidentes                  | 1                    | SEQ-09, ACT-02, EST-03              | Completa                                                                          |
-| RF-09 Consulta de rutas           | 2                    | SEQ-06, SEQ-08                      | Parcial: la consulta es de solo lectura y se describe en la tabla de casos de uso |
-| RF-10 Personalización             | 2                    | UC-23                               | Solo cliente: no interviene en servicios ni en eventos                            |
-
-## 6.2 Observaciones de trazabilidad
-
-- Los casos UC-04, UC-21 y UC-22 carecen de requisito formal propio: cubren datos maestros institucionales, usos excepcionales de transporte y auditoría, que el dominio exige aunque no estén numerados entre los requisitos funcionales. Sus procesos se modelan íntegramente en ACT-04 y ACT-05.
-- La personalización de tema e idioma se resuelve en el cliente, por lo que no genera intercambio de mensajes con los servicios de dominio ni eventos en el broker.
-- El consumo de eventos se realiza con procesamiento idempotente y entrega al menos una vez; los flujos que dependen de la confirmación de un consumidor (bordadas y notificaciones) describen explícitamente el reintento en sus notas de excepción.
-- La comunicación síncrona entre servicios se realiza mediante gRPC con tiempos de espera y cortacircuitos; la comunicación con los clientes pasa siempre por la puerta de enlace, que valida el token e inyecta la identidad antes de invocar a cualquier servicio.
+- To establish the system's **use-case model** with complete functional specifications.
+- To represent, through **sequence, activity, and state diagrams**, the critical business flows (QR boarding and alighting, real-time GPS monitoring, notifications, trips, and incidents).
+- To describe the **data flow** among actors, processes, and data stores.
+- To document the **process logic**, business rules, event, error, and exception handling, and the concurrency and inter-service communication aspects.
+- To serve as an input for development, verification, and software quality testing.
+
+## 1.2 Scope
+
+The scope of this analysis covers the dynamic processes of the following functional modules of the Guardian Escolar system:
+
+- User, family, and student–guardian linkage management.
+- Authentication, password recovery, and session management.
+- School, campus, bus fleet, driver, route, stop, and assignment management (bus–route and student–route).
+- Boarding and alighting control of students through QR codes.
+- Real-time notifications and alerts to guardians.
+- Bus location monitoring through GPS devices.
+- Trip management (starting and finishing the execution of a route).
+- Incident or emergency reporting during the trip.
+- Interface customization (theme and language) in the client applications.
+
+Out of scope: the modeling of physical data persistence, infrastructure deployment details, and the static view of the system (complete class diagram), which is referenced as an input but is not replaced.
+
+## 1.3 Audience
+
+This document is intended for:
+
+| Audience | Expected use |
+|----------|--------------|
+| **Analysts** | Validate the functional coherence and traceability of the requirements |
+| **Developers** | Guide the implementation of flows, services, events, and validations |
+| **Client** | Understand the system behavior and the school transportation process flows |
+| **Quality assurance (QA) team** | Design test cases and verify alternative and exception flows |
+| **Architects** | Review communication, concurrency, and event-handling patterns |
+
+## 1.4 Definitions, acronyms, and abbreviations
+
+| Term / acronym | Definition |
+|----------------|------------|
+| **Guardian (parent)** | Adult responsible for one or more students, authorized to consult their transportation information and to receive notifications. |
+| **Boarding** | Operational event that records a student getting on a bus. |
+| **Alighting** | Operational event that records a student getting off the bus. |
+| **Alert** | High-priority communication generated by an event or operational condition (e.g., GPS signal loss, deviation, prolonged stop). |
+| **QR code** | Individual visual identifier of each student, used to validate boarding and alighting. |
+| **API** | Application Programming Interface. |
+| **JWT** | JSON Web Token: token-based authentication mechanism based on a signed token. |
+| **RBAC** | Role-Based Access Control. |
+| **gRPC** | Typed and efficient synchronous communication mechanism between services. |
+| **Kafka** | Asynchronous messaging platform (event broker). |
+| **DLQ** | Dead Letter Queue: queue of failed messages for retries or analysis. |
+| **GPS** | Global Positioning System; VT03F device integrated through the TCP protocol. |
+| **DDD** | Domain-Driven Design. |
+| **SLA/SLO** | Service level agreements and objectives. |
+
+## 1.5 Reference documents
+
+| Document | Description |
+|----------|-------------|
+| Software Requirements Specification | Defines the functional requirements (FR), non-functional requirements (NFR), and user stories of the system. |
+| Static view of the system (domain and class model) | Defines the entities, aggregates, value objects, invariants, and domain services with which this document maintains strict naming consistency. |
+| Software technical proposal | Defines the microservices architecture, communication patterns, and design decisions. |
+| Software design | Defines the integration contracts, the data model, and the application interfaces. |
+| APA guidelines (seventh edition) | Reference guide used for bibliographic citations. |
+
+The complete list of bibliographic references is presented in section [14. References](#14-references).
+
+## 1.6 Version control
+
+| Version | Date | Author | Change description |
+|---------|------|--------|--------------------|
+| 1.0 | 10/10/2026 | Guardian Escolar team | Initial version of the document: dynamic views (use cases, sequence, activity, states, data flow, logic, events, concurrency, prototypes, and traceability). |
+
+---
+
+# 2. General system description
+
+## 2.1 System summary
+
+Guardian Escolar is a software platform that manages the daily transportation of students to and from their schools. It allows schools to organize buses, drivers, routes, stops, students, and families, and provides boarding and alighting control of students through QR codes, real-time monitoring of the buses' location, and immediate notification of the relevant transportation events to guardians (boarding, alighting, GPS signal loss, deviations, prolonged stops, and incidents).
+
+The platform is composed of a set of independent microservices whose synchronous communication is carried out through gRPC and REST (through the gateway) and whose asynchronous communication is carried out through a message broker (Kafka). The client applications are a web application for administration (administrator and super-administrator panels) and a mobile application for guardians, drivers, and students.
+
+## 2.2 System context
+
+The following diagram illustrates the general context: the client applications and external systems interact with the platform through the API Gateway, the single public entry point; the domain services communicate with each other synchronously or asynchronously and persist in a relational database schema with logical isolation per service.
+
+```mermaid
+flowchart LR
+    subgraph CLIENT["Client applications"]
+        WEB["Web application<br/>(administration)"]
+        MOV["Mobile application<br/>(guardian, driver, student)"]
+    end
+
+    subgraph EDGE["Entry edge"]
+        GW["API Gateway<br/>(authentication and limits)"]
+    end
+
+    subgraph SERVICES["Backend services"]
+        IAM["iam-service<br/>(identity and sessions)"]
+        UM["user-management-service<br/>(people and families)"]
+        SCH["school-service<br/>(schools and campuses)"]
+        NTF["notification-service<br/>(boardings and alerts)"]
+        BUS["bus-service<br/>(fleet and drivers)"]
+        RTE["route-service<br/>(routes, stops, and trips)"]
+        GPS["gps-service<br/>(telemetry)"]
+        CFG["configuration-service<br/>(policies and parameters)"]
+    end
+
+    subgraph INFRA["Infrastructure"]
+        KAFKA[("Message broker<br/>(Kafka)")]
+        DB[("Relational database<br/>(schema per service)")]
+        REDIS[("Redis<br/>(ephemeral state)")]
+        VT03F[("VT03F GPS device<br/>(TCP protocol)")]
+    end
+
+    WEB --> GW
+    MOV --> GW
+    GW --> IAM
+    GW --> UM
+    GW --> SCH
+    GW --> NTF
+    GW --> BUS
+    GW --> RTE
+    GW --> GPS
+    GW --> CFG
+    GPS <-->|TCP| VT03F
+    NTF --> KAFKA
+    RTE --> KAFKA
+    GPS --> KAFKA
+    CFG --> KAFKA
+    IAM --> REDIS
+    GW --> REDIS
+    IAM --> DB
+    UM --> DB
+    SCH --> DB
+    NTF --> DB
+    BUS --> DB
+    RTE --> DB
+    GPS --> DB
+    CFG --> DB
+```
+
+**Explanation.** All requests from the client applications enter through the gateway, which validates the access token and injects the user identity before routing the request to the corresponding service. The domain services are stateful regarding their own data (each persists in its schema) and communicate asynchronously through events for the processes that do not require an immediate response. The VT03F GPS device is integrated through the TCP protocol with the telemetry service, which processes the positions and publishes events so that other services update the bus location and evaluate alert conditions.
+
+## 2.3 Main actors and roles
+
+| Actor | Technical role | Description |
+|-------|----------------|-------------|
+| **SUPER_ADMIN** | Super-administrator | Global role: manages administrators and schools, and manages its own profile and contact data. |
+| **ADMIN** | Administrator | Operational role: manages users (students, parents, drivers), families, buses, stops, routes, and assignments. |
+| **Guardian** | Parent/Guardian | Consults the route of their students, receives notifications and alerts, and views the live location of the bus. |
+| **Driver** | Driver | Consults their assigned route, starts and finishes the trip, scans the boarding and alighting QR codes, and reports incidents. |
+| **Student** | Student | Views their personal QR code and consults their route. |
+| **VT03F GPS device** | External system | Continuously sends the bus position (latitude, longitude, speed, course, and GPS date) through TCP. |
+| **System** | Automatic actor | Executes automatic processes: event detection, generation, and sending of notifications and alerts. |
+| **External providers** | External systems | Push notification sending, SMS messaging, email, and interactive maps. |
+
+## 2.4 Assumptions and constraints
+
+**Assumptions:**
+
+1. User accounts are **not self-registered**: the administrator (ADMIN) or super-administrator (SUPER_ADMIN) creates all ecosystem accounts (FR-1.1).
+2. The guardian is linked to one or more students through the family linkage managed by the administrator (FR-1.4).
+3. The driver is assigned to the **bus**, and reaches their routes transitively through the bus assigned to the route; there is no direct driver–route table (decision FR-3.6).
+4. Each bus has **a single active trip** at a time (FR-7.1).
+5. The student must be assigned to the route to board; alighting requires a previous active boarding (FR-4.2, FR-4.3).
+6. The initial operating environment is the municipality of Neiva, Huila (Colombia).
+7. The user interface can be customized in theme and language; customization is resolved in the client applications (FR-10.1, FR-10.2).
+
+**Constraints:**
+
+1. All private endpoints require a valid JWT; tokens expire in 1 hour and refresh tokens in 7 days (NFR-004).
+2. Inter-service communication is performed with gRPC (synchronous) and Kafka (asynchronous); another service's database is never accessed directly (ADR-002, ADR-004, ADR-005).
+3. Each service persists in its own schema within a shared relational instance; foreign keys between schemas are maintained as direct references.
+4. The processing of minors' personal data requires parental authorization according to Colombian regulations (Law 1581 of 2012 and Decree 1377 of 2013).
+5. The mobile application and some notification flows may be under development or partially implemented; this document describes the target behavior of the system.
+
+## 2.5 Relationship with the static view
+
+The static view of the system defines the entities, aggregates, value objects, and invariants of the domain (DDD tactical model). This document maintains **strict naming consistency** with that view: the classes, attributes, and methods that appear in the dynamic diagrams are the same as those of the domain model.
+
+The main domain aggregates are:
+
+- `Person` and `Family` (user management context).
+- `Profile` (security context).
+- `School` (school management context).
+- `Bus` and its assignments (fleet management context).
+- `Route` with `RouteStop`, `RouteBusAssignment`, and `RouteStudentAssignment` (route management context).
+- `GpsDevice` with `GpsLocation` (GPS telemetry context).
+- `Boarding` (boarding context).
+- `Alert` (alerts context).
+
+The following class diagram summarizes the main entities and their relationships, as defined in the static view:
+
+```mermaid
+classDiagram
+    class Person {
+        +UUID id
+        +String name
+        +String lastName
+        +IdentificationType identificationType
+        +String identificationNumber
+        +Email email
+        +PhoneNumber phone
+        +String residenceAddress
+        +Date dateBirth
+        +Status status
+    }
+    class Family {
+        +UUID id
+        +String name
+        +String observations
+        +Status status
+    }
+    class Profile {
+        +UUID id
+        +UUID personId
+        +UUID campuseId
+        +UUID roleId
+        +Status status
+    }
+    class School {
+        +UUID id
+        +UUID cityId
+        +String name
+        +String address
+        +PhoneNumber phone
+        +Email email
+        +String theme
+        +Status status
+    }
+    class Bus {
+        +UUID id
+        +String plate
+        +int capacity
+        +Date soatValidity
+        +UUID campuseId
+        +UUID gpsDeviceId
+        +UUID modelId
+        +Status status
+    }
+    class Route {
+        +UUID id
+        +String name
+        +String targetSector
+        +UUID campuseId
+        +Time startTime
+        +Time endTime
+        +Status status
+    }
+    class Stop {
+        +UUID id
+        +UUID cityId
+        +UUID schoolId
+        +String name
+        +String address
+        +Decimal longitude
+        +Decimal latitude
+        +Status status
+    }
+    class RouteStop {
+        +UUID id
+        +UUID routeId
+        +UUID stopId
+        +int orderSequence
+        +Status status
+    }
+    class RouteBusAssignment {
+        +UUID id
+        +UUID busId
+        +UUID routeId
+        +Status status
+    }
+    class RouteStudentAssignment {
+        +UUID id
+        +UUID profileId
+        +UUID routeStopId
+        +Status status
+    }
+    class GpsDevice {
+        +UUID id
+        +String imei
+        +DateTime lastConnection
+        +Boolean gpsStatus
+    }
+    class GpsLocation {
+        +UUID id
+        +UUID gpsDeviceId
+        +Decimal latitude
+        +Decimal longitude
+        +Decimal speed
+        +Decimal course
+        +DateTime dateTime
+    }
+    class RouteExecution {
+        +UUID id
+        +UUID busId
+        +UUID driverId
+        +UUID routeId
+        +DateTime startDateTime
+        +DateTime endDateTime
+        +Status status
+    }
+    class Boarding {
+        +UUID id
+        +UUID profileId
+        +UUID routeExecutionId
+        +UUID routeStopId
+        +BoardingType boardingType
+        +DateTime dateTime
+    }
+    class Alert {
+        +UUID id
+        +UUID alertTypeId
+        +UUID profileId
+        +UUID routeExecutionId
+        +String description
+        +DateTime dateTime
+        +DateTime acknowledgedAt
+    }
+
+    Person "1" --> "0..1" Profile : "owns"
+    Person "1" --> "1..*" Family : "joins"
+    Route "1" --> "1..*" RouteStop : "contains"
+    Route "1" --> "0..*" RouteBusAssignment : "assigns"
+    RouteStop "1" --> "0..*" RouteStudentAssignment : "assigns"
+    Route "1" --> "0..*" RouteExecution : "executes"
+    Bus "1" --> "0..1" GpsDevice : "installs"
+    GpsDevice "1" --> "0..*" GpsLocation : "generates"
+    Bus "1" --> "0..*" RouteBusAssignment : "participates"
+    Bus "1" --> "0..*" RouteExecution : "operates"
+    Boarding --> Profile : "student"
+    Boarding --> RouteExecution : "belongs to"
+    Alert --> RouteExecution : "references"
+```
+
+**Explanation.** The diagram summarizes the entities and aggregates defined in the static view; the relationships between contexts are implemented through identity references (shared identifiers) and, when a context needs another context's data, through APIs or events, never through direct database access. The dynamic flows described in sections 4 through 7 operate on these same entities and respect their invariants (see section 8.1).---
+
+# 3. Use-case model
+
+## 3.1 General use-case diagram
+
+The following diagram presents the general use-case model of the system. The actors are represented on the left and the use cases inside the system boundary.
+
+```mermaid
+flowchart TB
+    subgraph SYSTEM["Guardian Escolar system"]
+        direction TB
+        UC1(("UC-01 Sign in and renew session"))
+        UC2(("UC-02 Recover password"))
+        UC3(("UC-03 Manage user accounts"))
+        UC4(("UC-04 Manage families and link students"))
+        UC5(("UC-05 Manage schools and campuses"))
+        UC6(("UC-06 Manage bus fleet"))
+        UC7(("UC-07 Assign driver to bus"))
+        UC8(("UC-08 Manage routes and stops"))
+        UC9(("UC-09 Assign bus to route"))
+        UC10(("UC-10 Assign students to route"))
+        UC11(("UC-11 Query assigned route"))
+        UC12(("UC-12 Start and finish trip"))
+        UC13(("UC-13 Record QR boarding and alighting"))
+        UC14(("UC-14 View QR code"))
+        UC15(("UC-15 Receive notifications and alerts"))
+        UC16(("UC-16 Monitor bus in real time"))
+        UC17(("UC-17 Report incident"))
+        UC18(("UC-18 Manage profile and contact data"))
+        UC19(("UC-19 Customize theme and language"))
+    end
+
+    SADMIN(["Super-administrator"]) --> UC1
+    SADMIN --> UC3
+    SADMIN --> UC5
+    SADMIN --> UC18
+
+    ADMIN(["Administrator"]) --> UC1
+    ADMIN --> UC3
+    ADMIN --> UC4
+    ADMIN --> UC6
+    ADMIN --> UC7
+    ADMIN --> UC8
+    ADMIN --> UC9
+    ADMIN --> UC10
+    ADMIN --> UC18
+
+    GUARDIAN(["Guardian"]) --> UC1
+    GUARDIAN --> UC11
+    GUARDIAN --> UC15
+    GUARDIAN --> UC16
+
+    DRIVER(["Driver"]) --> UC1
+    DRIVER --> UC11
+    DRIVER --> UC12
+    DRIVER --> UC13
+    DRIVER --> UC17
+
+    STUDENT(["Student"]) --> UC1
+    STUDENT --> UC11
+    STUDENT --> UC14
+
+    SYS(["System"]) --> UC15
+    SYS --> UC16
+
+    GPSDEV(["VT03F GPS device"]) --> UC16
+```
+
+**Explanation.** The model distinguishes five human actors (super-administrator, administrator, guardian, driver, and student) and two non-human actors (automatic system and GPS device). The authentication use cases (UC-01, UC-02) are common to all roles; the administration use cases (UC-03 through UC-10) correspond to the administrative roles; the operational use cases (UC-11 through UC-17) correspond to the driver, the student, and the guardian; and the customization use cases (UC-18, UC-19) are cross-cutting.
+
+## 3.2 System actors
+
+| Actor | Description | Associated use cases |
+|-------|-------------|----------------------|
+| **SUPER_ADMIN** | Global role that manages administrators and schools | UC-01, UC-03, UC-05, UC-18 |
+| **ADMIN** | Operational role that manages the school and transportation ecosystem | UC-01, UC-03, UC-04, UC-06, UC-07, UC-08, UC-09, UC-10, UC-18 |
+| **Guardian** | Responsible for one or more students | UC-01, UC-11, UC-15, UC-16 |
+| **Driver** | Operator of the bus and the route | UC-01, UC-11, UC-12, UC-13, UC-17 |
+| **Student** | Beneficiary of school transportation | UC-01, UC-11, UC-14 |
+| **System** | Automatic actor that detects events and sends notifications and alerts | UC-15, UC-16 |
+| **VT03F GPS device** | Telemetry hardware that reports the bus position | UC-16 |
+
+## 3.3 Use-case catalog
+
+| ID | Use case | Primary actor | Associated requirements | Priority |
+|----|----------|---------------|-------------------------|----------|
+| UC-01 | Sign in and renew session | All roles | FR-2.1, FR-2.2 | High |
+| UC-02 | Recover password | All roles | FR-2.1 (derived: recovery flow) | Medium |
+| UC-03 | Manage user accounts | ADMIN, SUPER_ADMIN | FR-1.1, FR-1.2, FR-1.3 | High |
+| UC-04 | Manage families and link students | ADMIN | FR-1.4 | High |
+| UC-05 | Manage schools and campuses | SUPER_ADMIN | Master data (School, SchoolCampus) | Medium |
+| UC-06 | Manage bus fleet | ADMIN | FR-3.8 | Medium |
+| UC-07 | Assign driver to bus | ADMIN | FR-3.6 | High |
+| UC-08 | Manage routes and stops | ADMIN | FR-3.1, FR-3.2, FR-3.3, FR-3.4 | High |
+| UC-09 | Assign bus to route | ADMIN | FR-3.5 | Medium |
+| UC-10 | Assign students to route | ADMIN | FR-3.7 | High |
+| UC-11 | Query assigned route | Guardian, Driver, Student | FR-9.1, FR-9.2 | High |
+| UC-12 | Start and finish trip | Driver | FR-7.1, FR-7.2 | High |
+| UC-13 | Record QR boarding and alighting | Driver | FR-4.2, FR-4.3, FR-5.1 | High |
+| UC-14 | View QR code | Student | FR-4.1 | Medium |
+| UC-15 | Receive notifications and alerts | Guardian (System as sender) | FR-5.2, FR-5.3, FR-5.4, FR-8.2 | High |
+| UC-16 | Monitor bus in real time | Guardian (System, GPS) | FR-6.1, FR-6.2, FR-6.3 | High |
+| UC-17 | Report incident | Driver | FR-8.1 | Medium |
+| UC-18 | Manage profile and contact data | ADMIN, SUPER_ADMIN | Master authentication data (profile) | Medium |
+| UC-19 | Customize theme and language | All roles (client) | FR-10.1, FR-10.2 | Low |
+
+## 3.4 Use-case specifications
+
+### UC-01 Sign in and renew session
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | All roles (SUPER_ADMIN, ADMIN, Guardian, Driver, Student) |
+| **Description** | The user enters their credentials (identity document number and password), receives a JWT access token expiring in 1 hour and a refresh token valid for 7 days, and can renew the session or log out securely. |
+| **Preconditions** | The user has an account created by an administrator and their profile is in `ACTIVE` status. |
+| **Postconditions** | The token pair (access and refresh) is issued, the session is registered, and the user can invoke the operations authorized by their role (RBAC). |
+| **Business rules** | INV-PRO-003 (an inactive profile cannot sign in); NFR-004 (token expiration). |
+| **Traceability** | FR-2.1, FR-2.2 · HU-IAM-001 |
+
+**Main flow:**
+
+1. The user selects "Sign in" in the application and enters their identity document number and password.
+2. The application sends the credentials to the identity service through the gateway.
+3. The service validates the syntax of the credentials and verifies the profile status.
+4. The service validates the password (secure hash) and queries the role and permissions of the profile.
+5. If the validation succeeds, the service generates the JWT access token (1 hour) and the refresh token (7 days) and registers the session.
+6. The application stores the tokens securely and presents the panel or main view according to the role.
+
+**Alternative flows:**
+
+- A1 (renewal): when the access token expires, the application requests renewal with the refresh token; the service validates that the token is not revoked, issues a new token pair, and marks the previous refresh token as used.
+- A2 (logout): the user finishes the session; the service revokes the refresh token and adds the access token to the revocation list to prevent its reuse.
+
+**Exceptions:**
+
+- E1: Invalid credentials → the user is informed and the failed attempt is logged.
+- E2: Inactive profile → access is rejected with the corresponding message.
+- E3: Revoked or expired refresh token → authentication is requested again.
+
+---
+
+### UC-02 Recover password
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | All roles |
+| **Description** | The user requests the recovery of their password by entering the registered email; the system validates their identity through a code sent by email or SMS, and allows setting a new password in accordance with the current security policy. |
+| **Preconditions** | The user's account exists in the system and has a registered contact medium. |
+| **Postconditions** | The password is reset, the recovery token is invalidated, and the user can sign in with the new password. |
+| **Business rules** | Password policy of the configuration service (length, complexity, and expiration); request limit per IP address and per account. |
+| **Traceability** | FR-2.1 (recovery flow) · HU-IAM-001 |
+
+**Main flow:**
+
+1. The user chooses "Forgot your password?" and enters their email.
+2. The system validates that the account exists and generates a single-use recovery code with expiration.
+3. The system sends the code to the registered email or phone.
+4. The user enters the code; the system validates it.
+5. The user defines the new password; the system validates the security policies.
+6. The system updates the password hash, invalidates the active tokens of the account, and redirects to sign in.
+
+**Exceptions:**
+
+- E1: The account does not exist or the contact medium does not match → a generic message is shown to avoid revealing account information.
+- E2: The code is incorrect or expired → a limited number of retries is allowed.
+- E3: Request limit exceeded → rate limiting is applied per IP and per account.
+
+---
+
+### UC-03 Manage user accounts
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | ADMIN, SUPER_ADMIN |
+| **Description** | The administrator creates, queries, updates, and activates or deactivates the accounts of students, parents, drivers, and administrators, assigning the corresponding role to each account. Deactivation blocks system access and assignments. |
+| **Preconditions** | The authenticated user has the ADMIN or SUPER_ADMIN role with the account management permission. |
+| **Postconditions** | The person and their profile are created or updated; the creation of the person triggers the domain event to generate the security profile. |
+| **Business rules** | INV-PER-001 through INV-PER-003 (unique document, mandatory names, email format); INV-PRO-001 and INV-PRO-002 (profile with valid person and role). |
+| **Traceability** | FR-1.1, FR-1.2, FR-1.3 · HU-USER-004 |
+
+**Main flow:**
+
+1. The administrator selects the account type (student, parent, driver, or administrator) and enters the person's data.
+2. The user management service validates the document uniqueness, the email format, and the mandatory data, and persists the `Person` entity.
+3. The system publishes the person creation event corresponding to the role (student, parent, driver, or administrator).
+4. The identity service consumes the event and creates the `Profile` with the assigned role and its initial status.
+5. The administrator can update the data; the system validates the business rules again.
+6. The administrator can activate or deactivate the account; deactivation blocks access and assignments.
+
+**Alternative flows:**
+
+- A1 (deactivation): the account moves to `INACTIVE` status; the user's active assignments are invalidated and session tokens are revoked.
+
+**Exceptions:**
+
+- E1: Duplicate identity document → creation is rejected with the corresponding message.
+- E2: Associated profile not found when deactivating → the audit event is logged and the process finishes without blocking.
+
+---
+
+### UC-04 Manage families and link students
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | ADMIN |
+| **Description** | The administrator creates families and links one or more students to a guardian's (parent's) account, so that the guardian can consult their transportation information and receive notifications. |
+| **Preconditions** | The guardian and the students exist as system accounts. |
+| **Postconditions** | The students are associated with the guardian through the family relationship; the guardian views the transportation information of their students. |
+| **Business rules** | INV-FAM-002 (an active family must have at least one valid member); FR-1.4. |
+| **Traceability** | FR-1.4 · HU-USER-003 |
+
+**Main flow:**
+
+1. The administrator opens the family management and creates or selects a family.
+2. The administrator adds the guardian as a member of the family.
+3. The administrator adds the corresponding students.
+4. The system validates the integrity of the relationships and persists the changes.
+5. The guardian can query the route, the stops, and the notifications of their students.
+
+**Exceptions:**
+
+- E1: One of the members does not exist or is inactive → the user is informed and the linkage is not completed.
+
+---
+
+### UC-05 Manage schools and campuses
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | SUPER_ADMIN |
+| **Description** | The super-administrator creates and updates schools and their campuses, associating each school with a city registered in the geographic context. |
+| **Preconditions** | The user has the SUPER_ADMIN role. |
+| **Postconditions** | The school or campus is registered and available to associate buses, routes, and administrators. |
+| **Business rules** | INV-SCH-001 through INV-SCH-003 (name, city, and school identity uniqueness). |
+| **Traceability** | Master data: `School`, `SchoolCampus`. |
+
+**Main flow:**
+
+1. The super-administrator selects "School management".
+2. Enters the school name and selects the city.
+3. The system validates uniqueness and the city and persists the school.
+4. The super-administrator adds the campuses and the school administrators.
+5. The system confirms the registration and publishes it as a domain event for the transportation contexts.
+
+---
+
+### UC-06 Manage bus fleet
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | ADMIN |
+| **Description** | The administrator creates, edits, and activates or deactivates the school's buses, registering the plate, the model, and the associated GPS device; the plate must be unique and the capacity greater than zero. |
+| **Preconditions** | The user has the ADMIN role; the school and the model exist. |
+| **Postconditions** | The bus is registered with its unique plate and available for assignment to routes. |
+| **Business rules** | INV-BUS-001 through INV-BUS-004 (unique plate, valid school, valid driver, exclusive GPS device). |
+| **Traceability** | FR-3.8 · HU-FLEET-001 |
+
+**Main flow:**
+
+1. The administrator opens the fleet management and selects "New bus".
+2. Enters the plate, the model, the school, and the associated GPS device.
+3. The system validates the plate uniqueness and that the GPS device is not assigned to another bus.
+4. The system persists the bus and leaves it available for assignment to routes.
+
+**Exceptions:**
+
+- E1: Duplicate plate → the registration is rejected.
+- E2: GPS device already assigned to another bus → another device is requested or the previous one is disassociated.
+
+---
+
+### UC-07 Assign driver to bus
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | ADMIN |
+| **Description** | The administrator assigns or revokes the driver responsible for a bus. The driver is responsible for that bus until a new assignment is made; the driver's route coverage is derived from the bus assigned to the route. |
+| **Preconditions** | The bus and the driver profile exist and are active. |
+| **Postconditions** | The bus is associated with the driver; the driver queries their route through the bus assigned to the route. |
+| **Business rules** | INV-BUS-003 (the assigned driver must be a valid driver profile); decision FR-3.6 (no direct driver–route table). |
+| **Traceability** | FR-3.6 · HU-BUS-002 |
+
+**Main flow:**
+
+1. The administrator selects a bus and the "Assign driver" option.
+2. The system presents the available active drivers.
+3. The administrator selects the driver and confirms.
+4. The system validates the driver profile and records the assignment; the previous assignment is finished.
+
+**Exceptions:**
+
+- E1: The driver is invalid or inactive → the assignment is rejected.
+
+---
+
+### UC-08 Manage routes and stops
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | ADMIN |
+| **Description** | The administrator creates, queries, updates, and deletes school routes, defining the ordered stops and the associated schedules. A route can only be deleted if no active trip depends on it. |
+| **Preconditions** | The user has the ADMIN role; the school and the stops exist. |
+| **Postconditions** | The route is created or updated with its ordered stops and schedules, ready to assign a bus and students. |
+| **Business rules** | INV-ROU-001 through INV-ROU-004; AGGR-INV-001 through AGGR-INV-004 (no duplicate stops in the same position, no duplicate assignments). |
+| **Traceability** | FR-3.1, FR-3.2, FR-3.3, FR-3.4 · HU-ROUTE-001 |
+
+**Main flow:**
+
+1. The administrator opens the route management and selects "New route".
+2. Enters the name and the school, and adds the stops in order.
+3. Defines the schedules (departure and arrival) and the stop assignment by direction.
+4. The system validates the route uniqueness, the absence of duplicate stops in the same position, and the schedules.
+5. The system persists the route and publishes the corresponding domain event.
+
+**Alternative flows:**
+
+- A1 (update): the administrator modifies stops or schedules; the system validates that no active trips prevent the structural change.
+- A2 (deletion): the system verifies that no active trip depends on the route; if it does, the deletion is rejected.
+
+**Exceptions:**
+
+- E1: Duplicate route or duplicate stops → the administrator is informed.
+- E2: Deletion with active trip → the operation is rejected.
+
+---
+
+### UC-09 Assign bus to route
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | ADMIN |
+| **Description** | The administrator assigns or revokes the bus that covers a route, with the restriction of one bus per route and one route per bus. |
+| **Preconditions** | The route and the bus exist and belong to the same school context. |
+| **Postconditions** | The route is covered by the bus; the telemetry service associates the bus GPS tracking with the route. |
+| **Business rules** | INV-RBA-001 through INV-RBA-003; AGGR-INV-004 (a bus is not assigned to the same route more than once). |
+| **Traceability** | FR-3.5 · HU-ROUTE-005 |
+
+**Main flow:**
+
+1. The administrator selects the route and the "Assign bus" option.
+2. The system presents the available buses of the school.
+3. The administrator selects the bus and confirms; the system validates uniqueness.
+4. The system persists the assignment and notifies the telemetry context to associate the GPS device.
+
+**Exceptions:**
+
+- E1: The bus is already assigned to another route → the assignment is rejected or the previous assignment is requested to be revoked.
+
+---
+
+### UC-10 Assign students to route
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | ADMIN |
+| **Description** | The administrator assigns students to a route indicating the boarding stop and the alighting stop; the stops must belong to the route. |
+| **Preconditions** | The route has its stops defined; the students belong to the corresponding school context. |
+| **Postconditions** | The student is enabled to board at the assigned stop; their alighting is validated against the configured stop. |
+| **Business rules** | INV-RSA-001 through INV-RSA-003; AGGR-INV-003 (the student is not duplicated on the same route); FR-3.7. |
+| **Traceability** | FR-3.7 · HU-ROUTE-008 |
+
+**Main flow:**
+
+1. The administrator selects the route and the "Assign students" option.
+2. The system presents the school's students not assigned to the route.
+3. The administrator selects each student and indicates their boarding and alighting stops.
+4. The system validates that the stops belong to the route and that there is no duplication.
+5. The system persists the assignments and enables the boarding authorization for QR code handling.
+
+**Exceptions:**
+
+- E1: Stop not belonging to the route → the student assignment is rejected.
+- E2: Student already assigned → the administrator is informed.
+
+---
+
+### UC-11 Query assigned route
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | Guardian, Driver, Student |
+| **Description** | The guardian queries the detail of their students' route (bus, driver, ordered stops, and schedules); the driver queries the route assigned to their bus; the student queries their personal route. |
+| **Preconditions** | The user is authenticated and a valid assigned route exists. |
+| **Postconditions** | The user views the route detail (ordered stops, schedules, bus, and driver). |
+| **Business rules** | FR-9.1, FR-9.2. |
+| **Traceability** | FR-9.1, FR-9.2 · HU-ROUTE-004, HU-ROUTE-002 |
+
+**Main flow:**
+
+1. The user signs in and selects "My route" (or "My child's route").
+2. The system queries the current route according to the student assignment (guardian) or the bus (driver).
+3. The system presents the bus, the driver, the stops in order, and the scheduled times.
+4. In the driver's case, the query requires an active trip to show the operational information.
+
+**Exceptions:**
+
+- E1: There is no assigned route → an informational message is shown.
+
+---
+
+### UC-12 Start and finish trip
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | Driver |
+| **Description** | The driver starts the execution of the route (trip) when the bus is on the road and finishes it when the journey is completed; only **one** active trip per bus can exist at a time, and finishing validates that no alightings are pending. |
+| **Preconditions** | The bus has an assigned route; the driver is authenticated and associated with the bus. |
+| **Postconditions** | A `RouteExecution` is created in `IN_PROGRESS` status; when finished, it moves to `FINISHED` (or is cancelled). |
+| **Business rules** | FR-7.1 (one active trip per bus); FR-7.2 (no pending alightings when finishing). |
+| **Traceability** | FR-7.1, FR-7.2 · HU-ROUTE-003 |
+
+**Main flow:**
+
+1. The driver opens the application and selects "Start trip" on their assigned route.
+2. The system verifies that the bus does not have a previous active trip.
+3. The system creates the `RouteExecution` in `IN_PROGRESS` status and notifies the start of the route.
+4. During the trip, the driver records boardings and alightings through QR codes (UC-13).
+5. When the journey is finished, the driver selects "Finish trip".
+6. The system validates that there are no pending alightings (students on board without their alighting recorded).
+7. The system finishes the execution and notifies the end of the route.
+
+**Alternative flows:**
+
+- A1 (cancellation): the driver cancels the trip before completing it; the system records the `CANCELLED` status, preserving the traceability of the recorded events.
+- A2 (restart): after finishing or cancelling, the driver can start a new trip.
+
+**Exceptions:**
+
+- E1: There is already an active trip for the bus → the start is rejected.
+- E2: Pending alightings remain → the missing drop-offs are requested to be recorded before finishing.
+
+---
+
+### UC-13 Record QR boarding and alighting
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | Driver (with the student as the code holder) |
+| **Description** | The driver scans with the mobile application the individual QR code of each student to record their boarding or alighting. Boarding validates that the student is assigned to the active trip's route; alighting requires a previous active boarding. Each event generates an automatic notification to the guardian. |
+| **Preconditions** | There is an active trip of the bus; the student carries their QR code; the student is assigned to the route (boarding) or has an active boarding (alighting). |
+| **Postconditions** | The `Boarding` entity is created with type `BOARDING` or `EXIT`; the student's guardian is notified. |
+| **Business rules** | INV-BRD-001 through INV-BRD-005; AGGR-INV-011 through AGGR-INV-014; FR-4.2, FR-4.3, FR-5.1. |
+| **Traceability** | FR-4.2, FR-4.3, FR-5.1, FR-5.2, FR-5.3 · HU-QR-001, HU-QR-002 |
+
+**Main flow:**
+
+1. The driver selects "Scan" and the operation type (boarding or alighting).
+2. The application reads the student's QR code.
+3. The system validates the code validity and resolves the student's identity.
+4. For boarding: validates that the student is assigned to the active trip's route and has no active boarding; for alighting: validates that the student has an active boarding.
+5. The system records the `Boarding` with the current stop, the bus, the student, and the event time.
+6. The system publishes the registered boarding/alighting event.
+7. The notification service consumes the event and sends the real-time notification to the guardian with the time and the stop (or the location, on alighting).
+8. The application confirms the operation to the driver.
+
+**Alternative flows:**
+
+- A1 (alighting without active boarding): the system rejects the alighting and asks to verify the boarding record.
+- A2 (expired or invalid QR): the system asks to regenerate the student's code.
+
+**Exceptions:**
+
+- E1: Student not assigned to the route → the boarding is rejected.
+- E2: Invalid or expired QR code → the driver is informed.
+
+---
+
+### UC-14 View QR code
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | Student |
+| **Description** | The student views their individual QR code in the mobile application, which rotates or expires according to the configured security policy. |
+| **Preconditions** | The student has an active account and a QR code generated by the system. |
+| **Postconditions** | The student presents the valid code to be scanned by the driver. |
+| **Business rules** | FR-4.1 (individual generation with rotation/expiration policy). |
+| **Traceability** | FR-4.1 · HU-QR-004 |
+
+**Main flow:**
+
+1. The student signs in to the mobile application.
+2. Selects the "My QR code" option.
+3. The system shows the current code and its validity status.
+4. The student presents it to the driver for scanning.
+5. If the code is about to expire, the application renews it automatically.
+
+**Exceptions:**
+
+- E1: Expired code → the application regenerates it presenting a new code.
+
+---
+
+### UC-15 Receive notifications and alerts
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | Guardian (the System acts as sender) |
+| **Description** | The guardian receives in real time the boarding and alighting notifications of their students, the prolonged-stop alerts, and the incident alerts; they can consult the history in the application inbox. |
+| **Preconditions** | The guardian has linked students; a notification device or channel is registered. |
+| **Postconditions** | The notification or alert is delivered through the preferred channel and is recorded for consultation. |
+| **Business rules** | FR-5.2, FR-5.3, FR-5.4, FR-8.2; at-least-once delivery with idempotent processing. |
+| **Traceability** | FR-5.2, FR-5.3, FR-5.4, FR-8.2 · HU-NOTIF-001, HU-NOTIF-005, HU-INCIDENT-001 |
+
+**Main flow:**
+
+1. The system detects the relevant event (boarding, alighting, prolonged stop, or incident).
+2. The notification service resolves the guardian responsible for the student.
+3. The service generates the message according to the event type and the preferred channel.
+4. The service delivers the real-time notification and records the delivery status.
+5. The guardian receives it in the application and can consult it in the inbox.
+
+**Exceptions:**
+
+- E1: Channel unavailable → retried with exponential backoff policy and, if it persists, the failure is recorded.
+- E2: Destination not registered → the alert is recorded for later delivery.
+
+---
+
+### UC-16 Monitor bus in real time
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | Guardian (the System and the GPS Device as senders) |
+| **Description** | The guardian views on an interactive map the real-time location of the bus transporting their students; the system continuously captures the GPS position and updates the map without manual refresh; on signal loss, it shows the last known position with a "no signal" marker. |
+| **Preconditions** | The bus has a registered and connected GPS device; the guardian has students linked to the bus. |
+| **Postconditions** | The bus position updates on the map; the positions are stored in the history. |
+| **Business rules** | INV-GPS-001 through INV-GPS-003; INV-LOC-001 through INV-LOC-004; FR-6.1, FR-6.2, FR-6.3. |
+| **Traceability** | FR-6.1, FR-6.2, FR-6.3 · HU-GPS-002 |
+
+**Main flow:**
+
+1. The VT03F GPS device sends the position (latitude, longitude, speed, course, and GPS date) through TCP.
+2. The telemetry service validates the device, processes the position, and persists it as `GpsLocation`.
+3. The service publishes the received-position event.
+4. The service updates the current location of the bus and exposes it for consultation.
+5. The guardian's application receives the real-time update and shows it on the map.
+6. If no position arrives within the configured threshold, the telemetry service detects the signal loss and generates the corresponding alert.
+
+**Exceptions:**
+
+- E1: Signal loss → the signal-loss event is published and the last position is shown with a "no signal" marker.
+- E2: Invalid position (latitude/longitude out of range) → discarded and recorded.
+
+---
+
+### UC-17 Report incident
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | Driver |
+| **Description** | The driver reports an incident or emergency during the trip indicating the type, an optional description, and the GPS location; the system automatically notifies the school and the guardians of the students on board. |
+| **Preconditions** | There is an active trip; the driver is authenticated. |
+| **Postconditions** | An incident-type `Alert` is created with its recipients; the school and the guardians of the students on board are notified. |
+| **Business rules** | INV-ALT-001 through INV-ALT-003 (valid type, bus, and message); FR-8.1, FR-8.2. |
+| **Traceability** | FR-8.1, FR-8.2 · HU-INCIDENT-001 |
+
+**Main flow:**
+
+1. The driver selects "Report incident".
+2. Selects the incident type, writes an optional description, and can attach the current location.
+3. The system validates the data and creates the incident-type `Alert`.
+4. The system resolves the school and the guardians of the students on board.
+5. The system notifies the recipients and records the delivery traceability.
+
+**Exceptions:**
+
+- E1: No active trip → the system asks to start the trip before reporting.
+
+---
+
+### UC-18 Manage profile and contact data
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | ADMIN, SUPER_ADMIN |
+| **Description** | The administrator views their personal information and manages the change of email, password, and phone through code verification flows, in accordance with the policies of the configuration service. |
+| **Preconditions** | The user is authenticated with the ADMIN or SUPER_ADMIN role. |
+| **Postconditions** | The personal data changes after code verification; session tokens are renewed or revoked accordingly. |
+| **Business rules** | Password and code-verification policies of the configuration service; email and phone format validation. |
+| **Traceability** | Master profile data (Security/UserManagement). |
+
+**Main flow:**
+
+1. The user opens their profile information.
+2. Selects the desired change (email, password, or phone).
+3. The system requests the verification code through the current medium; the user enters it.
+4. The system validates the code, applies the change, and confirms the operation.
+
+**Exceptions:**
+
+- E1: Incorrect or expired code → a limited number of retries is allowed.
+- E2: The new data already exists in the system (email or document) → the change is rejected.
+
+---
+
+### UC-19 Customize theme and language
+
+| Field | Description |
+|-------|-------------|
+| **Actors** | All roles (client applications) |
+| **Description** | The user customizes the interface colors (theme) and selects the language among at least four options; the customization is completely resolved in the client. |
+| **Preconditions** | The user is authenticated (although the theme can also be allowed in public mode). |
+| **Postconditions** | The interface shows the selected theme and language; the preference is saved on the device. |
+| **Business rules** | FR-10.1, FR-10.2 (no interaction with services or messaging). |
+| **Traceability** | FR-10.1, FR-10.2 · HU-UI-001, HU-UI-002 |
+
+**Main flow:**
+
+1. The user opens the application settings.
+2. Selects the theme and the language.
+3. The application applies the changes immediately and saves the preference.---
+
+# 4. Sequence diagrams
+
+The sequence diagrams represent the temporal interaction between the actors and the system components for the critical or complex use cases. The authentication, account creation, assignment, trip, QR scanning, telemetry, alert, and incident flows are prioritized.
+
+## 4.1 SEQ-01 — Sign-in and session renewal
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User
+    participant App as Client application
+    participant GW as API Gateway
+    participant IAM as iam-service
+    participant Redis as Redis
+    participant DB as Database
+
+    User->>App: Enters identity document and password
+    App->>GW: Authentication request
+    GW->>IAM: Validates credentials (identity injected)
+    IAM->>DB: Queries Profile (status and role)
+    DB-->>IAM: Profile data
+    alt Profile INACTIVE or invalid credentials
+        IAM-->>App: Error 401 (access denied)
+    else Profile ACTIVE and valid credentials
+        IAM->>Redis: Registers session and revocation list
+        IAM-->>App: Access token (1 h) and refresh token (7 days)
+    end
+    App-->>User: Session started according to role
+
+    Note over App,IAM: Session renewal (expired token)
+    App->>GW: Requests renewal with refresh token
+    GW->>IAM: Validates refresh token
+    IAM->>Redis: Checks that the token is not revoked
+    IAM-->>App: New token pair (previous refresh invalidated)
+```
+
+**Explanation.** The authentication flow validates the user's profile and role (RBAC), issues the access and refresh tokens, and registers the session in the ephemeral state (Redis). Renewal validates that the refresh token is not revoked and issues a new token pair, which prevents the concurrent reuse of the same refresh token (see section 10).
+
+## 4.2 SEQ-02 — Account creation with events (person → profile)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as Administrator
+    participant App as Web application
+    participant GW as API Gateway
+    participant UM as user-management-service
+    participant Broker as Kafka
+    participant IAM as iam-service
+    participant DB as Database
+
+    Admin->>App: Enters the person's data and role
+    App->>GW: Account creation request
+    GW->>UM: Creates Person
+    UM->>UM: Validates document uniqueness and data format
+    UM->>DB: Persists Person
+    UM->>Broker: Publishes person-created event (per role)
+    Broker-->>IAM: Delivers the event
+    IAM->>IAM: Creates Profile with the assigned role
+    IAM->>DB: Persists Profile (ACTIVE status)
+    IAM-->>UM: Confirms processing
+    UM-->>App: Account created
+    App-->>Admin: Visual confirmation
+```
+
+**Explanation.** Account creation is a distributed flow: the user management service persists the `Person` and publishes the event corresponding to the role (student, parent, driver, or administrator); the identity service consumes the event and creates the security `Profile`. This separation keeps the user management and security contexts decoupled.
+
+## 4.3 SEQ-03 — Bus-to-route assignment and telemetry association
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as Administrator
+    participant App as Web application
+    participant GW as API Gateway
+    participant RTE as route-service
+    participant Broker as Kafka
+    participant GPS as gps-service
+    participant BUS as bus-service
+
+    Admin->>App: Assigns bus to the route
+    App->>GW: Bus–route assignment request
+    GW->>RTE: Creates RouteBusAssignment
+    RTE->>RTE: Validates uniqueness (one bus per route, one route per bus)
+    RTE->>Broker: Publishes bus-assigned-to-route event
+    Broker-->>GPS: Delivers the event
+    GPS->>BUS: Queries the bus GPS device (gRPC/REST)
+    BUS-->>GPS: Associated GPS device
+    GPS->>GPS: Associates the bus tracking with the route
+    GPS-->>RTE: Confirms association
+    RTE-->>App: Assignment completed
+    App-->>Admin: Visual confirmation
+```
+
+**Explanation.** The bus-to-route assignment validates the `Route` aggregate constraints (one bus per route and one route per bus) and, through an asynchronous event, the telemetry context associates the bus GPS device so that its position can be reported during the route execution.
+
+## 4.4 SEQ-04 — Trip start (route execution)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Driver as Driver
+    participant App as Mobile application
+    participant GW as API Gateway
+    participant RTE as route-service
+    participant Broker as Kafka
+    participant NTF as notification-service
+    participant DB as Database
+
+    Driver->>App: Selects "Start trip"
+    App->>GW: Trip start request
+    GW->>RTE: Creates RouteExecution
+    RTE->>RTE: Checks that no active trip exists for the bus
+    alt An active trip already exists
+        RTE-->>App: Error: active trip for the bus
+    else No active trip
+        RTE->>DB: Persists RouteExecution (IN_PROGRESS)
+        RTE->>Broker: Publishes trip status change event
+        Broker-->>NTF: Delivers the event
+        NTF-->>App: Route start confirmation
+        App-->>Driver: Trip started
+    end
+```
+
+**Explanation.** Trip start applies the business rule of a single active trip per bus (FR-7.1). When the `RouteExecution` is created in `IN_PROGRESS` status, the status change event feeds the interested consumers (notifications) without coupling the route service to the communication channels.
+
+## 4.5 SEQ-05 — QR boarding registration
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Driver as Driver
+    participant App as Mobile application
+    participant GW as API Gateway
+    participant NTF as notification-service
+    participant IAM as iam-service
+    participant RTE as route-service
+    participant Broker as Kafka
+    participant Push as Push provider
+    actor Parent as Guardian
+
+    Driver->>App: Scans the student's QR code (boarding)
+    App->>GW: Boarding registration request
+    GW->>NTF: Processes the scan
+    NTF->>IAM: Resolves the student identity
+    IAM-->>NTF: Student identity
+    NTF->>RTE: Checks the student assignment to the active route
+    alt Student not assigned or with active boarding
+        RTE-->>NTF: Validation rejected
+        NTF-->>App: Error: boarding validation
+    else Valid student
+        NTF->>NTF: Records Boarding (type BOARDING)
+        NTF->>Broker: Publishes scan/registered boarding event
+        Broker-->>Push: Delivers event for notification
+        Push-->>Guardian: Boarding notification (time and stop)
+        NTF-->>App: Boarding recorded
+        App-->>Driver: Student confirmed on board
+    end
+```
+
+**Explanation.** The boarding scan crosses information from two contexts: the notification service resolves the student identity (security context) and validates the assignment to the active route (routes context). Once validated, the `Boarding` is recorded and the event that triggers the real-time notification to the guardian is published.
+
+## 4.6 SEQ-06 — QR alighting registration
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Driver as Driver
+    participant App as Mobile application
+    participant GW as API Gateway
+    participant NTF as notification-service
+    participant RTE as route-service
+    participant Broker as Kafka
+    participant Push as Push provider
+    actor Parent as Guardian
+
+    Driver->>App: Scans the student's QR code (alighting)
+    App->>GW: Alighting registration request
+    GW->>NTF: Processes the scan
+    NTF->>RTE: Checks the student active boarding
+    alt No active boarding
+        RTE-->>NTF: No active boarding
+        NTF-->>App: Error: alighting without registered boarding
+    else With active boarding
+        NTF->>NTF: Records Boarding (type EXIT)
+        NTF->>Broker: Publishes alighting-registered event
+        Broker-->>Push: Delivers event for notification
+        Push-->>Guardian: Alighting notification (location and time)
+        NTF-->>App: Alighting recorded
+        App-->>Driver: Student confirmed at stop
+    end
+```
+
+**Explanation.** Alighting requires that the student has a previous active boarding (FR-4.3); otherwise, the operation is rejected. On alighting, the notification to the guardian includes the location and time of the event. The alighting record is associated with the current stop of the bus in the route execution.
+
+## 4.7 SEQ-07 — GPS position reception and live update
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Device as VT03F GPS device
+    participant GPS as gps-service
+    participant DB as Database
+    participant Broker as Kafka
+    participant BUS as bus-service
+    participant Edge as WebSocket/SSE (edge)
+    actor Parent as Guardian
+
+    Device->>GPS: Sends position via TCP (lat, long, speed, course, date)
+    GPS->>GPS: Validates the registered device (IMEI)
+    GPS->>DB: Persists GpsLocation
+    GPS->>Broker: Publishes received-position event
+    Broker-->>BUS: Delivers the event
+    BUS->>BUS: Updates the current bus location
+    BUS-->>Edge: New position available
+    Edge-->>Guardian: Real-time map update
+```
+
+**Explanation.** The telemetry context receives the device positions, validates them against the registered devices, persists them in the history, and publishes the received-position event. The fleet context consumes the event to update the current bus location, which is exposed to the clients through a real-time channel (WebSocket or SSE) at the edge.
+
+## 4.8 SEQ-08 — GPS signal-loss detection and alert
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant GPS as gps-service
+    participant Timer as Signal timer
+    participant Broker as Kafka
+    participant NTF as notification-service
+    participant Push as Push provider
+    actor Parent as Guardian
+
+    Timer->>GPS: Queries the last position received from the bus
+    GPS->>GPS: Evaluates the configured signal threshold
+    alt Reception within the threshold
+        GPS->>GPS: Continues normal monitoring
+    else Threshold exceeded (signal loss)
+        GPS->>Broker: Publishes signal-loss event
+        Broker-->>NTF: Delivers the event
+        NTF->>NTF: Creates signal-loss Alert
+        NTF->>Push: Sends alert with the last known position
+        Push-->>Guardian: "No signal" alert with location
+    end
+```
+
+**Explanation.** The telemetry service evaluates the time elapsed since the last received position (domain service `GpsSignalService`). When the threshold is exceeded, the signal-loss event is published; the notification service creates the alert and delivers it to the guardian with the last known position and a "no signal" marker.
+
+## 4.9 SEQ-09 — Incident report and notification
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Driver as Driver
+    participant App as Mobile application
+    participant GW as API Gateway
+    participant NTF as notification-service
+    participant RTE as route-service
+    participant DB as Database
+    participant Push as Push provider
+    actor Parent as Guardian
+    actor School as School
+
+    Driver->>App: Reports incident (type, description, location)
+    App->>GW: Incident report request
+    GW->>NTF: Creates incident-type Alert
+    NTF->>RTE: Queries the active execution and students on board
+    RTE-->>NTF: Students on board and school
+    NTF->>DB: Persists Alert and AlertRecipient
+    NTF->>Push: Notifies the school
+    Push-->>School: Incident alert
+    NTF->>Push: Notifies the guardians of students on board
+    Push-->>Guardian: Trip incident alert
+    NTF-->>App: Incident recorded
+    App-->>Driver: Report confirmation
+```
+
+**Explanation.** The incident report creates an incident-type `Alert` and determines the recipients from the active route execution: the school and the guardians of the students on board. The delivery traceability is recorded through the `Alert` and `AlertRecipient` entities.
+
+---
+
+# 5. Activity diagrams
+
+The activity diagrams describe the business process flows and the complex use cases, including lanes (swimlanes) per actor or component, decisions, forks, and parallel flows.
+
+## 5.1 ACT-01 — Route management (creation with stops and schedules)
+
+```mermaid
+flowchart TB
+    A[Administrator selects\nNew route] --> B[Enters name and school]
+    B --> C[Adds stops in order]
+    C --> D[Defines departure and arrival schedules]
+    D --> E{Duplicate stops\nor duplicate route?}
+    E -- Yes --> C
+    E -- No --> F[Validates that the route\nbelongs to the school]
+    F --> G[Persists the route and its stops]
+    G --> H[Publishes the route-created event]
+    H --> I[Notifies the dependent contexts\ntrips and boardings]
+    I --> J[End]
+```
+
+**Explanation.** The route creation flow walks through data capture, stop ordering, and schedule definition, and validates the `Route` aggregate rules (uniqueness, stops without duplicates in the same position). On persistence, the domain event notifies the contexts that depend on the route (boarding and telemetry).
+
+## 5.2 ACT-02 — QR boarding and alighting (swimlanes)
+
+```mermaid
+flowchart TB
+    subgraph DRIVER["Driver (mobile application)"]
+        direction TB
+        C1[Selects boarding or alighting operation] --> C2[Scans the student's QR code]
+        C2 --> C3[Receives the validation result]
+    end
+
+    subgraph SYSTEM["System (backend services)"]
+        direction TB
+        S1[Resolves the student identity] --> S2{Boarding operation?}
+        S2 -- Yes --> S3{Student assigned\nto the active route?}
+        S3 -- Yes --> S4[Records Boarding type BOARDING]
+        S3 -- No --> S5[Rejects the boarding]
+        S2 -- No --> S6{Active boarding exists?}
+        S6 -- Yes --> S7[Records Boarding type EXIT]
+        S6 -- No --> S8[Rejects the alighting]
+        S4 --> S9[Publishes registered boarding event]
+        S7 --> S9
+        S9 --> S10[Generates and sends the notification to the guardian]
+    end
+
+    subgraph GUARDIAN["Guardian"]
+        direction TB
+        A1[Receives the real-time notification]
+    end
+
+    C3 --> SYSTEM
+    S10 --> GUARDIAN
+```
+
+**Explanation.** The scanning flow is distributed in three lanes: the driver captures the code; the system validates the operation according to the type (boarding: assignment to the route; alighting: active boarding) and records the `Boarding`; and the guardian receives the real-time notification. The system decisions separate the success and rejection paths without blocking the driver's flow.
+
+## 5.3 ACT-03 — Trip finish with pending-alighting validation
+
+```mermaid
+flowchart TB
+    A[Driver selects\nFinish trip] --> B[The system queries the active execution]
+    B --> C{Do all students\non board have their alighting recorded?}
+    C -- No --> D[Identifies the students with pending alighting]
+    D --> E[Requests to record the missing drop-offs]
+    E --> F[The driver records the pending alightings]
+    F --> C
+    C -- Yes --> G[Finishes the route execution]
+    G --> H[Publishes the finish event]
+    H --> I[Notifies the guardians of the end of the trip]
+    I --> J[End]
+```
+
+**Explanation.** Trip finish applies rule FR-7.2: no pending alightings may remain. The flow iterates until all students on board have their alighting recorded, and only then does the `RouteExecution` finish and the end of the trip get notified.
+
+## 5.4 ACT-04 — GPS signal-loss alert detection
+
+```mermaid
+flowchart TB
+    A[Telemetry service receives positions] --> B{Each position within\nthe configured signal threshold?}
+    B -- Yes --> C[Updates the current bus location]
+    C --> A
+    B -- No --> D[Detects the signal loss]
+    D --> E[Publishes the signal-loss event]
+    E --> F[Alert service creates the alert]
+    F --> G[Notification service delivers the alert]
+    G --> H[Guardian sees the last position with\nthe no-signal marker]
+    H --> I[End]
+```
+
+**Explanation.** Signal monitoring is a continuous process: while positions arrive within the threshold, the system updates the bus location; when the time since the last position exceeds the threshold, the domain service `GpsSignalService` detects the loss and the event → alert → guardian notification chain is triggered.
+
+## 5.5 ACT-05 — Incident report and recipient notification
+
+```mermaid
+flowchart TB
+    A[Driver selects\nReport incident] --> B[Enters type, optional description,\nand location]
+    B --> C{Is there an active trip?}
+    C -- No --> D[The trip start is requested]
+    D --> E[End: the incident is not recorded]
+    C -- Yes --> F[Validates the incident data]
+    F --> G[Persists the incident alert]
+    G --> H[Determines the school and the guardians\nof the students on board]
+    H --> I[Notifies the school\nand the guardians in parallel]
+    I --> J[Records the delivery traceability]
+    J --> K[End]
+```
+
+**Explanation.** The incident report requires an active trip; once validated, the alert is persisted and the recipient list is determined from the students on board. The sending to the school and to the guardians is performed in parallel, and the delivery is recorded for traceability.
+
+## 5.6 ACT-06 — Password recovery
+
+```mermaid
+flowchart TB
+    A[User requests the recovery] --> B[Enters the registered email]
+    B --> C{Does the account exist\nand does the medium match?}
+    C -- No --> D[Generic validation message]
+    D --> E[End]
+    C -- Yes --> F[Generates a single-use code with expiration]
+    F --> G[Sends the code by email or SMS]
+    G --> H[User enters the code]
+    H --> I{Valid\nand current code?}
+    I -- No --> J[Limited retries; then the request is blocked]
+    J --> K[End]
+    I -- Yes --> L[User defines the new password]
+    L --> M{Does it comply\nwith the security policy?}
+    M -- No --> L
+    M -- Yes --> N[Updates the password hash]
+    N --> O[Invalidates the active tokens of the account]
+    O --> P[Redirects to sign in]
+    P --> Q[End]
+```
+
+**Explanation.** The recovery flow combines contact-medium verification with a single-use code and the application of the password policy. The retry restrictions and per-IP limits protect the operation against brute-force attempts.
+
+---
+
+# 6. State diagrams
+
+The state diagrams model the lifecycle of the system objects with relevant states, transitions, events, conditions (guards), and actions.
+
+## 6.1 EST-01 — Profile lifecycle (`Profile`)
+
+```mermaid
+stateDiagram-v2
+    [*] --> INACTIVE : The profile is created
+    INACTIVE --> ACTIVE : activate()
+    ACTIVE --> INACTIVE : deactivate()
+    ACTIVE --> [*] : The profile is invalidated
+    INACTIVE --> [*] : The profile is invalidated
+```
+
+**Explanation.** The profile is born inactive and moves to `ACTIVE` through the `activate()` action; deactivation (action `deactivate()`) blocks the user's access to the system (INV-PRO-003) and their assignments. The profile is the object on which access control is based.
+
+## 6.2 EST-02 — Route lifecycle (`Route`)
+
+```mermaid
+stateDiagram-v2
+    [*] --> CREATED : The route is created
+    CREATED --> ACTIVE : activate() (requires complete configuration)
+    ACTIVE --> INACTIVE : deactivate()
+    INACTIVE --> ACTIVE : activate()
+    CREATED --> [*] : Deleted without active trips
+```
+
+**Explanation.** The route is created in `CREATED` status and can only be activated when its configuration (stops, schedules, and assignments) is complete (INV-ROU-003). From the `ACTIVE` and `INACTIVE` states it can be activated again; deletion only proceeds if no active trip depends on it.
+
+## 6.3 EST-03 — Route execution lifecycle (`RouteExecution` / trip)
+
+```mermaid
+stateDiagram-v2
+    [*] --> SCHEDULED : The execution is scheduled
+    SCHEDULED --> IN_PROGRESS : The driver starts the trip
+    IN_PROGRESS --> FINISHED : The trip finishes (no pending alightings)
+    IN_PROGRESS --> CANCELLED : The driver cancels the trip
+    FINISHED --> SCHEDULED : A new execution is scheduled
+    CANCELLED --> SCHEDULED : A new execution is scheduled
+```
+
+**Explanation.** The route execution (trip) moves from `SCHEDULED` to `IN_PROGRESS` when the driver starts the trip; only **one** active execution per bus exists (FR-7.1). The transition to `FINISHED` requires that no pending alightings remain (FR-7.2); cancellation preserves the traceability of the recorded events. Once finished or cancelled, a new execution can be scheduled.
+
+## 6.4 EST-04 — Boarding lifecycle (`Boarding`)
+
+```mermaid
+stateDiagram-v2
+    [*] --> QR_SCANNED : The driver scans the QR code
+    QR_SCANNED --> BOARDING_REGISTERED : Validated registration (BOARDING or EXIT)
+    QR_SCANNED --> [*] : Rejected scan (failed validation)
+```
+
+**Explanation.** The boarding is born when the QR code is scanned (`QR_SCANNED`) and, after the validation of the business rules (student assignment, active boarding for alighting, valid stop and bus), it is recorded (`BOARDING_REGISTERED`), belonging to the `Boarding` aggregate.
+
+## 6.5 EST-05 — GPS device lifecycle (`GpsDevice`)
+
+```mermaid
+stateDiagram-v2
+    [*] --> REGISTERED : The device is registered (IMEI)
+    REGISTERED --> CONNECTED : connect() (receives positions)
+    CONNECTED --> DISCONNECTED : disconnect() (signal loss)
+    DISCONNECTED --> CONNECTED : reconnect() (reception resumes)
+    CONNECTED --> [*] : The device is retired
+```
+
+**Explanation.** The GPS device is born `REGISTERED` and moves to `CONNECTED` when it starts receiving valid positions. In the event of signal loss, it moves to `DISCONNECTED` and can return to `CONNECTED` when reception is restored. Only registered devices can send valid location data (INV-GPS-002).
+
+## 6.6 EST-06 — Alert lifecycle (`Alert`)
+
+```mermaid
+stateDiagram-v2
+    [*] --> CREATED : The alert is created (type and recipients)
+    CREATED --> DELIVERING : The delivery starts
+    DELIVERING --> DELIVERED : Delivery confirmed
+    DELIVERING --> FAILED : Channel failure (retries exhausted)
+    FAILED --> DELIVERING : Retry with exponential backoff
+    DELIVERED --> [*] : Alert attended or expired
+```
+
+**Explanation.** The alert is created from a significant event (signal loss, prolonged stop, or incident), is delivered through the corresponding channel, and remains `DELIVERED` once confirmed. If the channel fails, the alert is retried with exponential backoff; after exhausting the retries it moves to `FAILED` and is sent to the dead letter queue (DLQ) for analysis.
+
+---
+
+# 7. Data flow model
+
+The data flow model (DFD) complements the analysis methodology; it is presented as an optional model that describes the transformation of the data among the actors, processes, and data stores of the system.
+
+## 7.1 Context diagram (level 0)
+
+```mermaid
+flowchart LR
+    ADMIN["Administrator"] -->|Management data| S(((Guardian Escolar)))
+    SADMIN["Super-administrator"] -->|Management data| S
+    GUARD["Guardian"] -->|Route queries and notifications| S
+    DRIVER["Driver"] -->|Trip and scanning operations| S
+    STUDENT["Student"] -->|QR code and queries| S
+    GPSDEV["VT03F GPS device"] -->|Position via TCP| S
+    S -->|Notifications and alerts| GUARD
+    S -->|Notifications and alerts| DRIVER
+    S -->|Incident notifications| SCHOOL["School"]
+    S -->|Current QR code| STUDENT
+    S -->|Status and confirmations| ADMIN
+    S -->|Status and confirmations| SADMIN
+    S -->|Sending request| PUSH["Push / SMS / email provider"]
+    S -->|Map data| MAP["Map service"]
+```
+
+**Explanation.** Level 0 shows the system boundary with seven external entities: administrator, super-administrator, guardian, driver, student, GPS device, and external providers (push/SMS/email and maps). All client application interactions pass through the gateway; the GPS device enters through the telemetry TCP protocol.
+
+## 7.2 Level-1 data flow diagram
+
+```mermaid
+flowchart LR
+    ADMIN["Administrator"] -->|People, families, buses, routes data| P3((P3 User and\nfamily management))
+    ADMIN -->|Fleet, route, and assignment data| P4((P4 Fleet\nmanagement))
+    ADMIN -->|Routes, stops,\nand assignments data| P5((P5 Route\nmanagement))
+    ADMIN -->|School data| P6((P6 School\nmanagement))
+    GUARD["Guardian"] -->|Credentials| P1((P1 Authentication))
+    GUARD -->|Route query| P7((P7 Route\nquery))
+    GUARD -->|Notification delegation| P8((P8 Notification\nand alerts))
+    DRIVER["Driver"] -->|Credentials| P1
+    DRIVER -->|Trip start and finish| P9((P9 Trip\nmanagement))
+    DRIVER -->|Boarding and alighting QR scan| P10((P10 Boarding\nmanagement))
+    DRIVER -->|Incident report| P11((P11 Incident\nmanagement))
+    STUDENT["Student"] -->|QR code request| P10
+    GPSDEV["GPS device"] -->|Position| P12((P12 GPS\ntelemetry))
+    P3 --> D1[(People)]
+    P3 --> D2[(Families)]
+    P4 --> D3[(Buses)]
+    P5 --> D4[(Routes)]
+    P5 --> D5[(Stops)]
+    P5 --> D6[(Assignments)]
+    P6 --> D7[(Schools)]
+    P1 --> D8[(Profiles and roles)]
+    P7 --> D4
+    P9 --> D9[(Route executions)]
+    P10 --> D10[(Boardings)]
+    P8 --> D11[(Alerts and notifications)]
+    P11 --> D11
+    P12 --> D12[(GPS positions)]
+    P12 --> D13[(GPS devices)]
+    P8 -->|Notifications and alerts| GUARD
+    P8 -->|Incident notifications| SCHOOL["School"]
+    P11 -->|Incident alert| P8
+    P12 -->|Signal loss| P8
+```
+
+**Explanation.** Level 1 decomposes the system into twelve processes: authentication (P1), user and family management (P3), fleet (P4), routes (P5), schools (P6), route query (P7), notification and alerts (P8), trips (P9), boardings (P10), incidents (P11), and GPS telemetry (P12). Each process updates its data stores and communicates through data flows; the processes P8, P10, P11, and P12 exchange events asynchronously, which is represented with the flows between them.
+
+## 7.3 Data dictionary
+
+| Element | Type | Composition / description |
+|---------|------|---------------------------|
+| **CredentialsData** | Flow | identityDocument, password |
+| **PersonData** | Flow | id, name, lastName, identificationNumber, email, phone |
+| **RouteData** | Flow | id, name, campuseId, stopList (order), schedules (startTime, endTime) |
+| **QRScan** | Flow | qrCode, operationType (ON_BOARD/OFF_BOARD), busId, timestamp |
+| **GPSPosition** | Flow | gpsDeviceId, latitude, longitude, speed, course, dateTime |
+| **Notification** | Flow | destinationProfileId, channel (push/SMS/email), message, sourceEvent |
+| **D1 People** | Store | Person (id, name, lastName, identificationNumber, email, phone) |
+| **D2 Families** | Store | Family, FamilyMember |
+| **D3 Buses** | Store | Bus (id, plate, capacity, soatValidity, campuseId, gpsDeviceId, modelId) |
+| **D4 Routes** | Store | Route (id, name, campuseId, startTime, endTime), RouteStop |
+| **D5 Stops** | Store | Stop (id, name, address, cityId, schoolId) |
+| **D6 Assignments** | Store | RouteBusAssignment, RouteStudentAssignment |
+| **D7 Schools** | Store | School, SchoolCampus |
+| **D8 Profiles and roles** | Store | Profile, Role, Permissions, SessionProfile |
+| **D9 Route executions** | Store | RouteExecution (status: SCHEDULED/IN_PROGRESS/FINISHED/CANCELLED) |
+| **D10 Boardings** | Store | Boarding (id, profileId, routeExecutionId, routeStopId, boardingType, dateTime) |
+| **D11 Alerts and notifications** | Store | Alert, AlertType, AlertRecipient |
+| **D12 GPS positions** | Store | GpsLocation (id, gpsDeviceId, latitude, longitude, speed, course, dateTime) |
+| **D13 GPS devices** | Store | GpsDevice (id, imei, gpsStatus, lastConnection) |---
+
+# 8. Process logic description
+
+## 8.1 Business rules
+
+The system's business rules are modeled as domain invariants (user management, security, schools, fleet, routes, telemetry, boardings, and alerts contexts) and as aggregate invariants.
+
+### 8.1.1 Entity invariants
+
+| Rule | Description |
+|------|-------------|
+| INV-PER-001 | A person's identity document number must be unique. |
+| INV-PER-002 | The person's first and last names cannot be empty. |
+| INV-PER-003 | The email address must have a valid format. |
+| INV-PRO-001 | A profile must reference an existing person. |
+| INV-PRO-002 | A profile must have a valid role. |
+| INV-PRO-003 | An inactive profile cannot start an authenticated session. |
+| INV-FAM-002 | An active family must have at least one valid member. |
+| INV-SCH-001 | A school must have a valid name. |
+| INV-BUS-001 | A bus plate must be unique. |
+| INV-BUS-004 | A GPS device cannot be assigned to several buses simultaneously. |
+| INV-ROU-004 | A route must not contain duplicate stops in the same position. |
+| INV-GPS-002 | Only registered GPS devices can send valid location data. |
+| INV-LOC-001 | Latitude must be between -90 and 90. |
+| INV-LOC-002 | Longitude must be between -180 and 180. |
+| INV-LOC-003 | Speed cannot be negative. |
+| INV-BRD-004 | The boarding type must be BOARDING or EXIT. |
+| INV-ALT-003 | The alert message cannot be empty. |
+
+### 8.1.2 Aggregate invariants
+
+| Rule | Description |
+|------|-------------|
+| AGGR-INV-001 | A route must belong to a school. |
+| AGGR-INV-002 | A route cannot contain duplicate stops in the same position. |
+| AGGR-INV-003 | A student cannot be assigned to the same route more than once. |
+| AGGR-INV-004 | A bus cannot be assigned to the same route more than once. |
+| AGGR-INV-005 | A bus must have a unique plate. |
+| AGGR-INV-007 | A GPS device cannot be assigned simultaneously to several buses. |
+| AGGR-INV-008 | A GPS device must have a unique IMEI. |
+| AGGR-INV-009 | A GPS location must belong to a registered GPS device. |
+| AGGR-INV-010 | Latitude and longitude must contain valid geographic values. |
+| AGGR-INV-011 | A boarding event must reference a student. |
+| AGGR-INV-012 | A boarding event must reference a bus. |
+| AGGR-INV-013 | A boarding event must reference a stop. |
+| AGGR-INV-014 | The boarding type must be valid. |
+
+## 8.2 Key algorithms
+
+### 8.2.1 Student-to-route assignment validation
+
+```text
+Domain service: RouteAssignmentService
+Method: validateStudentAssignment(route, studentId)
+
+1. If the route already has the student assigned (route.hasStudent(studentId)):
+       Throw domain exception: "The student is already assigned to this route"
+2. If the indicated stop does not belong to the route:
+       Throw domain exception: "The boarding/alighting stop does not belong to the route"
+3. If the student does not belong to the route's school context:
+       Throw domain exception: "The student does not belong to the route's school"
+4. Record the assignment (RouteStudentAssignment)
+```
+
+### 8.2.2 QR boarding and alighting scan validation
+
+```text
+Domain service: BoardingValidationService
+Method: validateScan(student, bus, stop, operationType, activeTrip)
+
+1. If no active trip exists for the bus:
+       Throw exception: "There is no active trip for this bus"
+2. If the student identity cannot be resolved from the QR code:
+       Throw exception: "The QR code is invalid or has expired"
+3. If operationType == BOARDING (boarding):
+       3.1 If the student is not assigned to the active trip's route:
+               Throw exception: "The student is not assigned to this route"
+       3.2 If the student already has an active boarding (type BOARDING without alighting):
+               Throw exception: "The student is already on board"
+       3.3 Record Boarding(type = BOARDING)
+4. If operationType == EXIT (alighting):
+       4.1 If the student does not have an active boarding:
+               Throw exception: "The student does not have an active boarding"
+       4.2 Record Boarding(type = EXIT) at the current stop
+5. Persist the event and publish the corresponding domain event
+```
+
+### 8.2.3 GPS signal-loss detection
+
+```text
+Domain service: GpsSignalService
+Method: detectSignalLoss(lastReception, currentTime, thresholdMinutes)
+
+1. difference = currentTime - lastReception
+2. If difference > thresholdMinutes * 60 * 1000:
+       Return true (signal loss)
+   Else:
+       Return false
+3. When the loss is detected, the GpsSignalLost event is published,
+   which is consumed by the alerts context to create the alert
+   and notify the guardian with the last known position.
+```
+
+### 8.2.4 Trip finish with pending alightings
+
+```text
+Process: FinishTrip(routeExecutionId)
+
+1. Get the active route execution (IN_PROGRESS)
+2. Get the bus's active boardings (type BOARDING without a later EXIT)
+3. If active boardings exist:
+       3.1 Identify the students with pending alighting
+       3.2 Return the list to the driver to record the drop-offs
+       3.3 Finish without changing the status
+4. If no active boardings exist:
+       4.1 Change the execution status to FINISHED
+       4.2 Publish the trip-finish event
+       4.3 Notify the guardians of the trip finish
+```
+
+### 8.2.5 Session renewal with concurrency protection
+
+```text
+Process: RenewSession(refreshToken)
+
+1. Validate the signature and validity of the refresh token
+2. Verify in the revocation list that the token is not invalidated
+3. Verify that the token has not been used (single-flight)
+4. If it was already used: reject the renewal (possible reuse)
+5. Mark the token as used and invalidate the previous session
+6. Generate a new token pair (1-hour access and 7-day refresh)
+7. Register the new session in the ephemeral state
+```
+
+## 8.3 Decision tables
+
+### 8.3.1 QR scan decision
+
+| Condition | Boarding (BOARDING) | Alighting (EXIT) |
+|-----------|---------------------|------------------|
+| An active trip of the bus exists | Required | Required |
+| The QR code resolves to a valid student | Required | Required |
+| The student is assigned to the trip's route | Required | Irrelevant |
+| The student has an active boarding | Must not exist | Required |
+| Result | Boarding record + notification | Alighting record + notification with location |
+
+### 8.3.2 Trip start decision
+
+| Condition | Start trip | Finish trip |
+|-----------|------------|-------------|
+| The bus has an assigned route | Required | — |
+| No active execution of the bus exists | Required | — |
+| An active execution (IN_PROGRESS) exists | — | Required |
+| No pending alightings remain | — | Required |
+| Result | `RouteExecution` in `IN_PROGRESS` | `RouteExecution` in `FINISHED` (or `CANCELLED`) |
+
+### 8.3.3 Bus–route assignment decision
+
+| Condition | Assign bus | Result |
+|-----------|------------|--------|
+| The bus exists and belongs to the school | Required | — |
+| The bus is not assigned to another route | Required | — |
+| The route does not have that bus assigned | Required | — |
+| Result | — | `RouteBusAssignment` created; telemetry associated |
+
+## 8.4 Important validations and calculations
+
+| Validation / calculation | Description |
+|--------------------------|-------------|
+| Geographic values | Latitude must be between -90 and 90 and longitude between -180 and 180; speed cannot be negative. |
+| GPS signal threshold | The time elapsed without reception is compared against the configured threshold; when exceeded, the signal-loss event is generated. |
+| QR code validity | The student's code rotates or expires according to the configured policy; scan validations reject expired codes. |
+| Master data uniqueness | Person document, bus plate, and GPS device IMEI are unique at the system level. |
+| Password policy | Length, complexity, and expiration defined by the configuration service; validation before changing or resetting. |
+| Request limits | Speed limits per token and IP applied at the gateway and in the recovery flows. |
+
+---
+
+# 9. Event, error, and exception handling
+
+## 9.1 System event catalog
+
+### 9.1.1 Domain events
+
+| Event | Aggregate | Origin | Recipients / use |
+|-------|-----------|--------|------------------|
+| `PersonRegistered` | Person | User management | Security profile creation |
+| `FamilyCreated` | Family | User management | Member linkage |
+| `ProfileCreated` | Profile | Security | Profile availability |
+| `SessionStarted` | Profile | Security | Session registration |
+| `SchoolCreated` | School | School management | Transportation contexts |
+| `BusRegistered` | Bus | Fleet management | Route and telemetry association |
+| `RouteCreated` | Route | Route management | Route availability |
+| `RouteBusAssigned` | Route | Route management | Telemetry association with the bus |
+| `StudentAssignedToRoute` | Route | Route management | Boarding authorization |
+| `RouteStopAdded` | Route | Route management | Available stops |
+| `StudentQrCodeGenerated` | Boarding | Boarding | Student's current QR code |
+| `BoardingQrScanned` | Boarding | Boarding | Validation and start of the record |
+| `BoardingRegistered` | Boarding | Boarding | Notification to the guardian |
+| `GpsDeviceRegistered` | GpsDevice | Telemetry | Device availability |
+| `GpsLocationReceived` | GpsDevice | Telemetry | Bus location update |
+| `GpsSignalLost` | GpsDevice | Telemetry | Signal-loss alert creation |
+| `AlertCreated` | Alert | Alerts | Notification to responsible users |
+
+### 9.1.2 Integration events (message broker)
+
+| Topic | Producer | Consumers | Payload summary |
+|-------|----------|-----------|-----------------|
+| `student.created` | user-management-service | iam-service | New student person → profile/role |
+| `driver.created` | user-management-service | iam-service | New driver person → profile/role |
+| `admin.created` | user-management-service | iam-service | New administrator person → profile/role |
+| `parent.created` | user-management-service | iam-service | New guardian person → profile/role |
+| `profile.created` | iam-service | — | Profile created for a person |
+| `student.scanned` | notification-service | notification-service | Boarding/alighting scan → guardian notification |
+| `trip.status.changed` | route-service | notification consumers | Route execution lifecycle |
+| `config.changed` | configuration-service | interested services | Parameter and policy changes |
+| `notification.delivered` | notification-service | metrics | Notification delivery result |
+| `user.access.revoked` | iam-service | gateways/sessions | Access revocation (ephemeral-state list) |
+
+> All events include the standard envelope fields: `eventId` (idempotency key), `eventType`, `aggregateId`, `aggregateType`, `occurredAt`, `version`, `payload`, and the correlation metadata (`correlationId`, `causationId`, `userId`).
+
+## 9.2 Error scenarios and their handling
+
+| Scenario | Code | User message | Handling |
+|----------|------|--------------|----------|
+| Invalid credentials | 401 | "Incorrect credentials" | Authentication rejection; the failed attempt is recorded. |
+| Inactive profile | 401 | "Your account is inactive; contact the administrator" | Access blocking (INV-PRO-003). |
+| Expired or revoked token | 401 | "The session expired; sign in again" | Renewal or new authentication. |
+| Student not assigned to the route | 400 | "The student is not assigned to this route" | Boarding scan rejection. |
+| Alighting without active boarding | 400 | "The student does not have an active boarding" | Alighting scan rejection. |
+| Invalid or expired QR code | 400 | "The QR code is invalid or has expired" | Request to regenerate the code. |
+| Duplicate active trip | 409 | "An active trip already exists for this bus" | Trip start rejection. |
+| Pending alightings when finishing | 409 | "There are students pending alighting" | The students on board are listed to record their drop-offs. |
+| Route deletion with active trip | 409 | "The route cannot be deleted: it has an active trip" | Deletion rejection. |
+| Duplicate plate, document, or IMEI | 409 | "The value is already registered" | Creation operation rejection. |
+| Request limit exceeded | 429 | "Too many attempts; try again later" | Speed limit per token and IP. |
+| Service unavailable | 503 | "The service is unavailable; try again" | Timeouts and circuit breakers in inter-service calls; client retry. |
+| Notification channel failure | 500 | "The notification could not be sent" | Retry with exponential backoff; failure recorded. |
+
+## 9.3 User messages
+
+| Context | Typical messages |
+|---------|------------------|
+| Authentication | "Incorrect credentials", "Your account is inactive", "The session expired". |
+| Boarding / alighting | "Student confirmed on board", "Student confirmed at the stop", "The student is not assigned to this route". |
+| Trip | "Trip started", "Trip finished", "There are students pending alighting". |
+| Notifications | "Your child boarded the bus at stop X at HH:MM", "Your child got off the bus at the indicated location", "The bus lost signal; last known position", "Incident reported on the trip". |
+| Password recovery | "Code sent", "Incorrect or expired code", "Password updated". |
+| Administration | "Account created", "Bus assigned to the route", "Student assigned to the route". |
+
+## 9.4 Error handling and retries
+
+- **At-least-once delivery + idempotency.** The broker guarantees at-least-once delivery; consumers store the processed `eventId` and discard duplicate events, which is critical for GPS positions, boardings, and alerts.
+- **Outbox pattern.** When the transaction confirmation must coincide with the event publication, the service writes the event to an outbox table in the same transaction and a publisher routes it to the broker.
+- **Dead letter queue (DLQ).** Events that fail after retries are sent to the dead letter queue with 7-day retention, and an alert is raised when the queue contains messages.
+- **Exponential backoff retries.** Notification delivery and event consumption retries use exponential backoff (1 s → 2 s → 4 s → 8 s) with a maximum of 3 to 5 attempts.
+- **Timeouts and circuit breakers.** Synchronous calls between services (gRPC) define timeouts and circuit breakers so that provider failures do not degrade availability.
+- **Centralized exception handling.** Services expose a global exception handler that translates domain errors into standardized responses for the client and records the traceability with a correlation identifier.
+
+---
+
+# 10. Concurrency and communication aspects
+
+## 10.1 Processes and threads
+
+- Each microservice is deployed as an **independent process** (container), stateless in memory; the ephemeral state resides in Redis and the persistent data in the service's relational schema.
+- The integration services (notifications, routes, telemetry) run **asynchronous consumers** (background processes) that subscribe to the broker topics and process the events idempotently.
+- The gateway is the only component without its own database and keeps ephemeral cache in Redis for tokens and speed limits.
+- Horizontal scaling is possible up to 10 instances per service (NFR-003); each instance is replaceable without state to replicate.
+
+## 10.2 Synchronous communication
+
+| Origin | Destination | Channel | Use |
+|--------|-------------|---------|-----|
+| Client applications | API Gateway | REST/HTTPS | Single entry point; token validation and speed limits. |
+| API Gateway | Services | REST | Routing of authenticated requests. |
+| notification-service | iam-service | REST | Profile identity resolution. |
+| notification-service | route-service | REST | Reference of executions, stops, and trips. |
+| notification-service | bus-service | REST | Bus fleet reference. |
+| school-service | route-service | gRPC | School stop queries. |
+| user-management-service | iam-service | gRPC | People identity resolution for profiles. |
+| gps-service | bus-service | gRPC/REST | Query of the GPS device associated with the bus. |
+
+Synchronous calls between services apply timeouts and circuit breakers and are never executed on the synchronous path without a defined failure plan.
+
+## 10.3 Asynchronous communication
+
+| Topic | Producer | Consumers | Purpose |
+|-------|----------|-----------|---------|
+| `student.created`, `driver.created`, `admin.created`, `parent.created` | User management | Identity service | Profile creation per role. |
+| `profile.created` | Identity service | — | Profile availability. |
+| `student.scanned` | Notification service | Notification service | Scan processing and guardian notification. |
+| `trip.status.changed` | Route service | Notification consumers | Trip lifecycle. |
+| `config.changed` | Configuration service | Interested services | Propagation of parameters and policies. |
+| `notification.delivered` | Notification service | Metrics | Delivery results. |
+| `user.access.revoked` | Identity service | Gateways / sessions | Access revocation. |
+
+## 10.4 Concurrency and consistency
+
+| Situation | Mechanism |
+|-----------|-----------|
+| A single active trip per bus | Uniqueness check in the `RouteExecution` creation with concurrency control (lock/version) to prevent two simultaneous starts. |
+| Concurrent session renewal | Use of *single-flight*: a single refresh per token; the second attempt is rejected by marking the first use. |
+| Session revocation | Revocation list in Redis; the access-revocation event notifies the gateways. |
+| Duplicates from repeated delivery | Idempotent consumers that store the processed `eventId`. |
+| Consistency between transaction and event | Outbox pattern in the flows that require publication after database confirmation. |
+| Speed limits | Enforcement at the gateway per token and IP; specific limits in the password recovery (code by email/SMS) and authentication flows. |
+| Write concurrency in aggregates | Aggregates are modified only through their aggregate root; a transaction does not directly modify multiple aggregates. |
+
+## 10.5 Integration with external systems
+
+| External system | Integration | Pattern |
+|-----------------|-------------|---------|
+| VT03F GPS device | Position ingestion through the TCP protocol (latitude, longitude, speed, course, GPS date) | Synchronous (TCP connection) + events |
+| Push notification provider | Real-time notification sending (boarding, alighting, alerts, incidents) | Asynchronous |
+| SMS and email messaging | Sending recovery codes and secondary notifications | Asynchronous |
+| Map service | Location display on an interactive map | REST / WebSocket · SSE |
+| Real-time channels | Map update without manual refresh | WebSocket / SSE at the edge |
+
+---
+
+# 11. Prototypes and screen flow
+
+## 11.1 Navigation map
+
+The following diagram presents the navigation map of the client applications. The web application corresponds to the administrative roles and the mobile application to guardians, drivers, and students.
+
+```mermaid
+flowchart TB
+    subgraph WEB["Web application (administration)"]
+        direction TB
+        H["Public home"] --> LG["Sign in"]
+        LG --> RF["Password recovery"]
+        RF --> RA["Reset password"]
+        LG --> DA["Administrator panel"]
+        DA --> GU["User management"]
+        DA --> GF["Family management"]
+        DA --> GC["Driver management"]
+        DA --> GB["Bus management"]
+        DA --> GP["Stop management"]
+        DA --> GR["Route management"]
+        DA --> PG["Profile and contact data"]
+        PG --> CE["Email change"]
+        PG --> CP["Password change"]
+        PG --> CT["Phone change"]
+        LG --> DS["Super-administrator panel"]
+        DS --> GAD["Administrator management"]
+        DS --> GSC["School and campus management"]
+        DS --> PG
+    end
+
+    subgraph MOBILE["Mobile application"]
+        direction TB
+        MLG["Sign in"] --> M1["Main view per role"]
+
+        subgraph PAR2["Guardian"]
+            direction TB
+            A1["My students"] --> A2["My child's route"]
+            A2 --> A3["Live bus map"]
+            A1 --> A4["Notifications and alerts"]
+            A3 --> A4
+        end
+
+        subgraph DRV2["Driver"]
+            direction TB
+            C1["My route (stops and schedules)"] --> C2["Active trip"]
+            C2 --> C3["Scan QR code"]
+            C2 --> C4["Report incident"]
+            C2 --> C5["Notifications"]
+        end
+
+        subgraph STU2["Student"]
+            direction TB
+            E1["My QR code"] --> E2["My route"]
+            E2 --> E3["Notifications"]
+        end
+
+        M1 --> A1
+        M1 --> C1
+        M1 --> E1
+    end
+```
+
+**Explanation.** The web application organizes the administration of the ecosystem: the administrator and super-administrator panels concentrate the management of users, families, drivers, buses, stops, routes, schools, and the maintenance of their own profile. The mobile application is organized by role: the guardian queries the route, the live map, and the notifications of their students; the driver operates the trip, the QR scan, and the incident report; the student views their QR code and their route.
+
+## 11.2 Relationship between screens and use cases
+
+| Screen (web) | Use cases |
+|--------------|-----------|
+| Sign in | UC-01, UC-02 |
+| Password recovery and reset | UC-02 |
+| Administrator panel | UC-03 through UC-10, UC-18 |
+| User / family / driver management | UC-03, UC-04 |
+| Bus management | UC-06, UC-07 |
+| Stop and route management | UC-08, UC-09, UC-10 |
+| Super-administrator panel | UC-05, UC-03 |
+| Profile and contact data | UC-18 |
+
+| Screen (mobile) | Use cases |
+|-----------------|-----------|
+| Sign in | UC-01, UC-02 |
+| My students / My child's route | UC-11, UC-15, UC-16 |
+| Live map | UC-16 |
+| My route (driver) | UC-11, UC-12 |
+| Scan QR code | UC-13 |
+| Report incident | UC-17 |
+| My QR code (student) | UC-14 |
+| Notifications and alerts | UC-15 |
+| Theme and language settings | UC-19 |
+
+## 11.3 Description of main screens
+
+**Web application:**
+
+- **Sign in:** credentials form; linked password recovery.
+- **Administrator panel:** operational summary and access to the management of users, families, drivers, buses, stops, and routes.
+- **User management:** card list (CardList) with creation, editing, activation, and deactivation; search and filters.
+- **Route management:** route creation with ordered stops and schedules; bus and student assignment.
+- **Super-administrator panel:** management of administrators and schools.
+- **Profile and contact data:** display of personal information and email, password, and phone change flows with code verification and confirmation modals.
+
+**Mobile application:**
+
+- **My child's route (guardian):** detail of bus, driver, ordered stops, and schedules; link to the live map.
+- **Live map:** interactive map with the bus's current position and a "no signal" marker on GPS loss.
+- **Scan QR code (driver):** camera integration; shows the boarding or alighting validation result in real time.
+- **Report incident (driver):** type selection, optional description, and location; sending confirmation.
+- **My QR code (student):** individual current code with automatic renewal.
+- **Notifications:** inbox with the history of boarding, alighting, alert, and incident events.
+
+---
+
+# 12. Traceability matrix
+
+## 12.1 Requirements ↔ use cases ↔ dynamic diagrams matrix
+
+| Requirement | Description | Use cases | Dynamic diagrams | HU |
+|-------------|-------------|-----------|------------------|----|
+| FR-1.1 | Account creation per role | UC-03 | SEQ-02 | HU-USER-004 |
+| FR-1.2 | User data update | UC-03 | — | HU-USER-004 |
+| FR-1.3 | Account activation/deactivation | UC-03 | EST-01 | HU-USER-004 |
+| FR-1.4 | Student–guardian linkage | UC-04 | — | HU-USER-003 |
+| FR-2.1 | Authentication and JWT issuance | UC-01 | SEQ-01 | HU-IAM-001 |
+| FR-2.2 | Session logout and renewal | UC-01, UC-02 | SEQ-01, ACT-06 | HU-IAM-001 |
+| FR-3.1 to 3.4 | Route, stop, and schedule management | UC-08 | ACT-01, EST-02 | HU-ROUTE-001 |
+| FR-3.5 | Bus-to-route assignment | UC-09 | SEQ-03 | HU-ROUTE-005 |
+| FR-3.6 | Driver-to-bus assignment | UC-07 | — | HU-BUS-002 |
+| FR-3.7 | Student-to-route assignment | UC-10 | — | HU-ROUTE-008 |
+| FR-3.8 | Bus fleet management | UC-06 | — | HU-FLEET-001 |
+| FR-4.1 | Individual QR code generation | UC-14 | — | HU-QR-004 |
+| FR-4.2 | QR boarding record | UC-13 | SEQ-05, ACT-02, EST-04 | HU-QR-001 |
+| FR-4.3 | QR alighting record | UC-13 | SEQ-06, ACT-02, EST-04 | HU-QR-002 |
+| FR-5.1 | Boarding/alighting event detection | UC-13 | SEQ-05, SEQ-06 | HU-QR-001 |
+| FR-5.2 | Boarding notification to the guardian | UC-15 | SEQ-05, ACT-02 | HU-NOTIF-001 |
+| FR-5.3 | Alighting notification to the guardian | UC-15 | SEQ-06, ACT-02 | HU-NOTIF-001 |
+| FR-5.4 | Prolonged-stop alert | UC-15 | SEQ-08, ACT-04, EST-06 | HU-NOTIF-005 |
+| FR-6.1 | Continuous GPS position capture | UC-16 | SEQ-07 | HU-GPS-002 |
+| FR-6.2 | Interactive map without manual refresh | UC-16 | SEQ-07 | HU-GPS-002 |
+| FR-6.3 | GPS signal-loss alert | UC-16 | SEQ-08, ACT-04 | HU-GPS-002 |
+| FR-7.1 | Trip start (one active per bus) | UC-12 | SEQ-04, EST-03 | HU-ROUTE-003 |
+| FR-7.2 | Trip finish without pending alightings | UC-12 | ACT-03, EST-03 | HU-ROUTE-003 |
+| FR-8.1 | Incident report | UC-17 | SEQ-09, ACT-05, EST-06 | HU-INCIDENT-001 |
+| FR-8.2 | School and guardian notification | UC-15 | SEQ-09, ACT-05 | HU-INCIDENT-001 |
+| FR-9.1 | Route query by the guardian | UC-11 | — | HU-ROUTE-004 |
+| FR-9.2 | Route query by the driver | UC-11 | — | HU-ROUTE-002 |
+| FR-10.1 | Theme customization | UC-19 | — | HU-UI-001 |
+| FR-10.2 | Language customization | UC-19 | — | HU-UI-002 |
+
+## 12.2 Functional requirement coverage
+
+| Requirements group | No. of FR | Coverage with diagrams |
+|--------------------|-----------|------------------------|
+| RF-01 User management | 4 | Complete (SEQ-02, EST-01) |
+| RF-02 Authentication | 2 | Complete (SEQ-01, ACT-06) |
+| RF-03 Routes | 6 | Complete (ACT-01, EST-02, SEQ-03) |
+| RF-04 QR scanning | 3 | Complete (SEQ-05, SEQ-06, ACT-02, EST-04) |
+| RF-05 Notifications | 4 | Complete (SEQ-08, ACT-04, EST-06) |
+| RF-06 Real-time tracking | 3 | Complete (SEQ-07, SEQ-08, ACT-04) |
+| RF-07 Trips | 2 | Complete (SEQ-04, ACT-03, EST-03) |
+| RF-08 Incidents | 2 | Complete (SEQ-09, ACT-05, EST-06) |
+| RF-09 Route queries | 2 | Partial: read-only query described in the UC-11 specification |
+| RF-10 Customization | 2 | Client only: without service diagrams (UC-19) |
+
+## 12.3 Traceability observations
+
+- The institutional master-data processes (schools and campuses), exceptional transportation uses, and auditing are covered in the UC-04, UC-05, and UC-18 specifications; not all correspond to numbered functional requirements.
+- Theme and language customization (RF-10) is resolved on the client and does not generate message exchange with the services.
+- Event consumers process with idempotency and at-least-once delivery; the flows that depend on a consumer's confirmation (boardings and notifications) explicitly describe the retry and the dead letter queue in section 9.
+- Synchronous communication between services uses timeouts and circuit breakers; all communication with clients passes through the gateway, which validates the token and injects the identity before invoking any service.
+
+---
+
+# 13. Annexes
+
+## 13.1 Glossary
+
+| Term | Definition |
+|------|------------|
+| **Guardian (parent)** | Adult responsible for one or more students, authorized to consult their transportation. |
+| **Boarding** | Event that records a student getting on a bus. |
+| **Alighting** | Event that records a student getting off the bus. |
+| **Alert** | High-priority communication generated by an operational condition (signal loss, prolonged stop, incident). |
+| **Route execution (trip)** | Operational occurrence of a route: scheduled, in progress, finished, or cancelled. |
+| **Route** | Planned path that connects the school with the stops and the assigned students. |
+| **Stop** | Place where students get on or off the bus. |
+| **Assignment** | Relationship between a route and a student, bus, driver, or stop. |
+| **QR code** | Student's individual identifier for validating transportation. |
+| **GPS device** | Telemetry hardware (VT03F) installed on the bus. |
+| **Notification** | Message to the user about a transportation event. |
+| **Traceability** | Ability to know what happened, when, and in relation to which user, vehicle, route, or event. |
+
+For the project's expanded glossary, consult the domain term dictionary.
+
+## 13.2 Identified risks and open questions
+
+| Type | Description | Handling |
+|------|-------------|----------|
+| Risk | The creation of routes, schedules, and assignments can remain incomplete without minimum configuration validation. | Rule INV-ROU-003: the route is not activated without its configuration. |
+| Risk | A duplicate scan can generate duplicate notifications to the guardian. | Idempotent event processing with `eventId`. |
+| Risk | GPS signal loss can generate false prolonged-stop alerts. | Configurable threshold and location validation. |
+| Risk | Concurrent token renewal can allow reuse. | Refresh *single-flight* and revocation list. |
+| Open question | To what extent does the mobile application cover the driver and student flows in the current version? | Under development; the document describes the target behavior. |
+| Open question | Is the alerts service kept as an independent context or consolidated into notifications? | Pending architecture decision; the current model separates them. |
+
+## 13.3 Change history and approvals
+
+| Version | Date | Description | Status |
+|---------|------|-------------|--------|
+| 1.0 | 10/10/2026 | Initial version of the dynamic views | Approved by the team |
+
+**Project team members:** Juan Pablo Chala Ramírez · Johan Smith Santamaria Fernández · Sharik Dayanna Rojas Ibarra.
+
+---
+
+# 14. References
+
+- Booch, G., Rumbaugh, J., y Jacobson, I. (2006). *El lenguaje unificado de modelado* (2.ª ed.). Pearson Educación.
+- Dennis, A., Wixom, B. H., y Roth, R. M. (2015). *Systems analysis and design* (6.ª ed.). John Wiley & Sons.
+- Evans, E. (2003). *Domain-driven design: Tackling complexity in the heart of software*. Addison-Wesley.
+- Fowler, M. (2004). *UML distilled: Guía breve para el modelado estándar de objetos* (3.ª ed.). Addison-Wesley.
+- International Organization for Standardization. (2018). *Ingeniería de sistemas y software — Procesos del ciclo de vida — Ingeniería de requisitos* (ISO/IEC/IEEE 29148:2018). ISO. https://www.iso.org/standard/72089.html
+- Kendall, K. E., y Kendall, J. E. (2011). *Systems analysis and design* (8.ª ed.). Pearson.
+- Object Management Group. (2017). *OMG Unified Modeling Language (OMG UML), version 2.5.1*. OMG. https://www.omg.org/spec/UML/2.5.1
+- Pressman, R. S., y Maxim, B. R. (2021). *Ingeniería del software: Un enfoque práctico* (9.ª ed.). McGraw-Hill.
+- Qiu, K. (s. f.). *Mermaid: Generation of diagrams and flowcharts from text in a similar manner as Markdown*. https://mermaid.js.org/
+- República de Colombia. (2012). *Ley 1581 de 2012: Por la cual se dictan disposiciones generales para la protección de datos personales*. Diario Oficial.
+- Richardson, C. (2018). *Microservices patterns: With examples in Java*. Manning Publications.
+- Sommerville, I. (2011). *Ingeniería de software* (9.ª ed.). Pearson Educación.
