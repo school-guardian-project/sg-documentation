@@ -6,7 +6,7 @@ Guardian Escolar
 Software para la creación de la aplicación "Guardian Escolar"
 
 Johan Smith Santamaria Fernández  
-Sharick Dayanna Rojas Ibarra  
+Sharik Dayanna Rojas Ibarra  
 Juan Pablo Chala Ramírez
 
 SENA — Servicio Nacional de Aprendizaje  
