@@ -1,104 +1,104 @@
 
-**Software Design Document**
+**Software Design**
 
 Guardian Escolar
 
-Software para la creación de la aplicación "Guardian Escolar"
+Software for the creation of the "Guardian Escolar" application
 
 Johan Smith Santamaria Fernández  
 Sharik Dayanna Rojas Ibarra  
 Juan Pablo Chala Ramírez
 
 SENA — Servicio Nacional de Aprendizaje  
-Ficha de programación 3145556  
-Centro de formación de Neiva (Huila)
+Programming group 3145556  
+Neiva Training Center (Huila)
 
 Instructor: José de Jesús Motta Vargas  
-Neiva, 6 de octubre de 2026
+Neiva, October 6, 2026
 
-# Control de versiones
+# Version control
 
-**Tabla 1**. Control de versiones del documento
+**Table 1**. Document version control
 
-| Versión | Fecha      | Autor                   | Descripción del cambio        |
+| Version | Date       | Author                  | Change description            |
 | ------- | ---------- | ----------------------- | ----------------------------- |
-| 1.0     | 06/10/2026 | Equipo Guardian Escolar | Versión inicial del documento |
+| 1.0     | 06/10/2026 | Guardian Escolar Team   | Initial version of the document |
 
-**Tabla de contenido**
+**Table of contents**
 
-Presione F9 (o clic derecho → Actualizar campo) para generar el índice.
+Press F9 (or right-click → Update field) to generate the table of contents.
 
-# 1 Introduction y principios de diseño
+# 1 Introduction and design principles
 
-## 1.1 Purpose and Scope
+## 1.1 Purpose and scope
 
-El presente documento especifica el **diseño del software** de la plataforma Guardian Escolar: el modelo arquitectónico que estructura el sistema, los patrones de diseño empleados, las interfaces gráficas web y móvil, el modelo de datos persistente y los contratos de integración que enlazan todas las piezas. El diseño traduce los requisitos funcionales y no funcionales del sistema en decisiones concretas y verificables de construcción.
+This document specifies the **software design** of the Guardian Escolar platform: the architectural model that structures the system, the design patterns used, the web and mobile graphical interfaces, the persistent data model, and the integration contracts that link all the pieces together. The design translates the functional and non-functional requirements of the system into concrete and verifiable construction decisions.
 
-La plataforma está compuesta por una **aplicación web Angular 21 con Angular Material 3**, una **aplicación móvil React + Expo** para conductor y acudiente, un **API Gateway (Kong OSS)** en el borde, **nueve microservicios de dominio**, un **bus de eventos Apache Kafka 4.1.0 (modo KRaft)**, un canal **gRPC** de baja latencia y una **base de datos relacional única SQL Server 2022** organizada en esquemas.
+The platform is made up of a **web application in Angular 21 with Angular Material 3**, a **mobile application in React + Expo** for driver and guardian, an **API Gateway (Kong OSS)** at the edge, **nine domain microservices**, an **Apache Kafka 4.1.0 event bus (KRaft mode)**, a low-latency **gRPC** channel, and a **single relational database SQL Server 2022** organized into schemas.
 
-**Tabla 2**. Contenido del documento por sección
+**Table 2**. Document content by section
 
-| Elemento de diseño    | Contenido del documento                                                                   | Sección |
+| Design element        | Document content                                                                          | Section |
 | --------------------- | ----------------------------------------------------------------------------------------- | ------- |
-| Modelo arquitectónico | Vistas de contexto, contenedores, despliegue y capas; estilos aplicados con justificación | 2       |
-| Patrones de diseño    | Catálogo de patrones verificados y patrones no adoptados                                  | 3       |
-| Graphical Interfaces   | Pantallas web por rol, pantallas móviles, mapa de navegación y design tokens              | 4       |
-| Modelo de datos       | Diagrama ER global, diccionario de datos por esquema, enums, semillas, índices y reglas   | 5       |
-| Contratos de interfaz | Resources REST, eventos Kafka y flujo gRPC                                                 | 6       |
-| Decisiones            | Decisiones de diseño, alternativas descartadas y trade-offs                               | 7       |
+| Architectural model   | Context, container, deployment, and layer views; styles applied with justification        | 2       |
+| Design patterns       | Catalog of verified patterns and non-adopted patterns                                     | 3       |
+| Graphical interfaces  | Web screens by role, mobile screens, navigation map, and design tokens                    | 4       |
+| Data model            | Global ER diagram, data dictionary by schema, enums, seeds, indexes, and rules            | 5       |
+| Interface contracts   | REST resources, Kafka events, and gRPC flow                                               | 6       |
+| Decisions             | Design decisions, discarded alternatives, and trade-offs                                  | 7       |
 
-## 1.2 Design Principles
+## 1.2 Design principles
 
-Los principios siguientes rigen toda decisión de diseño del sistema y se evalúan en la revisión técnica de cada incremento.
+The following principles govern every design decision of the system and are evaluated in the technical review of each increment.
 
-**Tabla 3**. Design Principles y su aplicación
+**Table 3**. Design principles and their application
 
-| Principio                                                      | Aplicación concreta en el sistema                                                                                                                                                                                                                                         |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Acoplamiento bajo y cohesión alta**                          | Cada microservicio encapsula un contexto acotado (identidad, escolar, flota, rutas, notificaciones, auditoría, configuración, usos excepcionales) con su propio esquema; los servicios se relacionan mediante contratos, nunca mediante lecturas directas de datos ajenos |
-| **Responsabilidad única (SRP)**                                | Un caso de uso atiende una operación nominal; los controladores limitan su trabajo a traducir HTTP a caso de uso y devolver la respuesta                                                                                                                                  |
-| **Abertura para ampliación, cerrazón para modificación (OCP)** | La búsqueda se extiende agregando estrategias nuevas sin modificar los casos de uso; los tipos de alerta y los parámetros de configuración se agregan como datos, no como código                                                                                          |
-| **Sustitución de Liskov (LSP)**                                | Las implementaciones de los puertos de datos y los adaptadores remotos cumplen exactamente el contrato de su interfaz de dominio, de modo que las pruebas con dobles en memoria sustituyen al almacén real sin cambio de comportamiento                                   |
-| **Interface Principles segregada (ISP)**                     | Interfaces de puerto pequeñas y específicas: un puerto por operación de caso de uso (ICreateRouteUseCase, IListRouteUseCase, IStopRepository) en lugar de puertos monolíticos                                                                                             |
-| **Inversión de dependencias (DIP)**                            | El dominio declara los puertos; la infraestructura los implementa y el contenedor de inyección de dependencias los enlaza en el arranque                                                                                                                                  |
-| **Regla de dependencia**                                       | Las dependencias apuntan hacia el interior: infraestructura → aplicación → dominio; el dominio no conoce marcos web, motores de persistencia ni clientes de mensajería                                                                                                    |
-| **Diseño por contratos**                                       | El contrato REST se define antes de la implementación y el código nunca publica un recurso ausente de la definición; los eventos y los contratos RPC se versionan de forma aditiva                                                                                        |
-| **Fallop rápido, recupérese con elegancia**                    | Validación de entrada en el borde y en el servicio, comprobación de salud por componente, consumidores idempotentes y respuestas 503 cuando una dependencia crítica no responde                                                                                           |
-| **Mínimo privilegio**                                          | Autorización por rol y permisos con denegación por defecto; cada servicio de base de datos accede únicamente a su propio esquema                                                                                                                                          |
-| **Observabilidad desde el diseño**                             | Identificador de correlación de extremo a extremo, registros estructurados y métricas por componente                                                                                                                                                                      |
-| **Accesibilidad y consistencia visual**                        | Contraste WCAG AA, operación por teclado, indicadores de foco visibles y consumo exclusivo de los design tokens del sistema de diseño                                                                                                                                     |
+| Principle                                                     | Concrete application in the system                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Low coupling and high cohesion**                            | Each microservice encapsulates a bounded context (identity, school, fleet, routes, notifications, audit, configuration, exceptional uses) with its own schema; services relate through contracts, never through direct reads of others' data                                    |
+| **Single responsibility (SRP)**                               | A use case handles one nominal operation; controllers limit their work to translating HTTP into a use case and returning the response                                                                                                                                     |
+| **Open for extension, closed for modification (OCP)**         | Search is extended by adding new strategies without modifying the use cases; alert types and configuration parameters are added as data, not as code                                                                                                                       |
+| **Liskov substitution (LSP)**                                 | The implementations of the data ports and the remote adapters exactly fulfill the contract of their domain interface, so that tests with in-memory doubles substitute the real store without a change in behavior                                                          |
+| **Interface segregation principles (ISP)**                    | Small, specific port interfaces: one port per use-case operation (ICreateRouteUseCase, IListRouteUseCase, IStopRepository) instead of monolithic ports                                                                                                                     |
+| **Dependency inversion (DIP)**                                | The domain declares the ports; the infrastructure implements them and the dependency injection container wires them at startup                                                                                                                                            |
+| **Dependency rule**                                           | Dependencies point inward: infrastructure → application → domain; the domain knows nothing of web frameworks, persistence engines, or messaging clients                                                                                                                  |
+| **Design by contract**                                        | The REST contract is defined before implementation and the code never publishes a resource absent from the definition; events and RPC contracts are versioned additively                                                                                                   |
+| **Fail fast, recover gracefully**                             | Input validation at the edge and in the service, per-component health check, idempotent consumers, and 503 responses when a critical dependency does not respond                                                                                                           |
+| **Least privilege**                                           | Role- and permission-based authorization with default denial; each database service accesses only its own schema                                                                                                                                                          |
+| **Observability from design**                                 | End-to-end correlation identifier, structured logs, and per-component metrics                                                                                                                                                                                             |
+| **Accessibility and visual consistency**                      | WCAG AA contrast, keyboard operation, visible focus indicators, and exclusive consumption of the design system's design tokens                                                                                                                                           |
 
-## 1.3 Design Conventions
+## 1.3 Design conventions
 
-**Tabla 4**. Design Conventions
+**Table 4**. Design conventions
 
-| Área                    | Convención                                                                                                                                                                               |
+| Area                    | Convention                                                                                                                                                                               |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Almacén relacional      | Esquema y tabla en PascalCase; columna en PascalCase; columna de clave ajena &lt;Entidad&gt;Id                                                                                           |
-| Identificadores         | UNIQUEIDENTIFIER en las entidades de negocio; TINYINT autoincremento en catálogos; BIGINT autoincremento en auditoría; INT autoincremento en sesiones                                    |
-| Restricciones           | Prefijos PK, FK_&lt;Tabla&gt;\_&lt;TablaRef&gt;, UQ_&lt;Tabla&gt;\_&lt;Columna&gt;, CK_&lt;Tabla&gt;\_&lt;regla&gt;, DF_&lt;Tabla&gt;\_&lt;Columna&gt;                                   |
-| Ciclo de vida           | Baja lógica con Status en valores Active/Inactive; los contratos de interfaz los exponen como ACTIVE/INACTIVE                                                                            |
-| Superficies de interfaz | Rutas REST bajo /api/v1, sustantivos en plural y kebab-case; payloads en camelCase; identificadores uuid                                                                                 |
-| Eventos                 | Nombre &lt;entidad&gt;.&lt;acción&gt;; clave de mensaje = identificador de la entidad; carga útil JSON aditiva y sin datos sensibles                                                     |
-| Puertos de servicio     | Interfaz de caso de uso I&lt;Verbo&gt;&lt;Entidad&gt;UseCase; interfaz de almacén I&lt;Entidad&gt;Repository; implementación en la capa de infraestructura                               |
-| Tiempo                  | Marcas de fecha y hora en DATETIME2 con huso horario UTC en los flujos nuevos                                                                                                            |
-| Comunicación            | REST versionado en el borde, gRPC para llamadas internas de baja latencia y Kafka para desacoplamiento asincrónico; diagramas en representación ASCII orientada a lectura en texto plano |
+| Relational store        | Schema and table in PascalCase; column in PascalCase; foreign key column &lt;Entity&gt;Id                                                                                                |
+| Identifiers             | UNIQUEIDENTIFIER in business entities; auto-increment TINYINT in catalogs; auto-increment BIGINT in audit; auto-increment INT in sessions                                             |
+| Constraints             | Prefixes PK, FK_&lt;Table&gt;\_&lt;RefTable&gt;, UQ_&lt;Table&gt;\_&lt;Column&gt;, CK_&lt;Table&gt;\_&lt;rule&gt;, DF_&lt;Table&gt;\_&lt;Column&gt;                                       |
+| Lifecycle               | Soft delete with Status in values Active/Inactive; interface contracts expose them as ACTIVE/INACTIVE                                                                                    |
+| Interface surfaces      | REST routes under /api/v1, plural nouns in kebab-case; payloads in camelCase; uuid identifiers                                                                                           |
+| Events                  | Name &lt;entity&gt;.&lt;action&gt;; message key = entity identifier; additive JSON payload with no sensitive data                                                                        |
+| Service ports           | Use case interface I&lt;Verb&gt;&lt;Entity&gt;UseCase; store interface I&lt;Entity&gt;Repository; implementation in the infrastructure layer                                              |
+| Time                    | Date and time stamps in DATETIME2 with UTC time zone in the new flows                                                                                                                    |
+| Communication           | Versioned REST at the edge, gRPC for internal low-latency calls, and Kafka for asynchronous decoupling; diagrams in ASCII representation oriented to plain-text reading                   |
 
-# 2 Modelo arquitectónico
+# 2 Architectural model
 
-La arquitectura de Guardian Escolar se describe en cuatro vistas complementarias: contexto, contenedores, despliegue y capas internas. Las tres primeras siguen la notación de vistas de arquitectura (contexto, contenedores y componentes) adaptada a diagramas ASCII, de modo que el documento sea legible en cualquier medio de texto y no dependa de imágenes ni de notaciones gráficas propietarias.
+The architecture of Guardian Escolar is described in four complementary views: context, containers, deployment, and internal layers. The first three follow the architecture view notation (context, containers, and components) adapted to ASCII diagrams, so that the document is readable in any text medium and does not depend on images or proprietary graphical notations.
 
-## 2.1. Context View
+## 2.1. Context view
 
-La vista de contexto sitúa el sistema frente a sus actores y sistemas externos. Guardian Escolar se interpone entre la comunidad educativa y dos proveedores externos de nivel gratuito: un proveedor de correo electrónico transaccional y un proveedor de mensajería instantánea.
+The context view places the system in front of its actors and external systems. Guardian Escolar stands between the educational community and two external free-tier providers: a transactional email provider and an instant messaging provider.
 
-COMUNIDAD EDUCATIVA
+EDUCATIONAL COMMUNITY
 
 +----------------+ +----------------+ +----------------+ +----------------+
 
-| Super admin. | | Administrador | | Conductor | | Acudiente / |
+| Super admin. | | Administrator | | Driver | | Guardian / |
 
-| | | del colegio | | | | Estudiante |
+| | | of the school | | | | Student |
 
 +-------+--------+ +-------+--------+ +-------+--------+ +-------+--------+
 
@@ -112,13 +112,13 @@ v
 
 +--------------------------------------------+
 
-| GUARDIAN ESCOLAR (plataforma) |
+| GUARDIAN ESCOLAR (platform) |
 
-| Operación del servicio de transporte |
+| School transportation service |
 
-| escolar: identificación, usuarios, flota, |
+| operation: identification, users, fleet, |
 
-| rutas, eventos, notificaciones y auditoría|
+| routes, events, notifications and audit |
 
 +-------------------+------------------------+
 
@@ -132,36 +132,36 @@ v v
 
 +--------------------+ +--------------------+
 
-| Proveedor de correo| | Proveedor de |
+| Email provider | | Messaging |
 
-| transaccional | | mensajería (WhatsApp)|
+| (transactional) | | provider (WhatsApp)|
 
 +--------------------+ +--------------------+
 
-**Figura 1**. Context View de la plataforma
+**Figure 1**. Context view of the platform
 
-Actores y responsabilidades resumidas:
+Actors and summarized responsibilities:
 
-**Tabla 5**. Actores y su interacción con la plataforma
+**Table 5**. Actors and their interaction with the platform
 
-| Actor                           | Interacción principal con la plataforma                                                                                            |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Super administrador             | Administra la instancia global: organizaciones, usuarios, permisos, catálogos y parámetros del sistema.                            |
-| Administrador del colegio       | Configura el colegio y sus sedes, cursos, familias, conductores, rutas y horarios; consulta reportes y estados.                    |
-| Conductor                       | Consulta su ruta asignada, registra eventos de bordada y estados de viaje, ejecuta las validaciones de parada y consulta mensajes. |
-| Acudiente                       | Consulta la información de su familia, las rutas y estados de viaje de sus hijos, y envía solicitudes de uso excepcional.          |
-| Estudiante                      | Accede a un conjunto mínimo de consultas propias y de su ruta.                                                                     |
-| Sistemas externos de mensajería | Reciben las plantillas de notificación por correo y por mensajería instantánea.                                                    |
+| Actor                          | Main interaction with the platform                                                                                                 |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Super administrator            | Administers the global instance: organizations, users, permissions, catalogs, and system parameters.                              |
+| School administrator           | Configures the school and its campuses, grades, families, drivers, routes, and schedules; consults reports and statuses.          |
+| Driver                         | Consults the assigned route, records boarding events and trip statuses, runs the stop validations, and reads messages.            |
+| Guardian                       | Consults the information of their family, the routes and trip statuses of their children, and sends exceptional use requests.     |
+| Student                        | Accesses a minimal set of queries of their own and of their route.                                                                 |
+| External messaging systems     | Receive the notification templates by email and by instant messaging.                                                              |
 
-## 2.2. Container View
+## 2.2. Container view
 
-La vista de contenedores identifica las unidades desplegables de la plataforma. El sistema es una arquitectura de microservicios compuesta por nueve servicios de dominio y de plataforma, un paso de enrutamiento y agregación de API, un bus de eventos, una base de datos relacional compartida por esquemas lógicos, un almacenamiento de caché y de tokens de refresco y un servicio de mensajería para plantillas de notificación.
+The container view identifies the deployable units of the platform. The system is a microservices architecture composed of nine domain and platform services, an API routing and aggregation step, an event bus, a relational database shared through logical schemas, a cache and refresh-token store, and a messaging service for notification templates.
 
 +---------------------------+
 
-| Paso de API y enrutador |
+| API gateway and router |
 
-| (puerto 8000) |
+| (port 8000) |
 
 +-------------+-------------+
 
@@ -175,7 +175,7 @@ v v v v v v
 
 +-----------+ +---------+ +---------+ +------------+ +---------+ +-----------+
 
-| IAM | | Usuarios| |Escolar | | Flota | | Rutas | |Notificac. |
+| IAM | | Users | | School | | Fleet | | Routes | |Notificat. |
 
 | (8080) | | (8080) | | (8080) | | (8080) | | (8080) | | (8080) |
 
@@ -185,11 +185,11 @@ v v v v v v
 
 +-----------+ +---------+ +---------+ v |
 
-| Usos | |Auditoría| |Config. | +------------+ |
+| Uses | | Audit | | Config. | +------------+ |
 
-|excepcional| | (8080) | | (8080) | | Bus de | |
+|exceptional| | (8080) | | (8080) | | Event | |
 
-| (8080) | +---------+ +---------+ | eventos | |
+| (8080) | +---------+ +---------+ | bus | |
 
 +-----------+ | Kafka | |
 
@@ -207,43 +207,43 @@ v
 
 +---------------------------------+
 
-| Base de datos relacional |
+| Relational database |
 
 | SQL Server (1433) |
 
-| 11 esquemas, 38 tablas |
+| 11 schemas, 38 tables |
 
 +---------------------------------+
 
-Almacenamiento complementario: caché y refresco de sesión.
+Complementary storage: session cache and refresh.
 
-Canal de plantillas de notificación: servicio externo de mensajería.
+Notification template channel: external messaging service.
 
-**Figura 2**. Container View de la arquitectura
+**Figure 2**. Container view of the architecture
 
-Descripción de los contenedores:
+Container description:
 
-**Tabla 6**. Contenedores de la arquitectura y su rol
+**Table 6**. Containers of the architecture and their role
 
-| Contenedor                                    | Rol en la arquitectura                                                                                                                             |
+| Container                                     | Role in the architecture                                                                                                                           |
 | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Paso de API y enrutador                       | Punto de entrada único, enrutamiento hacia los servicios, terminación de TLS, limitación de tasa y política de CORS.                               |
-| Servicio de identificación y acceso           | Emisión de tokens, inicio y cierre de sesión, refresco de token, recuperación de la contraseña conforme a la política vigente y bloqueo de cuenta. |
-| Servicio de gestión de usuarios               | Personas, roles, permisos, perfiles y relación acudiente-estudiante.                                                                               |
-| Servicio de gestión escolar                   | Colegios, sedes, cursos, asignaciones, horarios y relaciones familiares.                                                                           |
-| Servicio de flota                             | Buses, marcas, modelos, mantenimientos y estados de flota.                                                                                         |
-| Servicio de rutas                             | Rutas, paradas, orden de paradas, ejecuciones, eventos de bordada, estados de viaje y reportes.                                                    |
-| Servicio de notificaciones                    | Plantillas, cola de entrega, destinatarios, reintentos y estado de envío.                                                                          |
-| Servicio de usos excepcionales                | Solicitudes, aprobaciones, límites y registros de escoltas.                                                                                        |
-| Servicio de auditoría                         | Eventos de auditoría, consulta filtrada y exportación.                                                                                             |
-| Servicio de configuración                     | Configuración del sistema y catálogos de referencia.                                                                                               |
-| Bus de eventos                                | Canal de eventos entre servicios (topicos de creación de personas, cambios de estado, eventos de viaje y eventos de telemetría).                   |
-| Base de datos relacional                      | Persistencia transaccional, con un esquema lógico por servicio y claves foráneas de apoyo entre esquemas.                                          |
-| Almacenamiento de caché y canal de plantillas | Caché de datos de referencia y refresco de token con latencia baja; salida de los mensajes de notificación hacia los dispositivos finales.         |
+| API gateway and router                        | Single entry point, routing to the services, TLS termination, rate limiting, and CORS policy.                                                      |
+| Identification and access service             | Token issuance, sign-in and sign-out, token refresh, password recovery in accordance with the current policy, and account lockout.                |
+| User management service                       | People, roles, permissions, profiles, and the guardian-student relationship.                                                                       |
+| School management service                     | Schools, campuses, grades, assignments, schedules, and family relationships.                                                                       |
+| Fleet service                                 | Buses, makes, models, maintenances, and fleet statuses.                                                                                            |
+| Routes service                                | Routes, stops, stop order, runs, boarding events, trip statuses, and reports.                                                                      |
+| Notifications service                         | Templates, delivery queue, recipients, retries, and delivery status.                                                                               |
+| Exceptional uses service                      | Requests, approvals, limits, and escort records.                                                                                                   |
+| Audit service                                 | Audit events, filtered query, and export.                                                                                                          |
+| Configuration service                         | System configuration and reference catalogs.                                                                                                       |
+| Event bus                                     | Event channel between services (people creation topics, status changes, trip events, and telemetry events).                                        |
+| Relational database                           | Transactional persistence, with one logical schema per service and supporting foreign keys between schemas.                                        |
+| Cache store and template channel              | Low-latency cache of reference data and token refresh; output of the notification messages toward the end devices.                                 |
 
-## 2.3. Deployment View
+## 2.3. Deployment view
 
-La vista de despliegue muestra cómo se distribuyen los contenedores en los recursos de ejecución. Cada microservicio se empaqueta en su propio contenedor, con su propio ciclo de vida y su propia configuración; la orquestación agrupa los contenedores y reparte las peticiones entre instancias.
+The deployment view shows how the containers are distributed across the execution resources. Each microservice is packaged in its own container, with its own lifecycle and its own configuration; the orchestration groups the containers and distributes the requests among instances.
 
 INTERNET
 
@@ -253,9 +253,9 @@ v
 
 +------------------------+
 
-| Balanceador y |
+| Load balancer and |
 
-| paso de API |
+| API gateway |
 
 | (8080 -> 8000) |
 
@@ -271,11 +271,11 @@ v v v
 
 +--------------+ +--------------+ +--------------+
 
-| Contenedores | | Contenedores | | Contenedores |
+| Service | | Service | | Service |
 
-| de servicio | | de servicio | | de servicio |
+| containers | | containers | | containers |
 
-| dominio A..C | | dominio D..F | | plataforma |
+| domain A..C | | domain D..F | | platform |
 
 +------+-------+ +------+-------+ +------+-------+
 
@@ -289,194 +289,194 @@ v
 
 +-----------------------------+ +-----------------------------+
 
-| Base de datos relacional | | Bus de eventos |
+| Relational database | | Event bus |
 
-| (1433) con volúmenes | | (9092) con discos |
+| (1433) with persistent | | (9092) with persistent |
 
-| persistentes | | persistentes |
+| volumes | | disks |
 
 +-----------------------------+ +-----------------------------+
 
-Caché y refresco: instancia de memoria; secretos: almacén del entorno de ejecución;
+Cache and refresh: memory instance; secrets: execution-environment store;
 
-observabilidad: métricas y trazas recolectadas de cada contenedor.
+observability: metrics and traces collected from each container.
 
-**Figura 3**. Deployment View de la plataforma
+**Figure 3**. Deployment view of the platform
 
-Consideraciones de despliegue:
+Deployment considerations:
 
-- Cada servicio expone su propio puerto de aplicación (8080) y solo el paso de API es accesible desde el exterior.
-- La base de datos y el bus de eventos se despliegan con almacenamiento persistente y no se exponen a Internet.
-- La escalabilidad horizontal se aplica por servicio según su carga: los servicios de rutas y notificaciones escalan por volumen de eventos; los servicios de lectura escalan por número de peticiones.
-- Las credenciales y secretos (base de datos, claves de firma de tokens, credenciales de correo y mensajería) se inyectan desde un almacén de secretos y nunca se incluyen en el código ni en los artefactos de despliegue; los estados del viaje y los indicadores de servicio se publican con marcas de tiempo de expiración, de modo que un corte de energía no deje indicadores obsoletos.
+- Each service exposes its own application port (8080) and only the API gateway is reachable from the outside.
+- The database and the event bus are deployed with persistent storage and are not exposed to the Internet.
+- Horizontal scalability is applied per service according to its load: the routes and notifications services scale by event volume; the read services scale by number of requests.
+- Credentials and secrets (database, token signing keys, email and messaging credentials) are injected from a secrets store and are never included in the code or in the deployment artifacts; trip statuses and service indicators are published with expiration timestamps, so that a power outage does not leave stale indicators.
 
-## 2.4. Internal Layer View of a Service
+## 2.4. Internal layer view of a service
 
-Cada servicio adopta internamente una arquitectura hexagonal (puertos y adaptadores) organizada en capas. La dependencia apunta siempre hacia el interior: las capas de dominio y de aplicación no conocen a la infraestructura.
+Each service internally adopts a hexagonal architecture (ports and adapters) organized into layers. The dependency always points inward: the domain and application layers know nothing of the infrastructure.
 
 +-------------------------------------------------------------------+
 
-| Adaptadores de entrada (primarios) |
+| Input adapters (primary) |
 
-| Controladores REST, manejadores de eventos, servidores gRPC, |
+| REST controllers, event handlers, gRPC servers, |
 
-| procesos programados |
+| scheduled processes |
 
 +-------------------------------+-----------------------------------+
 
-| invoca casos de uso
+| invokes use cases
 
 v
 
 +-------------------------------------------------------------------+
 
-| Aplicación (casos de uso) |
+| Application (use cases) |
 
-| Orquestación, transacciones, reglas de proceso, autorización |
+| Orchestration, transactions, process rules, authorization |
 
 +-------------------------------+-----------------------------------+
 
-| puertos de salida
+| output ports
 
 v
 
 +-------------------------------------------------------------------+
 
-| Dominio |
+| Domain |
 
-| Entidades, valores, invariantes, errores de dominio |
+| Entities, values, invariants, domain errors |
 
 +-------------------------------+-----------------------------------+
 
-| implementado por
+| implemented by
 
 v
 
 +-------------------------------------------------------------------+
 
-| Adaptadores de salida (secundarios) |
+| Output adapters (secondary) |
 
-| Accesos a datos, unidades de trabajo, clientes de eventos, |
+| Data accesses, units of work, event clients, |
 
-| clientes gRPC, adaptadores de correo y mensajería |
+| gRPC clients, email and messaging adapters |
 
 +-------------------------------------------------------------------+
 
-**Figura 4**. Internal Layer View of a Service
+**Figure 4**. Internal layer view of a service
 
-Convención de nombres internos: los puertos de salida terminan en Repository o Gateway, los casos de uso terminan en UseCase, las operaciones de consulta terminan en Query y las operaciones de cambio terminan en Command. Los errores de dominio se capturan en la capa de API y se traducen a respuestas de problema con el estado HTTP correspondiente.
+Internal naming convention: output ports end in Repository or Gateway, use cases end in UseCase, query operations end in Query, and change operations end in Command. Domain errors are captured in the API layer and translated into problem responses with the corresponding HTTP status.
 
-## 2.5. Adopted Architectural Styles and Justification
+## 2.5. Architectural styles adopted and justification
 
-**Tabla 7**. Adopted Architectural Styles and Justification
+**Table 7**. Architectural styles adopted and justification
 
-| Estilo                                          | Dónde se aplica                                                                                | Justificación                                                                                                               |
+| Style                                          | Where it is applied                                                                            | Justification                                                                                                               |
 | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Microservicios                                  | Conjunto de la plataforma: nueve servicios con ciclo de vida propio                            | Permite desplegar, escalar y fallar de forma independiente cada dominio; acota el impacto de un defecto a un solo servicio. |
-| Arquitectura hexagonal (puertos y adaptadores)  | Interior de cada servicio                                                                      | Separa reglas de negocio de infraestructura; habilita pruebas unitarias del dominio sin base de datos ni red.               |
-| Orientación a eventos                           | Flujos entre servicios (creación de personas, cambios de estado, eventos de viaje, telemetría) | Desacopla productores y consumidores en el tiempo; permite añadir consumidores nuevos sin tocar al productor.               |
-| Capas (n-tiers) dentro de cada servicio         | Adaptadores de entrada, aplicación, dominio, adaptadores de salida                             | Mantiene una dirección única de dependencia y una regla de negocio localizable.                                             |
-| API unificada bajo un paso de enrutador         | Exposición externa                                                                             | Ofrece un único punto de entrada, política de seguridad y límite de tasa comunes, y evita exponer servicios internos.       |
-| Base de datos por servicio con esquemas lógicos | Persistencia                                                                                   | Da autonomía de datos a cada servicio y, a la vez, permite integridad referencial de apoyo dentro del motor relacional.     |
+| Microservices                                  | Entire platform: nine services with their own lifecycle                                        | Allows each domain to be deployed, scaled, and to fail independently; bounds the impact of a defect to a single service.    |
+| Hexagonal architecture (ports and adapters)    | Interior of each service                                                                      | Separates business rules from infrastructure; enables unit testing of the domain without a database or network.             |
+| Event orientation                              | Flows between services (people creation, status changes, trip events, telemetry)               | Decouples producers and consumers in time; allows adding new consumers without touching the producer.                      |
+| Layers (n-tiers) within each service           | Input adapters, application, domain, output adapters                                           | Maintains a single dependency direction and a localizable business rule.                                                    |
+| Unified API under a routing step               | External exposure                                                                              | Offers a single entry point, common security policy and rate limit, and avoids exposing internal services.                  |
+| Database per service with logical schemas      | Persistence                                                                                    | Gives data autonomy to each service and, at the same time, allows supporting referential integrity within the relational engine. |
 
-Estilos descartados y por qué: la arquitectura monolítica modular se descartó porque la plataforma prevé crecimiento diferenciado por dominio (rutas y notificaciones crecen con el volumen de viajes; auditoría crece con el volumen de acciones); el servidor sin estado puro (stateless) se matizó porque la sesión de usuario y la caché de referencia requieren estado compartido; la arquitectura orientada a servicios (SOAP) se descartó por su sobrecarga de contrato y su menor adecuación a clientes web y móviles ligeros.
+Discarded styles and why: the modular monolithic architecture was discarded because the platform foresees differentiated growth by domain (routes and notifications grow with trip volume; audit grows with action volume); the pure stateless server was qualified because the user session and the reference cache require shared state; the service-oriented architecture (SOAP) was discarded for its contract overhead and its lesser suitability for lightweight web and mobile clients.
 
-## 2.6. Cross-Cutting Concerns
+## 2.6. Cross-cutting concerns
 
-Las siguientes preocupaciones se resuelven de forma transversal y no quedan confinadas a un servicio:
+The following concerns are resolved transversally and are not confined to a single service:
 
-**Tabla 8**. Cross-Cutting Concerns y criterios de diseño
+**Table 8**. Cross-cutting concerns and design criteria
 
-| Preocupación                 | Criterio de diseño                                                                                                                                                                                                         |
+| Concern                       | Design criterion                                                                                                                                                                                                          |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Seguridad                    | Autenticación por token, autorización por rol y permiso, transporte cifrado, secretos en almacén dedicado y validación de toda entrada.                                                                                    |
-| Disponibilidad               | Cada servicio puede reiniciarse sin afectar a los demás; las llamadas entre servicios tienen tiempo límite y reintento acotado; los fallos de envío de notificaciones se reintentan con política de retroceso exponencial. |
-| Observabilidad               | Identificador de correlación propagado en peticiones y eventos, métricas por servicio, trazas de extremo a extremo y registro estructurado.                                                                                |
-| Consistencia                 | Transacciones locales dentro de cada servicio y consistencia eventual entre servicios mediante eventos compensatorios cuando una operación distribuida falla.                                                              |
-| Evolución de contratos       | Versionado explícito de la API en la ruta (/api/v1), compatibilidad hacia atrás en los tópicos de eventos y versionado del servicio de RPC en su definición.                                                               |
-| Rendimiento                  | Índices alineados a las consultas de listado, paginación obligatoria en listas, proyección de solo los campos necesarios y caché para datos de referencia poco cambiantes.                                                 |
-| Accesibilidad                | Contraste mínimo de 4.5:1 para texto, 3:1 para elementos gráficos, navegación completa por teclado y soporte de lector de pantalla.                                                                                        |
-| Trazabilidad de la operación | Toda acción relevante genera un evento de auditoría con actor, acción, entidad, marca de tiempo y origen.                                                                                                                  |
+| Security                     | Token authentication, role- and permission-based authorization, encrypted transport, secrets in a dedicated store, and validation of all input.                                                                             |
+| Availability                 | Each service can be restarted without affecting the others; calls between services have a time limit and bounded retry; notification send failures are retried with an exponential backoff policy.                          |
+| Observability                | Correlation identifier propagated in requests and events, per-service metrics, end-to-end traces, and structured logging.                                                                                                  |
+| Consistency                  | Local transactions within each service and eventual consistency between services through compensating events when a distributed operation fails.                                                                          |
+| Contract evolution           | Explicit API versioning in the route (/api/v1), backward compatibility in the event topics, and versioning of the RPC service in its definition.                                                                          |
+| Performance                  | Indexes aligned with the listing queries, mandatory pagination in lists, projection of only the necessary fields, and cache for reference data that changes little.                                                        |
+| Accessibility                | Minimum contrast of 4.5:1 for text, 3:1 for graphical elements, full keyboard navigation, and screen reader support.                                                                                                       |
+| Operation traceability       | Every relevant action generates an audit event with actor, action, entity, timestamp, and origin.                                                                                                                          |
 
-# 3 Applied Design Patterns
+# 3 Design patterns applied
 
-Los patrones de esta sección fueron verificados en la implementación del sistema. La tabla los presenta con su intención, el lugar donde se aplica y el mecanismo concreto que lo materializa.
+The patterns in this section were verified in the implementation of the system. The table presents them with their intent, the place where they are applied, and the concrete mechanism that materializes them.
 
-## 3.1. Verified Patterns
+## 3.1. Verified patterns
 
-**Tabla 9**. Patrones de diseño verificados
+**Table 9**. Verified design patterns
 
-| Patrón                                         | Intención en el sistema                                                  | Aplicación verificada                                                                                                                                    |
+| Pattern                                        | Intent in the system                                                    | Verified application                                                                                                                                     |
 | ---------------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arquitectura hexagonal (puertos y adaptadores) | Mantener el dominio independiente de la infraestructura                  | Cada servicio separa puertos de entrada y de salida de sus adaptadores; el dominio no depende de marcos ni de bases de datos.                            |
-| Repository (acceso a datos)                    | Centralizar el acceso a datos y abstraer el motor de persistencia        | Puertos de salida tipados por entidad, con implementaciones sobre el ORM del servicio; las consultas de listado están en las implementaciones.           |
-| Unidad de trabajo                              | Garantizar atomicidad en operaciones que tocan varias entidades          | Interfaz de unidad de trabajo con confirmación explícita; los casos de uso abren transacción, ejecutan y confirman.                                      |
-| DTO y mapeador                                 | Desacoplar el contrato público del modelo interno                        | Objetos de transferencia de datos de entrada y de salida con perfiles de mapeo automático entre DTO, dominio y modelo de presentación.                   |
-| Manejador de problemas (ProblemDetails)        | Devolver errores normalizados y documentados                             | Punto único de traducción de errores internos a respuestas de problema, con estado HTTP, tipo, detalle y extensión de campos.                            |
-| Estrategia de búsqueda                         | Componer consultas filtrables sin condicionales dispersos                | Cadenas de criterios encadenables (colegio, sede, curso, estado, fechas, texto libre) combinables según la necesidad de cada listado.                    |
-| Fachada de casos de uso                        | Exponer una operación única y testeable por caso de negocio              | Cada caso de uso (crear persona, asignar ruta, aprobar uso excepcional, registrar bordada) es una clase con una operación pública.                       |
-| Observador / eventos de dominio                | Reaccionar a cambios sin acoplar al productor                            | La creación de personas, el cambio de estado de viaje y los eventos de telemetría se publican en tópicos y son consumidos por otros servicios.           |
-| Adaptador de cliente remoto                    | Ocultar el transporte de un servicio a otro tras una interfaz            | Clientes tipados del servicio de RPC con canal compartido, reintentos y transformación de errores a errores de dominio.                                  |
-| Inyección de dependencias / fábrica gestionada | Componer objetos sin fábricas manuales                                   | El contenedor de ejecución construye controladores, casos de uso, accesos a datos y clientes; los clientes se registran con política de vida compartida. |
-| Servicio alojado (hosted service)              | Ejecutar trabajos en segundo plano dentro del ciclo de vida del servicio | Procesos en segundo plano para envío de notificaciones y procesamiento de cola, con cancelación ordenada al detener el servicio.                         |
-| Interfaz de adaptador de salida                | Sustituir infraestructura sin tocar reglas                               | Puertos propios para envío de correo, envío de mensajería y publicación de eventos, con implementaciones intercambiables por entorno.                    |
-| Compensación en operación distribuida          | Deshacer efectos parciales cuando una operación entre servicios falla    | Secuencias con pasos compensatorios ante fallos de llamada entre servicios y confirmación explícita al final.                                            |
-| Punto de extensión por catálogo                | Permitir crecer en comportamiento sin modificar código                   | Los catálogos de configuración (tipos de alerta, estados, motivos) se parametrizan y se consumen como datos, no como condición fija.                     |
+| Hexagonal architecture (ports and adapters)    | Keep the domain independent of the infrastructure                        | Each service separates input and output ports from its adapters; the domain depends on neither frameworks nor databases.                                |
+| Repository (data access)                       | Centralize data access and abstract the persistence engine               | Output ports typed by entity, with implementations over the service's ORM; the listing queries are in the implementations.                               |
+| Unit of work                                   | Guarantee atomicity in operations that touch several entities            | Unit-of-work interface with explicit commit; use cases open a transaction, execute, and commit.                                                          |
+| DTO and mapper                                 | Decouple the public contract from the internal model                     | Input and output data transfer objects with automatic mapping profiles between DTO, domain, and presentation model.                                      |
+| Problem handler (ProblemDetails)               | Return normalized and documented errors                                  | Single point of translation of internal errors into problem responses, with HTTP status, type, detail, and field extension.                              |
+| Search strategy                                | Compose filterable queries without scattered conditionals                | Chainable criteria chains (school, campus, grade, status, dates, free text) combinable according to the need of each listing.                          |
+| Use case facade                                | Expose a single, testable operation per business case                    | Each use case (create person, assign route, approve exceptional use, register boarding) is a class with one public operation.                             |
+| Observer / domain events                       | React to changes without coupling to the producer                        | Person creation, trip status change, and telemetry events are published to topics and consumed by other services.                                        |
+| Remote client adapter                          | Hide the transport from one service to another behind an interface       | Typed clients of the RPC service with a shared channel, retries, and transformation of errors into domain errors.                                        |
+| Dependency injection / managed factory         | Compose objects without manual factories                                 | The execution container builds controllers, use cases, data accesses, and clients; clients are registered with a shared lifetime policy.                  |
+| Hosted service                                 | Run background jobs within the service lifecycle                         | Background processes for sending notifications and queue processing, with orderly cancellation when the service stops.                                  |
+| Output adapter interface                       | Substitute infrastructure without touching rules                         | Dedicated ports for email sending, messaging sending, and event publication, with implementations interchangeable per environment.                       |
+| Compensation in distributed operation          | Undo partial effects when an operation between services fails            | Sequences with compensating steps on inter-service call failures and explicit commit at the end.                                                        |
+| Catalog-based extension point                  | Allow growing in behavior without modifying code                         | The configuration catalogs (alert types, statuses, reasons) are parameterized and consumed as data, not as a fixed condition.                            |
 
-## 3.2. Evaluated Patterns Not Adopted
+## 3.2. Patterns evaluated but not adopted
 
-**Tabla 10**. Patrones de diseño evaluados no adoptados
+**Table 10**. Design patterns evaluated but not adopted
 
-| Patrón                                                    | Motivo de no adopción                                                                                                                                           |
+| Pattern                                                   | Reason for non-adoption                                                                                                                                          |
 | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Decorator                                                 | La decoración transversal de peticiones se resuelve en el paso de API (limitación de tasa, cabeceras, CORS) y en middleware del servicio, sin envolver dominio. |
-| CQRS (separación explícita de mando y consulta)           | El volumen de lectura no justifica duplicar modelo y persistencia; las consultas se optimizan con proyecciones, índices y paginación.                           |
-| Saga orquestada con componente dedicado                   | Las pocas operaciones distribuidas se resuelven con eventos y compensación local; introducir un orquestador añadiría un punto único de fallo.                   |
-| Malla de servicio                                         | El número de servicios y el tráfico actual no justifican la sobrecarga operativa de un sidecar en cada contenedor.                                              |
-| Modelo de resultado enriquecido (envoltorio de resultado) | Los errores se devuelven con el estado HTTP propio de la operación y un cuerpo de problema normalizado, sin envoltorio adicional en el cuerpo de éxito.         |
+| Decorator                                                 | The cross-cutting decoration of requests is resolved in the API gateway (rate limiting, headers, CORS) and in service middleware, without wrapping the domain.   |
+| CQRS (explicit command and query separation)              | The read volume does not justify duplicating model and persistence; queries are optimized with projections, indexes, and pagination.                            |
+| Orchestrated saga with a dedicated component              | The few distributed operations are resolved with events and local compensation; introducing an orchestrator would add a single point of failure.                |
+| Service mesh                                              | The number of services and the current traffic do not justify the operational overhead of a sidecar in each container.                                          |
+| Enriched result model (result wrapper)                    | Errors are returned with the operation's own HTTP status and a normalized problem body, with no additional wrapper in the success body.                        |
 
-# 4 Graphical Interfaces
+# 4 Graphical interfaces
 
-La plataforma se entrega en dos superficies: una aplicación web de gestión y una aplicación móvil de consulta y registro en campo. La web se dirige a los perfiles administrativos (super administrador y administrador del colegio) y a las pantallas públicas; la móvil se dirige a conductor, acudiente y estudiante, que operan desde el vehículo o desde el camino. Ambas superficies comparten tokens, componentes y reglas de validación, de modo que la identidad visual y el comportamiento sean un solo sistema.
+The platform is delivered in two surfaces: a management web application and a mobile application for consultation and field recording. The web targets the administrative profiles (super administrator and school administrator) and the public screens; the mobile targets driver, guardian, and student, who operate from the vehicle or from the road. Both surfaces share tokens, components, and validation rules, so that the visual identity and behavior are a single system.
 
-## 4.1. Interface Principles
+## 4.1. Interface principles
 
-**Tabla 11**. Interface Principles y consecuencias de diseño
+**Table 11**. Interface principles and design consequences
 
-| Principio                      | Consecuencia de diseño                                                                                                                                  |
+| Principle                      | Design consequence                                                                                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Primero la operación           | En las pantallas de campo, la acción principal (iniciar viaje, registrar bordada) siempre está a un toque y con tamaño de destino mínimo de 44 píxeles. |
-| Información escaneable         | Las listas y paneles muestran el dato decisivo primero (estado, hora, ruta) y el detalle en modal o vista de información.                               |
-| Confirmación antes de destruir | Toda eliminación o cambio irreversible pasa por un diálogo de confirmación con la consecuencia explícita.                                               |
-| Errores accionables            | Cada error se muestra junto al control afectado y explica cómo corregirlo; nunca se informa solo el código del problema.                                |
-| Accesibilidad desde el diseño  | Etiqueta asociada a cada control, orden de tabulación predecible, contraste mínimo cumplido y estados nunca comunicados solo por color.                 |
-| Consistencia entre superficies | Mismos tokens, mismas reglas de validación y mismos patrones de confirmación en web y móvil.                                                            |
+| Operation first                | On the field screens, the main action (start trip, register boarding) is always one tap away and with a minimum target size of 44 pixels.              |
+| Scannable information          | Lists and panels show the decisive datum first (status, time, route) and the detail in a modal or information view.                                     |
+| Confirmation before destroying | Every deletion or irreversible change goes through a confirmation dialog with the explicit consequence.                                                 |
+| Actionable errors              | Each error is shown next to the affected control and explains how to correct it; never only the problem code is reported.                              |
+| Accessibility from design      | Label associated with each control, predictable tab order, minimum contrast met, and states never communicated by color alone.                          |
+| Consistency between surfaces   | Same tokens, same validation rules, and same confirmation patterns on web and mobile.                                                                   |
 
-## 4.2. Web Interfaces by Role
+## 4.2. Web interfaces by role
 
-### 4.2.1. Espacio público (sin sesión)
+### 4.2.1. Public space (no session)
 
-La superficie pública comprende el inicio (presentación del servicio) y el acceso. El inicio comunica las capacidades del producto (monitoreo en tiempo real, alertas, control de asistencia, panel de administración, aplicación para familias, datos seguros) y el registro de institución.
-
-+--------------------------------------------------------------+
-
-| \[≡\] GUARDIAN ESCOLAR \[ Contacto \] \[ Iniciar sesión \] <- 56px
+The public surface comprises the home page (presentation of the service) and sign-in. The home page communicates the product's capabilities (real-time monitoring, alerts, attendance control, administration panel, application for families, secure data) and institution registration.
 
 +--------------------------------------------------------------+
 
-| La seguridad escolar en tiempo real |
-
-| GPS en tiempo real · Alertas instantáneas · Asistencia |
-
-| Panel de administración · App para familias · Datos seguros |
-
-| Registro: \[Nombre de la institución\] \[Correo\] \[Mensaje\] |
-
-| \[ Registrar \] |
+| \[≡\] GUARDIAN ESCOLAR \[ Contact \] \[ Sign in \] <- 56px
 
 +--------------------------------------------------------------+
 
-**Figura 5**. Boceto de la página de inicio pública
+| School safety in real time |
+
+| Real-time GPS · Instant alerts · Attendance |
+
+| Administration panel · App for families · Secure data |
+
+| Registration: \[Institution name\] \[Email\] \[Message\] |
+
+| \[ Register \] |
+
++--------------------------------------------------------------+
+
+**Figure 5**. Sketch of the public home page
 
 +--------------------------------------------------------------------------------+
 
@@ -486,55 +486,55 @@ La superficie pública comprende el inicio (presentación del servicio) y el acc
 
 | +--------------------------------+ |
 
-| | Iniciar sesión | |
+| | Sign in | |
 
-| | Correo | |
-
-| | \[\_**\_**\_**\_**\_**\_**\_**\_**\] | |
-
-| | Contraseña | <- política de contraseñas |
+| | Email | |
 
 | | \[\_**\_**\_**\_**\_**\_**\_**\_**\] | |
 
-| | ¿Olvidaste tu contraseña? | <- enlace a recuperación |
+| | Password | <- password policy |
 
-| | \[ Iniciar sesión \] | <- var(--button-apply) |
+| | \[\_**\_**\_**\_**\_**\_**\_**\_**\] | |
 
-| | (mensaje de credenciales | |
+| | Forgot your password? | <- link to recovery |
 
-| | inválidas, si aplica) | |
+| | \[ Sign in \] | <- var(--button-apply) |
+
+| | (invalid credentials | |
+
+| | message, if applicable) | |
 
 | +--------------------------------+ |
 
 +--------------------------------------------------------------------------------+
 
-**Figura 6**. Boceto del formulario de inicio de sesión
+**Figure 6**. Sketch of the sign-in form
 
-### 4.2.2. Rol super administrador
+### 4.2.2. Super administrator role
 
-El panel de super administración concentra la vista global de la instancia: organizaciones, colegios, administradores y alertas recientes.
+The super administration panel concentrates the global view of the instance: organizations, schools, administrators, and recent alerts.
 
 +--------------------------------------------------------------------------------+
 
-| GUARDIAN ESCOLAR \[ Tema ▾ \] \[ Idioma ▾ \] \[ Perfil ▾ \] 56px |
+| GUARDIAN ESCOLAR \[ Theme ▾ \] \[ Language ▾ \] \[ Profile ▾ \] 56px |
 
 +-------------------+------------------------------------------------------------+
 
-| | Bienvenido |
+| | Welcome |
 
 | PANEL | |
 
 | +---------------+----------------------------------+---------------------+ |
 
-| | Colegios | \[ Tarjetas: colegios, usuarios, | | |
+| | Schools | \[ Cards: schools, users, | | |
 
-| | Administrador | sedes y rutas \] | | |
+| | Administrator | campuses and routes \] | | |
 
-| | | Últimas alertas | | |
+| | | Latest alerts | | |
 
 | | | +----------------------------+ | | |
 
-| | | | hora | tipo | colegio | | | |
+| | | | time | type | school | | | |
 
 | | | +----------------------------+ | | |
 
@@ -542,33 +542,33 @@ El panel de super administración concentra la vista global de la instancia: org
 
 | | | +----------------------------+ | | |
 
-| | | \[ Ver todo \] | | |
+| | | \[ View all \] | | |
 
 | +---------------+-----------------------------------+---------------------+ |
 
-| 200px sidebar con ítems activos resaltados |
+| 200px sidebar with active items highlighted |
 
 +-------------------+------------------------------------------------------------+
 
-**Figura 7**. Boceto del panel de super administración
+**Figure 7**. Sketch of the super administration panel
 
-Gestión de colegios y de administradores repite la misma plantilla de módulo (lista + modal de información + modal de edición + diálogo de eliminación):
-
-+--------------------------------------------------------------------------------+
-
-| \[←\] Colegios \[ + Nuevo colegio \] |
+School and administrator management repeats the same module template (list + information modal + edit modal + delete dialog):
 
 +--------------------------------------------------------------------------------+
 
-| \[ Buscar por nombre.......... \] Filtro: \[Estado ▾\] Resultados: 12 |
+| \[←\] Schools \[ + New school \] |
 
 +--------------------------------------------------------------------------------+
 
-| Nombre | Ciudad | Sedes | Estado | Acciones |
+| \[ Search by name.......... \] Filter: \[Status ▾\] Results: 12 |
 
-| San José | Bogotá | 3 | Activo | \[i\] \[✎\] \[🗑\] |
++--------------------------------------------------------------------------------+
 
-| Norte Abierto | Trujillo | 1 | Inactivo | \[i\] \[✎\] \[🗑\] |
+| Name | City | Campuses | Status | Actions |
+
+| San José | Bogotá | 3 | Active | \[i\] \[✎\] \[🗑\] |
+
+| Norte Abierto | Trujillo | 1 | Inactive | \[i\] \[✎\] \[🗑\] |
 
 +--------------------------------------------------------------------------------+
 
@@ -576,57 +576,57 @@ Gestión de colegios y de administradores repite la misma plantilla de módulo (
 
 +--------------------------------------------------------------------------------+
 
-\[i\] -> modal de información (RecordInformation); \[✎\] -> modal de edición; \[🗑\] -> diálogo de eliminación (DeleteRecord)
+\[i\] -> information modal (RecordInformation); \[✎\] -> edit modal; \[🗑\] -> delete dialog (DeleteRecord)
 
-**Figura 8**. Boceto del módulo de gestión de colegios
+**Figure 8**. Sketch of the school management module
 
-### 4.2.3. Rol administrador del colegio
+### 4.2.3. School administrator role
 
-El panel administrativo agrupa las operaciones del colegio: personas (usuarios, padres, conductores, familias), transporte (buses, paradas, rutas) y perfil.
+The administrative panel groups the operations of the school: people (users, parents, drivers, families), transport (buses, stops, routes), and profile.
 
 +--------------------------------------------------------------------------------+
 
-| GUARDIAN ESCOLAR \[ Tema ▾ \] \[ Idioma ▾ \] \[ Perfil ▾ \] |
+| GUARDIAN ESCOLAR \[ Theme ▾ \] \[ Language ▾ \] \[ Profile ▾ \] |
 
 +-------------------+------------------------------------------------------------+
 
-| USUARIOS | Bienvenido, administrador |
+| USERS | Welcome, administrator |
 
-| - Usuarios | |
+| - Users | |
 
-| - Padres | +----------------+ +----------------+ |
+| - Parents | +----------------+ +----------------+ |
 
-| - Conductores | | Estudiantes | | Buses | |
+| - Drivers | | Students | | Buses | |
 
-| - Familias | | 120 | | 20 | |
+| - Families | | 120 | | 20 | |
 
 | ----------------| +----------------+ +----------------+ |
 
-| TRANSPORTE | +----------------+ +----------------+ |
+| TRANSPORT | +----------------+ +----------------+ |
 
-| - Buses | | Rutas | | Paradas | |
+| - Buses | | Routes | | Stops | |
 
-| - Paradas | | 20 | | 60 | |
+| - Stops | | 20 | | 60 | |
 
-| - Rutas | +----------------+ +----------------+ |
+| - Routes | +----------------+ +----------------+ |
 
 | ----------------| |
 
-| | Últimas alertas del colegio |
+| | Latest school alerts |
 
 | | +----------------------------------------------------+ |
 
-| | | 08:12 Desvío de ruta Ruta 04 \[Ver\] | |
+| | | 08:12 Route deviation Route 04 \[View\] | |
 
-| | | 07:55 Bordada no registrada Ruta 02 \[Ver\] | |
+| | | 07:55 Boarding not registered Route 02 \[View\] | |
 
 | +---------------+--------------------------------------------------------+ |
 
 +-------------------+------------------------------------------------------------+
 
-**Figura 9**. Boceto del panel del administrador del colegio
+**Figure 9**. Sketch of the school administrator panel
 
-Ficha de registro de estudiante (plantilla de formulario de la aplicación; los demás formularios comparten estructura):
+Student registration form (the application's form template; the other forms share the structure):
 
 +--------------------------------------------------------------------------------+
 
@@ -634,162 +634,162 @@ Ficha de registro de estudiante (plantilla de formulario de la aplicación; los 
 
 | +--------------------------------------------------------------------------+ |
 
-| | Nombre \* \[\_**\_**\_**\_**\_**\_\] | Apellido \* \[\_**\_**\_**\_**\_**\_\] | |
+| | First name \* \[\_**\_**\_**\_**\_**\_\] | Last name \* \[\_**\_**\_**\_**\_**\_\] | |
 
-| | Tipo de doc. \* \[Documento ▾\] | N.º de doc. \[\_**\_**\_**\_**\___\_\] | |
+| | Doc. type \* \[Document ▾\] | Doc. no. \[\_**\_**\_**\_**\___\_\] | |
 
-| | Fecha nac. \* \[aaaa-mm-dd \] | Género \[\_**\_**\___\__ ▾\] | |
+| | Birth date \* \[yyyy-mm-dd \] | Gender \[\_**\_**\___\__ ▾\] | |
 
-| | Colegio \* \[Colegio ▾\] | Sede \* \[Sede ▾\] | |
+| | School \* \[School ▾\] | Campus \* \[Campus ▾\] | |
 
-| | Curso \* \[Curso ▾\] | Grupo \[Grupo ▾\] | |
+| | Grade \* \[Grade ▾\] | Group \[Group ▾\] | |
 
-| | Acudiente \* \[Buscar persona ....\] | Estado \* \[Activo ▾\] | |
+| | Guardian \* \[Search person ....\] | Status \* \[Active ▾\] | |
 
 | | | |
 
-| | \[ Cancelar \] \[ Guardar \] | |
+| | \[ Cancel \] \[ Save \] | |
 
 | +--------------------------------------------------------------------------+ |
 
-| (errores en línea bajo cada campo, solo cuando el control fue tocado) |
+| (inline errors below each field, only when the control was touched) |
 
 +--------------------------------------------------------------------------------+
 
-**Figura 10**. Boceto del formulario de registro de estudiante
+**Figure 10**. Sketch of the student registration form
 
-### 4.2.4. Perfiles con acceso web limitado (conductor, acudiente, estudiante)
+### 4.2.4. Profiles with limited web access (driver, guardian, student)
 
-Los perfiles de campo conservan en la web un espacio de sesión reducido: información personal, cambio de datos de cuenta, idioma y tema. Las operaciones de consulta en ruta y los registros de campo se resuelven en la aplicación móvil.
+The field profiles keep a reduced session space on the web: personal information, account data change, language, and theme. The route consultation operations and field records are resolved in the mobile application.
 
 +--------------------------------------------------------------------------------+
 
-| \[←\] Mi perfil |
+| \[←\] My profile |
 
 +--------------------------------------------------------------------------------+
 
 | +---------------------------+ +------------------------------------------+ |
 
-| | (avatar) | | Nombre completo | |
+| | (avatar) | | Full name | |
 
-| | | | Correo electrónico | |
+| | | | Email address | |
 
-| | Nombre Apellido | | Teléfono de contacto | |
+| | First name Last name | | Contact phone | |
 
-| | Rol | | Estado de la cuenta | |
+| | Role | | Account status | |
 
-| +---------------------------+ | \[ Editar información \] | |
+| +---------------------------+ | \[ Edit information \] | |
 
 | +------------------------------------------+ |
 
-| Seguridad de la cuenta |
+| Account security |
 
-| - Cambio de correo electrónico -> flujo en cuatro pasos con código |
+| - Email change -> four-step flow with code |
 
-| - Cambio de contraseña -> flujo en tres pasos con código de longitud seis |
+| - Password change -> three-step flow with six-length code |
 
-| - Cambio de teléfono o contacto -> flujo en cuatro pasos con código |
+| - Phone or contact change -> four-step flow with code |
 
-| Preferencias: Idioma \[Español ▾\] Tema \[Azul claro ▾\] |
+| Preferences: Language \[Spanish ▾\] Theme \[Light blue ▾\] |
 
 +--------------------------------------------------------------------------------+
 
-**Figura 11**. Boceto del perfil con acceso web limitado
+**Figure 11**. Sketch of the profile with limited web access
 
-Flujo de cambio de un dato sensible (correo, teléfono) en cuatro pasos con confirmación visible y retorno al perfil; el cambio de contraseña aplica la política de contraseñas y usa tres pasos:
+Flow for changing a sensitive datum (email, phone) in four steps with visible confirmation and return to the profile; the password change applies the password policy and uses three steps:
 
-Paso 1 Paso 2 Paso 3 Paso 4
-
-+--------------+ +------------------+ +---------------+ +----------------+
-
-| Solicitar | -> | Validar código | -> | Ingresar el | -> | Validar código |
-
-| el cambio | | de seis | | nuevo valor | | final |
-
-| (dato actual)| | caracteres | | | | |
+Step 1 Step 2 Step 3 Step 4
 
 +--------------+ +------------------+ +---------------+ +----------------+
 
-**Figura 12**. Flujo de cambio de un dato sensible en cuatro pasos
+| Request | -> | Validate code | -> | Enter the | -> | Validate final |
 
-### 4.2.5. Matriz de componentes y validaciones por formulario
+| the change | | of six | | new value | | code |
 
-**Tabla 12**. Matriz de componentes y validaciones por formulario
+| (current data)| | characters | | | | |
 
-| Pantalla / formulario            | Componentes de interfaz                                                                                | Validaciones aplicadas                                                                                                                                                                                                                 |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Inicio de sesión                 | Campo de correo, campo de contraseña, botón primario, mensaje en línea                                 | Correo con formato válido; la política de contraseñas exige como mínimo ocho caracteres con mayúscula, minúscula, número y carácter especial; el error de credenciales se muestra en la vista y no revela cuál de los dos datos falló. |
-| Recuperación de acceso (paso 1)  | Campo de correo, botón primario                                                                        | Correo con formato válido; respuesta genérica para existencia de la cuenta.                                                                                                                                                            |
-| Recuperación de acceso (paso 2)  | Seis campos segmentados, botón primario                                                                | Código alfanumérico de longitud seis; foco y orden de tabulación preservados entre los seis campos; error en línea.                                                                                                                    |
-| Recuperación de acceso (paso 3)  | Campo de contraseña, campo de confirmación, botón primario                                             | coincidencia de ambas contraseñas; se aplica la política de contraseñas con un mínimo de ocho caracteres, mayúscula, minúscula, número y carácter especial; validación al enviar con todos los controles marcados como tocados.        |
-| Registro de estudiante           | Campos de identidad, selectores de colegio/sede/curso/grupo, buscador de acudiente, selector de estado | Obligatoriedad de los campos marcados con asterisco; documento sin duplicados en el colegio; acudiente existente y con rol de padre; fecha de nacimiento no futura.                                                                    |
-| Registro de conductor            | Campos de identidad, licencia, teléfono, selector de estado                                            | Obligatoriedad; teléfono en formato internacional; vigencia de la licencia informada antes de aceptar.                                                                                                                                 |
-| Registro de bus                  | Placa, marca, modelo, capacidad, número interno                                                        | Obligatoriedad; placa sin duplicados; capacidad entera positiva.                                                                                                                                                                       |
-| Registro de ruta                 | Nombre, origen, destino, hora de inicio, hora de fin, paradas en orden                                 | Obligatoriedad; hora de fin posterior a la hora de inicio; al menos una parada; orden de paradas único.                                                                                                                                |
-| Registro de parada               | Nombre, dirección, latitud, longitud                                                                   | Obligatoriedad; latitud entre −90 y 90; longitud entre −180 y 180.                                                                                                                                                                     |
-| Cambio de correo o contacto      | Campo de correo o teléfono, campos de código                                                           | Formato del dato nuevo; código de longitud seis; verificación en dos vueltas para evitar el uso del dato anterior.                                                                                                                     |
-| Cambio de contraseña autenticado | Campo de contraseña actual, nuevas contraseñas, código                                                 | Política de contraseñas aplicada a la nueva contraseña; no coincidir con la contraseña actual; código de longitud seis.                                                                                                                |
-| Eliminación de registro          | Diálogo de confirmación                                                                                | Confirmación explícita de la acción destructiva; en registros con dependencias, aviso de las entidades afectadas.                                                                                                                      |
++--------------+ +------------------+ +---------------+ +----------------+
 
-## 4.3. Mobile Interfaces
+**Figure 12**. Four-step flow for changing a sensitive datum
 
-La aplicación móvil se organiza en tres zonas: barra superior, área de contenido y navegación inferior. Las pantallas cubren el acceso, la operación de ruta del conductor, la consulta del acudiente y la administración de la cuenta.
+### 4.2.5. Matrix of components and validations per form
 
-Acceso:
+**Table 12**. Matrix of components and validations per form
+
+| Screen / form                     | Interface components                                                                                  | Validations applied                                                                                                                                                                                                                   |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sign-in                           | Email field, password field, primary button, inline message                                          | Email with valid format; the password policy requires at least eight characters with uppercase, lowercase, number, and special character; the credentials error is shown in the view and does not reveal which of the two data failed. |
+| Access recovery (step 1)          | Email field, primary button                                                                           | Email with valid format; generic response for account existence.                                                                                                                                                                      |
+| Access recovery (step 2)          | Six segmented fields, primary button                                                                  | Alphanumeric code of length six; focus and tab order preserved between the six fields; inline error.                                                                                                                                  |
+| Access recovery (step 3)          | Password field, confirmation field, primary button                                                    | match of both passwords; the password policy is applied with a minimum of eight characters, uppercase, lowercase, number, and special character; validation on submit with all controls marked as touched.                          |
+| Student registration              | Identity fields, school/campus/grade/group selectors, guardian search, status selector                | Requirement of the fields marked with an asterisk; document with no duplicates in the school; existing guardian with parent role; non-future birth date.                                                                             |
+| Driver registration               | Identity fields, license, phone, status selector                                                      | Requirement; phone in international format; license validity informed before accepting.                                                                                                                                               |
+| Bus registration                  | Plate, make, model, capacity, internal number                                                         | Requirement; plate with no duplicates; positive integer capacity.                                                                                                                                                                     |
+| Route registration                | Name, origin, destination, start time, end time, stops in order                                        | Requirement; end time later than the start time; at least one stop; unique stop order.                                                                                                                                                |
+| Stop registration                 | Name, address, latitude, longitude                                                                    | Requirement; latitude between −90 and 90; longitude between −180 and 180.                                                                                                                                                             |
+| Email or contact change           | Email or phone field, code fields                                                                     | Format of the new datum; code of length six; two-round verification to avoid the use of the previous datum.                                                                                                                          |
+| Authenticated password change     | Current password field, new passwords, code                                                           | Password policy applied to the new password; not matching the current password; code of length six.                                                                                                                                  |
+| Record deletion                   | Confirmation dialog                                                                                   | Explicit confirmation of the destructive action; in records with dependencies, warning of the affected entities.                                                                                                                     |
+
+## 4.3. Mobile interfaces
+
+The mobile application is organized into three zones: top bar, content area, and bottom navigation. The screens cover sign-in, the driver's route operation, the guardian's consultation, and account administration.
+
+Sign-in:
 
 +---------------------------+ +---------------------------+
 
-| GUARDIAN ESCOLAR | | Recuperar acceso |
+| GUARDIAN ESCOLAR | | Recover access |
 
-| Correo | | Correo |
+| Email | | Email |
 
 | \[\_**\_**\_**\_**\_**\_**\_\] | | \[\_**\_**\_**\_**\_**\_**\_\] |
 
-| | | \[ Continuar \] |
+| | | \[ Continue \] |
 
-| Contraseña | | | <- política de contraseñas
+| Password | | | <- password policy
 
 | \[\_**\_**\_**\_**\_**\_**\_\] | | +---------------------+ |
 
 | | | | | | | | | | | |
 
-| ¿Olvidaste tu | | |código de seis | |
+| Forgot your | | |six-character | |
 
-| contraseña? | | |caracteres segmentado| | <- longitud seis
+| password? | | |segmented code | | <- length six
 
-| \[ Iniciar sesión \] | | +---------------------+ |
+| \[ Sign in \] | | +---------------------+ |
 
-| | | \[ Validar \] |
-
-+---------------------------+ +---------------------------+
-
-**Figura 13**. Bocetos móviles de acceso y recuperación
-
-Conductor: operación de ruta con registro de bordada y aviso de sincronización en línea:
+| | | \[ Validate \] |
 
 +---------------------------+ +---------------------------+
 
-| \[≡\] Mi ruta \[🔔\] | | \[≡\] Mi ruta \[🔔\] |
+**Figure 13**. Mobile sketches of sign-in and recovery
+
+Driver: route operation with boarding registration and online sync notice:
+
++---------------------------+ +---------------------------+
+
+| \[≡\] My route \[🔔\] | | \[≡\] My route \[🔔\] |
 
 +---------------------------+ +---------------------------+
 
 | Ruta Centro | | Ruta Centro |
 
-| Salida 07:10 4 de 12 | | Próxima parada |
+| Departure 07:10 4 of 12 | | Next stop |
 
 | +---------------------+ | | +-----------------------+ |
 
-| | Próxima parada: | | | | Colegio San José | |
+| | Next stop: | | | | Colegio San José | |
 
-| | Colegio San José | | | | 07:42 (falta 6 min) | |
+| | Colegio San José | | | | 07:42 (6 min left) | |
 
 | | 07:42 1.2 km | | | +-----------------------+ |
 
 | +---------------------+ | | |
 
-| | | Estudiantes en esta parada |
+| | | Students at this stop |
 
-| Lista de paradas | | \[x\] Juan García 07:41 |
+| Stop list | | \[x\] Juan García 07:41 |
 
 | 1. Av. Norte 07:15 OK | | \[ \] María Ruiz -- |
 
@@ -797,81 +797,81 @@ Conductor: operación de ruta con registro de bordada y aviso de sincronización
 
 | 3. Colegio S.J. 07:42 .. | | |
 
-| 4. La Finlandia 07:55 | | \[ Registrar bordada \] |
+| 4. La Finlandia 07:55 | | \[ Register boarding \] |
 
-| \[ Registrar bordada \] | | (botón principal, 44px) |
-
-+---------------------------+ +---------------------------+
-
-**Figura 14**. Boceto móvil de la operación de ruta del conductor
-
-Estado sin conexión del conductor y monitor de viaje:
+| \[ Register boarding \] | | (primary button, 44px) |
 
 +---------------------------+ +---------------------------+
 
-| \[←\] Mi ruta \[Sin red\] | | \[←\] Viaje en curso \[⏸\] |
+**Figure 14**. Mobile sketch of the driver's route operation
 
-| 3 cambios pendientes | | |
+Driver offline state and trip monitor:
 
-+---------------------------+ | Estado: EN RUTA |
++---------------------------+ +---------------------------+
 
-| | | Inicio: 07:10 |
+| \[←\] My route \[No network\] | | \[←\] Trip in progress \[⏸\] |
 
-| Los registros se guardarán | | Paradas completadas: 4 |
+| 3 pending changes | | |
 
-| y se sincronizarán cuando | | Estudiantes a bordo: 18 |
++---------------------------+ | Status: EN ROUTE |
 
-| vuelva la conexión. | | |
+| | | Start: 07:10 |
 
-| | | \[ Pausar \] \[ Finalizar \]|
+| Records will be saved | | Stops completed: 4 |
 
-| Pendientes: | | |
+| and synced when | | Students on board: 18 |
 
-| - Bordada 07:42 Colegio SJ | | (la finalización exige |
+| the connection returns. | | |
 
-| - Estado 07:55 La Finlandia| | confirmación) |
+| | | \[ Pause \] \[ Finish \]|
+
+| Pending: | | |
+
+| - Boarding 07:42 Colegio SJ | | (finishing requires |
+
+| - Status 07:55 La Finlandia| | confirmation) |
 
 | | +---------------------------+
 
-| \[ Reintentar sincronizar \] |
+| \[ Retry sync \] |
 
 +---------------------------+
 
-**Figura 15**. Boceto móvil sin conexión y monitor de viaje
+**Figure 15**. Mobile sketch of the offline state and trip monitor
 
-Acudiente: familia y ruta en vivo:
-
-+---------------------------+ +---------------------------+
-
-| \[≡\] Mi familia \[🔔\] | | \[≡\] Ruta \[🔔\] |
+Guardian: family and live route:
 
 +---------------------------+ +---------------------------+
 
-| Titular | | Ruta Centro |
+| \[≡\] My family \[🔔\] | | \[≡\] Route \[🔔\] |
+
++---------------------------+ +---------------------------+
+
+| Policyholder | | Ruta Centro |
 
 | +---------------------+ | | +---------------------+ |
 
-| | Ana Gómez Acudiente| | | | Mapa del recorrido | |
+| | Ana Gómez Guardian| | | | Route map | |
 
-| +---------------------+ | | | (con resumen en | |
+| +---------------------+ | | | (with summary in | |
 
-| | | | texto alternativo) | |
+| | | | | alternative text) | |
 
-| Otros miembros | | +---------------------+ |
-
-| +---------------------+ | | |
-
-| | Juan García Estudiante| | | Próxima llegada: 07:52 |
-
-| | Ruta Centro \[Ver\] | | | Parada: Calle 12 |
-
-| +---------------------+ | | Estado: EN RUTA |
+| Other members | | +---------------------+ |
 
 | +---------------------+ | | |
 
-| | María Ruiz Estudiante| | | Paradas |
+| | Juan García Student | | | Next arrival: 07:52 |
 
-| | Sin ruta -- | | | 1. Av. Norte 07:15 ✓ |
+| | Ruta Centro \[View\] | | | Stop: Calle 12 |
+
+| +---------------------+ | | Status: EN ROUTE |
+
+| +---------------------+ | | |
+
+| | María Ruiz Student | | | Stops |
+
+| | No route -- | | | 1. Av. Norte 07:15 ✓ |
 
 | +---------------------+ | | 2. Calle 12 07:28 ✓ |
 
@@ -879,144 +879,144 @@ Acudiente: familia y ruta en vivo:
 
 | +---------------------+ | +---------------------------+
 
-| | Solicitud de uso | |
+| | Exceptional use | |
 
-| | excepcional \[Enviar\] | |
+| | request \[Send\] | |
 
 | +---------------------+ |
 
 +---------------------------+
 
-**Figura 16**. Boceto móvil de familia y ruta del acudiente
+**Figure 16**. Mobile sketch of the guardian's family and route
 
-## 4.4. Navigation Map
+## 4.4. Navigation map
 
 WEB
 
 |
 
-+-- / (redirección) -------------------------------------> /home
++-- / (redirect) ----------------------------------------> /home
 
 |
 
-+-- /home ................................ público (+ /contact)
++-- /home ................................ public (+ /contact)
 
 |
 
 +-- /auth
 
-| +-- /login ..................................... público
+| +-- /login ..................................... public
 
-| +-- /recuperar-acceso
+| +-- /recover-access
 
-| +-- /email ...... solicitud (política de contraseñas)
+| +-- /email ...... request (password policy)
 
-| +-- /code ....... validación de código de longitud seis
+| +-- /code ....... validation of six-length code
 
-| +-- /reset ...... nueva contraseña (política de contraseñas)
-
-|
-
-+-- /panel-administrador ................... SUPER_ADMIN, ADMIN
-
-| +-- /admin/usuarios, /padres ................. ADMIN
-
-| +-- /admin/conductores, /familias ............ ADMIN
-
-| +-- /admin/buses, /admin/paradas, /admin/rutas ......... ADMIN
-
-| +-- /admin/perfil .................... SUPER_ADMIN, ADMIN
-
-| +-- /cambio-correo y /cambio-contacto: dato -> /code-first -> /reset -> /code-second
-
-| +-- /cambio-clave: /email -> /code -> /reset
+| +-- /reset ...... new password (password policy)
 
 |
 
-+-- /panel-superadministrador .............. SUPER_ADMIN
++-- /admin-panel ................... SUPER_ADMIN, ADMIN
 
-| +-- /superadmin/admins y /superadmin/colegios SUPER_ADMIN
+| +-- /admin/users, /parents ................. ADMIN
 
-|
+| +-- /admin/drivers, /families ............... ADMIN
 
-+-- /\* (ruta no definida) ------------------------------> /home
+| +-- /admin/buses, /admin/stops, /admin/routes ......... ADMIN
 
-MÓVIL
+| +-- /admin/profile .................... SUPER_ADMIN, ADMIN
 
-|
+| +-- /email-change and /contact-change: data -> /code-first -> /reset -> /code-second
 
-+-- Acceso: login y recuperar acceso (email -> código -> política de contraseñas)
-
-|
-
-+-- Conductor
-
-| +-- Mi ruta (paradas, próxima parada, bordada)
-
-| +-- Viaje en curso y sin conexión (pendientes, reintento)
-
-| +-- Notificaciones
+| +-- /password-change: /email -> /code -> /reset
 
 |
 
-+-- Acudiente
++-- /superadmin-panel .............. SUPER_ADMIN
 
-| +-- Mi familia (titular, miembros, uso excepcional)
-
-| +-- Ruta (mapa con resumen de texto, paradas, estado)
-
-| +-- Notificaciones y mis datos
+| +-- /superadmin/admins and /superadmin/schools SUPER_ADMIN
 
 |
 
-+-- Estudiante: consulta de ruta y de datos propios
++-- /\* (undefined route) ------------------------------> /home
+
+MOBILE
 
 |
 
-+-- Cuenta compartida: perfil, seguridad, apariencia, idioma, acerca de,
++-- Access: login and recover access (email -> code -> password policy)
 
-política de privacidad y cierre de sesión con confirmación
+|
 
-**Figura 17**. Navigation Map de la plataforma
++-- Driver
 
-Reglas de navegación: la raíz redirige al inicio; una ruta no definida redirige al inicio; los flujos de cambio de datos son secuencias paso a paso con retorno explícito al perfil; el panel del administrador y el del super administrador son rutas distintas con menú lateral propio; el acceso a cada panel se decide por rol en el lado del servidor, no solo por la interfaz.
+| +-- My route (stops, next stop, boarding)
 
-## 4.5. Design Tokens
+| +-- Trip in progress and offline (pending, retry)
 
-Los design tokens son la única fuente de valores visuales: los componentes referencian variables, no colores ni tamaños sueltos.
+| +-- Notifications
 
-Paleta base:
+|
 
-**Tabla 13**. Paleta base de design tokens
++-- Guardian
 
-| Token                | Valor   | Uso                                          |
+| +-- My family (account holder, members, exceptional use)
+
+| +-- Route (map with text summary, stops, status)
+
+| +-- Notifications and my data
+
+|
+
++-- Student: route and own data lookup
+
+|
+
++-- Shared account: profile, security, appearance, language, about,
+
+privacy policy and sign-out with confirmation
+
+**Figure 17**. Platform navigation map
+
+Navigation rules: the root redirects to the home page; an undefined route redirects to the home page; data-change flows are step-by-step sequences with explicit return to the profile; the administrator panel and the super administrator panel are distinct routes with their own side menu; access to each panel is decided by role on the server side, not only by the interface.
+
+## 4.5. Design tokens
+
+Design tokens are the single source of visual values: components reference variables, not loose colors or sizes.
+
+Base palette:
+
+**Table 13**. Base palette of design tokens
+
+| Token                | Value   | Use                                          |
 | -------------------- | ------- | -------------------------------------------- |
-| \--bg-color          | #F0F4F8 | Fondo general de las vistas                  |
-| \--card-bg           | #FFFFFF | Fondo de tarjetas y modales                  |
-| \--card-secondary-bg | #F8FAFC | Fondo secundario de tarjetas                 |
-| \--text-color        | #111827 | Texto principal                              |
-| \--title-color       | #1A2E4A | Títulos                                      |
-| \--text-secondary    | #64748B | Texto secundario y metadatos                 |
-| \--border-color      | #E2E8F0 | Bordes y separadores                         |
-| \--color-navbar      | #1A56DB | Barra superior y panel lateral               |
-| \--accent-color      | #003AB8 | Enlaces y énfasis                            |
-| \--hover-color       | #2061EC | Estado de paso del puntero                   |
-| \--button-apply      | #1A56DB | Botón primario (aplicar, guardar, continuar) |
-| \--button-cancel     | #FFFFFF | Botón secundario (cancelar, volver)          |
-| \--alert-bg          | #FEF2F2 | Fondo de alertas                             |
-| \--alert-title       | #7F1D1D | Título de alerta                             |
-| \--alert-text        | #374151 | Texto de alerta                              |
-| \--alert-icon        | #DC2626 | Icono de alerta                              |
-| \--input-bg          | #FFFFFF | Fondo de campos de formulario                |
-| \--input-border      | #CBD5E1 | Borde de campos de formulario                |
-| \--modal-bg          | #FFFFFF | Fondo de diálogos                            |
-| \--mat-sys-surface   | #FFFFFF | Superficie del sistema Material              |
+| \--bg-color          | #F0F4F8 | General background of the views              |
+| \--card-bg           | #FFFFFF | Background of cards and modals               |
+| \--card-secondary-bg | #F8FAFC | Secondary background of cards                |
+| \--text-color        | #111827 | Main text                                    |
+| \--title-color       | #1A2E4A | Titles                                       |
+| \--text-secondary    | #64748B | Secondary text and metadata                  |
+| \--border-color      | #E2E8F0 | Borders and separators                       |
+| \--color-navbar      | #1A56DB | Top bar and side panel                       |
+| \--accent-color      | #003AB8 | Links and emphasis                           |
+| \--hover-color       | #2061EC | Pointer hover state                          |
+| \--button-apply      | #1A56DB | Primary button (apply, save, continue)       |
+| \--button-cancel     | #FFFFFF | Secondary button (cancel, back)              |
+| \--alert-bg          | #FEF2F2 | Alert background                             |
+| \--alert-title       | #7F1D1D | Alert title                                  |
+| \--alert-text        | #374151 | Alert text                                   |
+| \--alert-icon        | #DC2626 | Alert icon                                   |
+| \--input-bg          | #FFFFFF | Background of form fields                    |
+| \--input-border      | #CBD5E1 | Border of form fields                        |
+| \--modal-bg          | #FFFFFF | Background of dialogs                        |
+| \--mat-sys-surface   | #FFFFFF | Material system surface                      |
 
-Temas (ocho combinaciones; el token de barra y el del botón primario cambian juntos):
+Themes (eight combinations; the navbar token and the primary button token change together):
 
-**Tabla 14**. Combinaciones de tema y tokens de color
+**Table 14**. Theme combinations and color tokens
 
-| Tema               | \--color-navbar | \--button-apply |
+| Theme              | \--color-navbar | \--button-apply |
 | ------------------ | --------------- | --------------- |
 | light-theme-blue   | #1A56DB         | #1A56DB         |
 | light-theme-green  | #16A34A         | #16A34A         |
@@ -1027,90 +1027,90 @@ Temas (ocho combinaciones; el token de barra y el del botón primario cambian ju
 | dark-theme-yellow  | #B8860B         | #FACC15         |
 | dark-theme-red     | #5B1215         | #DC2626         |
 
-Tipografía:
+Typography:
 
-**Tabla 15**. Valores de tipografía
+**Table 15**. Typography values
 
-| Uso                   | Valor                                  |
+| Use                   | Value                                  |
 | --------------------- | -------------------------------------- |
-| Familia base          | "Segoe UI", Arial, sans-serif          |
-| Familia Material      | Roboto                                 |
-| Título de barra       | 20px, peso 500                         |
-| Título de formulario  | 1.5rem                                 |
-| Texto secundario      | 0.85rem a 1rem, color --text-secondary |
-| Etiquetas             | 0.78rem, peso 500, mayúsculas          |
-| Iconos de ilustración | 1.5rem                                 |
+| Base family           | "Segoe UI", Arial, sans-serif          |
+| Material family       | Roboto                                 |
+| Bar title             | 20px, weight 500                       |
+| Form title            | 1.5rem                                 |
+| Secondary text        | 0.85rem to 1rem, color --text-secondary |
+| Labels                | 0.78rem, weight 500, uppercase         |
+| Illustration icons    | 1.5rem                                 |
 
-Espaciado, radios y sombras:
+Spacing, radii and shadows:
 
-**Tabla 16**. Espaciado, radios y sombras
+**Table 16**. Spacing, radii and shadows
 
-| Uso                              | Valor                                   |
+| Use                              | Value                                   |
 | -------------------------------- | --------------------------------------- |
-| Escala de espaciado              | 4px, 8px, 12px, 16px, 24px, 32px        |
-| Controles compactos              | radio de 5px a 10px                     |
-| Tarjetas y modales               | radio de 16px                           |
-| Botones de formulario existentes | radio de 50px                           |
-| Tarjetas                         | sombra 0 4px 12px rgba(0, 0, 0, 0.08)   |
-| Modales                          | sombra propia de modal (--shadow-modal) |
+| Spacing scale                    | 4px, 8px, 12px, 16px, 24px, 32px        |
+| Compact controls                 | radius from 5px to 10px                 |
+| Cards and modals                 | radius of 16px                          |
+| Existing form buttons            | radius of 50px                          |
+| Cards                            | shadow 0 4px 12px rgba(0, 0, 0, 0.08)   |
+| Modals                           | modal's own shadow (--shadow-modal)     |
 
-Estructura y comportamiento:
+Structure and behavior:
 
-**Tabla 17**. Estructura y comportamiento de los componentes
+**Table 17**. Structure and behavior of the components
 
-| Elemento                                                      | Valor                                                                                                                                                           |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Barra superior                                                | altura 56px, fondo --color-navbar, título 20px                                                                                                                  |
-| Panel lateral                                                 | ancho 200px, fondo --color-navbar; ítems con radio 8px y separación 2px; paso con superposición blanca al 8%; activo con superposición blanca al 15% y peso 500 |
-| Densidad Material                                             | 0                                                                                                                                                               |
-| Paleta Material                                               | primaria tipo Azure, terciaria tipo azul, tipografía Roboto                                                                                                     |
-| Contraste                                                     | 4.5:1 para texto y 3:1 para elementos gráficos                                                                                                                  |
-| Objetivo táctil (móvil)                                       | mínimo 44px                                                                                                                                                     |
-| Punto de quiebre del panel lateral público                    | se oculta por encima de 1024px                                                                                                                                  |
-| Punto de quiebre del panel de información en flujos de sesión | se oculta por debajo de 1000px                                                                                                                                  |
-| Formularios y tarjetas                                        | pasan de dos columnas a una en pantallas pequeñas                                                                                                               |
+| Element                                                      | Value                                                                                                                                                           |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Top bar                                                      | height 56px, background --color-navbar, title 20px                                                                                                              |
+| Side panel                                                   | width 200px, background --color-navbar; items with radius 8px and 2px separation; hover with 8% white overlay; active with 15% white overlay and weight 500      |
+| Material density                                             | 0                                                                                                                                                               |
+| Material palette                                             | primary Azure type, tertiary blue type, Roboto typography                                                                                                       |
+| Contrast                                                     | 4.5:1 for text and 3:1 for graphic elements                                                                                                                     |
+| Touch target (mobile)                                        | minimum 44px                                                                                                                                                    |
+| Breakpoint of the public side panel                          | hidden above 1024px                                                                                                                                             |
+| Breakpoint of the information panel in session flows         | hidden below 1000px                                                                                                                                             |
+| Forms and cards                                              | go from two columns to one on small screens                                                                                                                     |
 
-## 4.6. Interface States
+## 4.6. Interface states
 
-**Tabla 18**. Interface States y patrones visuales
+**Table 18**. Interface states and visual patterns
 
-| Situación              | Patrón visual                                                                                                         |
+| Situation              | Visual pattern                                                                                                        |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Error de formulario    | Mensaje en línea bajo el campo, borde inválido y bloque de error tipado                                               |
-| Credenciales inválidas | Mensaje visible en la vista de acceso sin distinguir qué dato falló                                                   |
-| Confirmación           | Diálogo de confirmación con la consecuencia de la acción                                                              |
-| Carga y éxito          | Indicador de progreso o control deshabilitado durante la petición; mensaje visible antes de la navegación de retorno. |
-| Sin conexión (móvil)   | Insignia visible, contador de cambios pendientes y acción de reintentar sincronización                                |
-| Vacío (listas)         | Estado vacío con la acción de creación como siguiente paso                                                            |
+| Form error             | Inline message below the field, invalid border and typed error block                                                  |
+| Invalid credentials    | Message visible in the access view without distinguishing which piece of data failed                                  |
+| Confirmation           | Confirmation dialog with the consequence of the action                                                                |
+| Loading and success    | Progress indicator or control disabled during the request; message visible before the return navigation.              |
+| Offline (mobile)       | Visible badge, counter of pending changes and sync retry action                                                       |
+| Empty (lists)          | Empty state with the creation action as the next step                                                                 |
 
-## 4.7. Accessibility and Adaptation
+## 4.7. Accessibility and adaptation
 
-- Todo control tiene etiqueta asociada; el texto de relleno no sustituye a la etiqueta.
-- El orden de tabulación sigue el orden visual y se preserva en los campos segmentados de código.
-- Ningún estado se comunica solo por color: siempre acompaña texto o icono.
-- El mapa en vivo de la ruta se acompaña de un resumen textual de la posición, para no depender de la representación gráfica.
-- Los iconos sueltos reciben etiqueta accesible o mensaje emergente.
-- No se permite desplazamiento horizontal ni controles superpuestos en ningún punto de quiebre, y el texto se puede ampliar sin pérdida de contenido ni solapamientos.
+- Every control has an associated label; placeholder text does not replace the label.
+- The tab order follows the visual order and is preserved in the segmented code fields.
+- No state is communicated by color alone: it is always accompanied by text or an icon.
+- The live route map is accompanied by a textual summary of the position, so as not to depend on the graphic representation.
+- Standalone icons receive an accessible label or a tooltip.
+- Horizontal scrolling and overlapping controls are not allowed at any breakpoint, and text can be enlarged without loss of content or overlaps.
 
-# 5 Modelo de datos
+# 5 Data model
 
-La plataforma se persiste en una base de datos relacional única sobre SQL Server 2022 con once esquemas lógicos, uno por contexto de dominio, y treinta y ocho tablas en total. Cada servicio accede únicamente a su esquema; las claves foráneas que cruzan esquemas existen para garantizar integridad referencial dentro del motor, no para habilitar lecturas directas entre servicios. El esquema físico se mantiene con migraciones versionadas que se aplican en orden determinista en cada arranque.
+The platform is persisted in a single relational database on SQL Server 2022 with eleven logical schemas, one per domain context, and thirty-eight tables in total. Each service accesses only its own schema; the foreign keys that cross schemas exist to guarantee referential integrity within the engine, not to enable direct reads between services. The physical schema is maintained with versioned migrations that are applied in a deterministic order on every startup.
 
-Convenciones del modelo:
+Model conventions:
 
-**Tabla 19**. Convenciones del modelo de datos
+**Table 19**. Data model conventions
 
-| Convención               | Regla aplicada                                                                                                                                                                                          |
+| Convention               | Applied rule                                                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Llave primaria           | Identificador único global UNIQUEIDENTIFIER en las entidades de negocio; TINYINT autoincremental en catálogos pequeños; BIGINT autoincremental en la bitácora de auditoría y en el registro de errores. |
-| Llaves foráneas          | Declaradas como restricción de integridad referencial; algunas se crean junto con la tabla y otras se añaden por separado para respetar el orden de creación entre esquemas.                            |
-| Fechas y horas           | DATETIME2 para marcas de fecha y hora, DATE para vencimientos y TIME para horarios.                                                                                                                     |
-| Coordenadas geográficas  | DECIMAL(10,7) para latitud y longitud, con precisión suficiente para seguimiento vehicular.                                                                                                             |
-| Ciclo de vida            | Columna Status con valores ACTIVE e INACTIVE (baja lógica) en casi todas las entidades; el borrado físico se reserva para datos de prueba.                                                              |
-| Nulabilidad              | Solo se declara NULL cuando el dato es opcional por naturaleza (fecha de fin de vigencia, sitio web, segundo código de confirmación).                                                                   |
-| Restricciones de dominio | Comprobaciones en línea para estados, tipos de documento, días de la semana y tipo de bordada; unicidad sobre documentos, placas, IMEI, códigos de dispositivo y números de licencia.                   |
+| Primary key              | Global unique identifier UNIQUEIDENTIFIER in business entities; auto-incrementing TINYINT in small catalogs; auto-incrementing BIGINT in the audit log and in the error log.                             |
+| Foreign keys             | Declared as a referential integrity constraint; some are created together with the table and others are added separately to respect the creation order between schemas.                                 |
+| Dates and times          | DATETIME2 for date and time stamps, DATE for expirations and TIME for schedules.                                                                                                                        |
+| Geographic coordinates   | DECIMAL(10,7) for latitude and longitude, with sufficient precision for vehicle tracking.                                                                                                               |
+| Lifecycle                | Status column with values ACTIVE and INACTIVE (soft delete) in almost all entities; physical deletion is reserved for test data.                                                                        |
+| Nullability              | NULL is declared only when the data is optional by nature (end-of-validity date, website, second confirmation code).                                                                                    |
+| Domain restrictions      | Inline checks for statuses, document types, days of the week and boarding type; uniqueness on documents, plates, IMEI, device codes and license numbers.                                                |
 
-## 5.1. Diagrama ER global
+## 5.1. Global ER diagram
 
 +--------------------------------------------------------------+
 
@@ -1138,7 +1138,7 @@ Convenciones del modelo:
 
 +-------------------v--------------------v---------------------+
 
-| Iam: Profile, Role, Permissions, PermissionsRole, SessionProfile
+| Iam: Profile, Role, Permissions, PermissionsRole, SessionProfile |
 
 | FK: PersonId, CampuseId, RoleId |
 
@@ -1154,7 +1154,7 @@ Convenciones del modelo:
 
 +-------------------+--------------------+---------------------+
 
-| GpsDeviceId (1 : 1) | BusId y RouteId
+| GpsDeviceId (1 : 1) | BusId and RouteId
 
 +-------------------v--------------------v---------------------+
 
@@ -1164,7 +1164,7 @@ Convenciones del modelo:
 
 | Route: Route, Stop, RouteStop, RouteBusAssignments, |
 
-| RouteStudentAssignments, RouteSchedule, RouteExecution|
+| RouteStudentAssignments, RouteSchedule, RouteExecution |
 
 | FK: CampuseId, CityId, SchoolId, BusId, ProfileId |
 
@@ -1178,7 +1178,7 @@ Convenciones del modelo:
 
 | DeviceToken |
 
-| FK: RouteExecutionId, RouteStopId, AlertTypeId, ProfileId|
+| FK: RouteExecutionId, RouteStopId, AlertTypeId, ProfileId |
 
 +--------------------------------------------------------------+
 
@@ -1188,449 +1188,449 @@ Convenciones del modelo:
 
 | Audit: Audit (FK ProfileId), LogErrors |
 
-| Settings: PasswordPolicies (política de contraseñas), |
+| Settings: PasswordPolicies (password policy), |
 
-| SecuritySettings — sin llave foránea |
+| SecuritySettings — no foreign key |
 
 +--------------------------------------------------------------+
 
-**Figura 18**. Diagrama ER global del modelo de datos
+**Figure 18**. Global ER diagram of the data model
 
-Lectura del diagrama: la ciudad afilia a los colegios; el colegio despliega sedes y cursos; la sede es el punto de anclaje de perfiles, buses y rutas; el perfil (identidad y rol) es el nodo que conecta personas, familias, licencias, conductores, asignaciones, sesiones, alertas, bordadas, usos excepcionales y auditoría; la ruta se compone de paradas ordenadas y de asignaciones de bus y estudiantes; la ejecución de ruta es el contenedor de las bordadas y de las alertas de un trayecto real; y el dispositivo de geolocalización entrega las posiciones que alimentan la ejecución.
+Reading of the diagram: the city affiliates the schools; the school deploys campuses and courses; the campus is the anchoring point of profiles, buses and routes; the profile (identity and role) is the node that connects persons, families, licenses, drivers, assignments, sessions, alerts, boardings, exceptional uses and auditing; the route is made up of ordered stops and of bus and student assignments; the route execution is the container of the boardings and of the alerts of a real trip; and the geolocation device delivers the positions that feed the execution.
 
-## 5.2. IAM Schema — 5 Tables
+## 5.2. Iam schema — 5 tables
 
-**Tabla 20**. Columnas del esquema Iam
+**Table 20**. Columns of the Iam schema
 
-| Tabla           | Columna         | Tipo             | Nulidad  | PK/FK             | Descripción                                                  |
-| --------------- | --------------- | ---------------- | -------- | ----------------- | ------------------------------------------------------------ |
-| Role            | Id              | TINYINT identity | NOT NULL | PK                | Identificador del rol                                        |
-| Role            | Name            | VARCHAR(20)      | NOT NULL | UNIQUE            | Nombre del rol                                               |
-| Role            | Description     | VARCHAR(100)     | NOT NULL | —                 | Alcance del rol                                              |
-| Role            | Status          | VARCHAR(20)      | NOT NULL | —                 | Ciclo de vida del rol                                        |
-| Permissions     | Id              | TINYINT identity | NOT NULL | PK                | Identificador del permiso                                    |
-| Permissions     | TypePermissions | VARCHAR(100)     | NOT NULL | —                 | Código del permiso (recurso.acción)                          |
-| Permissions     | Description     | VARCHAR(150)     | NOT NULL | —                 | Descripción legible del permiso                              |
-| PermissionsRole | Id              | TINYINT identity | NOT NULL | PK                | Identificador de la asignación                               |
-| PermissionsRole | PermissionsId   | TINYINT          | NOT NULL | FK → Permissions  | Permiso asignado                                             |
-| PermissionsRole | RoleId          | TINYINT          | NOT NULL | FK → Role         | Rol receptor                                                 |
-| Profile         | Id              | UNIQUEIDENTIFIER | NOT NULL | PK                | Identidad de acceso                                          |
-| Profile         | PersonId        | UNIQUEIDENTIFIER | NOT NULL | FK → Person       | Persona titular del perfil                                   |
-| Profile         | CampuseId       | UNIQUEIDENTIFIER | Sí       | FK → SchoolCampus | Sede a la que pertenece el perfil                            |
-| Profile         | PasswordHash    | VARCHAR(100)     | NOT NULL | —                 | Resumen protegido de la contraseña (política de contraseñas) |
-| Profile         | RoleId          | TINYINT          | NOT NULL | FK → Role         | Rol vigente del perfil                                       |
-| Profile         | Status          | VARCHAR(20)      | NOT NULL | —                 | Activo o inactivo                                            |
-| SessionProfile  | Id              | INT identity     | NOT NULL | PK                | Identificador de la sesión                                   |
-| SessionProfile  | ProfileId       | UNIQUEIDENTIFIER | NOT NULL | FK → Profile      | Perfil de la sesión                                          |
-| SessionProfile  | DateStart       | DATETIME2        | NOT NULL | —                 | Inicio de la sesión                                          |
-| SessionProfile  | DateEnd         | DATETIME2        | NOT NULL | —                 | Cierre de la sesión                                          |
-| SessionProfile  | IPAddress       | VARCHAR(50)      | NOT NULL | —                 | Origen de la sesión                                          |
-| SessionProfile  | StatusSession   | VARCHAR(50)      | NOT NULL | —                 | Estado de la sesión                                          |
+| Table           | Column          | Type             | Nullability | PK/FK             | Description                                                  |
+| --------------- | --------------- | ---------------- | ----------- | ----------------- | ------------------------------------------------------------ |
+| Role            | Id              | TINYINT identity | NOT NULL    | PK                | Role identifier                                              |
+| Role            | Name            | VARCHAR(20)      | NOT NULL    | UNIQUE            | Role name                                                    |
+| Role            | Description     | VARCHAR(100)     | NOT NULL    | —                 | Role scope                                                   |
+| Role            | Status          | VARCHAR(20)      | NOT NULL    | —                 | Role lifecycle                                               |
+| Permissions     | Id              | TINYINT identity | NOT NULL    | PK                | Permission identifier                                        |
+| Permissions     | TypePermissions | VARCHAR(100)     | NOT NULL    | —                 | Permission code (resource.action)                            |
+| Permissions     | Description     | VARCHAR(150)     | NOT NULL    | —                 | Readable description of the permission                       |
+| PermissionsRole | Id              | TINYINT identity | NOT NULL    | PK                | Assignment identifier                                        |
+| PermissionsRole | PermissionsId   | TINYINT          | NOT NULL    | FK → Permissions  | Assigned permission                                          |
+| PermissionsRole | RoleId          | TINYINT          | NOT NULL    | FK → Role         | Receiving role                                               |
+| Profile         | Id              | UNIQUEIDENTIFIER | NOT NULL    | PK                | Access identity                                              |
+| Profile         | PersonId        | UNIQUEIDENTIFIER | NOT NULL    | FK → Person       | Person who owns the profile                                  |
+| Profile         | CampuseId       | UNIQUEIDENTIFIER | Yes         | FK → SchoolCampus | Campus to which the profile belongs                          |
+| Profile         | PasswordHash    | VARCHAR(100)     | NOT NULL    | —                 | Protected summary of the password (password policy)          |
+| Profile         | RoleId          | TINYINT          | NOT NULL    | FK → Role         | Current role of the profile                                  |
+| Profile         | Status          | VARCHAR(20)      | NOT NULL    | —                 | Active or inactive                                           |
+| SessionProfile  | Id              | INT identity     | NOT NULL    | PK                | Session identifier                                           |
+| SessionProfile  | ProfileId       | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile      | Profile of the session                                       |
+| SessionProfile  | DateStart       | DATETIME2        | NOT NULL    | —                 | Session start                                                |
+| SessionProfile  | DateEnd         | DATETIME2        | NOT NULL    | —                 | Session close                                                |
+| SessionProfile  | IPAddress       | VARCHAR(50)      | NOT NULL    | —                 | Session origin                                               |
+| SessionProfile  | StatusSession   | VARCHAR(50)      | NOT NULL    | —                 | Session status                                               |
 
-## 5.3. UserManagement Schema — 4 Tables
+## 5.3. UserManagement schema — 4 tables
 
-**Tabla 21**. Columnas del esquema UserManagement
+**Table 21**. Columns of the UserManagement schema
 
-| Tabla         | Columna               | Tipo             | Nulidad  | PK/FK                   | Descripción                      |
-| ------------- | --------------------- | ---------------- | -------- | ----------------------- | -------------------------------- |
-| Person        | Id                    | UNIQUEIDENTIFIER | NOT NULL | PK                      | Identidad de la persona          |
-| Person        | Name                  | VARCHAR(50)      | NOT NULL | —                       | Nombre                           |
-| Person        | LastName              | VARCHAR(50)      | NOT NULL | —                       | Apellido                         |
-| Person        | IdentificationType    | VARCHAR(20)      | NOT NULL | CHECK (TI, CC)          | Tipo de documento                |
-| Person        | IdentificationNumber  | VARCHAR(20)      | NOT NULL | UNIQUE                  | Número de documento              |
-| Person        | Email                 | VARCHAR(50)      | NOT NULL | —                       | Correo electrónico               |
-| Person        | Phone                 | INT              | NOT NULL | —                       | Teléfono de contacto             |
-| Person        | ResidenceAddress      | VARCHAR(50)      | NOT NULL | —                       | Dirección de residencia          |
-| Person        | DateBirth             | DATE             | NOT NULL | —                       | Fecha de nacimiento              |
-| Person        | Status                | VARCHAR(20)      | NOT NULL | —                       | Activa o inactiva                |
-| Family        | Id                    | UNIQUEIDENTIFIER | NOT NULL | PK                      | Identificador del grupo familiar |
-| Family        | Name                  | VARCHAR(50)      | NOT NULL | —                       | Nombre del grupo                 |
-| Family        | Observations          | VARCHAR(100)     | NOT NULL | —                       | Observaciones del grupo          |
-| Family        | Status                | VARCHAR(20)      | NOT NULL | —                       | Activo o inactivo                |
-| FamilyMember  | Id                    | UNIQUEIDENTIFIER | NOT NULL | PK                      | Identificador del vínculo        |
-| FamilyMember  | FamilyId              | UNIQUEIDENTIFIER | NOT NULL | FK → Family             | Grupo familiar                   |
-| FamilyMember  | ProfileId             | UNIQUEIDENTIFIER | NOT NULL | FK → Profile            | Perfil vinculado                 |
-| FamilyMember  | RelationshipType      | VARCHAR(20)      | NOT NULL | CHECK (Parent, Student) | Relación dentro del grupo        |
-| FamilyMember  | Status                | VARCHAR(20)      | NOT NULL | —                       | Activo o inactivo                |
-| DriverLicense | Id                    | UNIQUEIDENTIFIER | NOT NULL | PK                      | Identificador de la licencia     |
-| DriverLicense | ProfileId             | UNIQUEIDENTIFIER | NOT NULL | FK → Profile            | Conductor titular                |
-| DriverLicense | LicenseNumber         | VARCHAR(20)      | NOT NULL | UNIQUE                  | Número de licencia               |
-| DriverLicense | LicenseExpirationDate | DATE             | NOT NULL | —                       | Fecha de vencimiento             |
-| DriverLicense | Status                | VARCHAR(20)      | NOT NULL | —                       | Vigente o no vigente             |
+| Table         | Column                | Type             | Nullability | PK/FK                   | Description                      |
+| ------------- | --------------------- | ---------------- | ----------- | ----------------------- | -------------------------------- |
+| Person        | Id                    | UNIQUEIDENTIFIER | NOT NULL    | PK                      | Person identity                  |
+| Person        | Name                  | VARCHAR(50)      | NOT NULL    | —                       | First name                       |
+| Person        | LastName              | VARCHAR(50)      | NOT NULL    | —                       | Last name                        |
+| Person        | IdentificationType    | VARCHAR(20)      | NOT NULL    | CHECK (TI, CC)          | Document type                    |
+| Person        | IdentificationNumber  | VARCHAR(20)      | NOT NULL    | UNIQUE                  | Document number                  |
+| Person        | Email                 | VARCHAR(50)      | NOT NULL    | —                       | Email address                    |
+| Person        | Phone                 | INT              | NOT NULL    | —                       | Contact phone                    |
+| Person        | ResidenceAddress      | VARCHAR(50)      | NOT NULL    | —                       | Residence address                |
+| Person        | DateBirth             | DATE             | NOT NULL    | —                       | Date of birth                    |
+| Person        | Status                | VARCHAR(20)      | NOT NULL    | —                       | Active or inactive               |
+| Family        | Id                    | UNIQUEIDENTIFIER | NOT NULL    | PK                      | Family group identifier          |
+| Family        | Name                  | VARCHAR(50)      | NOT NULL    | —                       | Group name                       |
+| Family        | Observations          | VARCHAR(100)     | NOT NULL    | —                       | Group observations               |
+| Family        | Status                | VARCHAR(20)      | NOT NULL    | —                       | Active or inactive               |
+| FamilyMember  | Id                    | UNIQUEIDENTIFIER | NOT NULL    | PK                      | Link identifier                  |
+| FamilyMember  | FamilyId              | UNIQUEIDENTIFIER | NOT NULL    | FK → Family             | Family group                     |
+| FamilyMember  | ProfileId             | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile            | Linked profile                   |
+| FamilyMember  | RelationshipType      | VARCHAR(20)      | NOT NULL    | CHECK (Parent, Student) | Relationship within the group    |
+| FamilyMember  | Status                | VARCHAR(20)      | NOT NULL    | —                       | Active or inactive               |
+| DriverLicense | Id                    | UNIQUEIDENTIFIER | NOT NULL    | PK                      | License identifier               |
+| DriverLicense | ProfileId             | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile            | License holder (driver)          |
+| DriverLicense | LicenseNumber         | VARCHAR(20)      | NOT NULL    | UNIQUE                  | License number                   |
+| DriverLicense | LicenseExpirationDate | DATE             | NOT NULL    | —                       | Expiration date                  |
+| DriverLicense | Status                | VARCHAR(20)      | NOT NULL    | —                       | Current or not current           |
 
-## 5.4. School Schema — 4 Tables
+## 5.4. School schema — 4 tables
 
-**Tabla 22**. Columnas del esquema School
+**Table 22**. Columns of the School schema
 
-| Tabla        | Columna   | Tipo             | Nulidad  | PK/FK                | Descripción                             |
-| ------------ | --------- | ---------------- | -------- | -------------------- | --------------------------------------- |
-| School       | Id        | UNIQUEIDENTIFIER | NOT NULL | PK                   | Identificador del colegio               |
-| School       | CityId    | UNIQUEIDENTIFIER | NOT NULL | FK → City            | Ciudad de ubicación                     |
-| School       | Logo      | VARBINARY(MAX)   | NOT NULL | —                    | Logotipo institucional                  |
-| School       | Name      | VARCHAR(30)      | NOT NULL | —                    | Nombre del colegio                      |
-| School       | Address   | VARCHAR(30)      | NOT NULL | —                    | Dirección                               |
-| School       | Phone     | INT              | NOT NULL | —                    | Teléfono de contacto                    |
-| School       | Email     | VARCHAR(50)      | NOT NULL | —                    | Correo institucional                    |
-| School       | Website   | VARCHAR(100)     | Sí       | —                    | Sitio web institucional                 |
-| School       | Theme     | VARCHAR(20)      | Sí       | —                    | Tema visual institucional               |
-| School       | Status    | VARCHAR(20)      | NOT NULL | —                    | Activo o inactivo                       |
-| SchoolCampus | Id        | UNIQUEIDENTIFIER | NOT NULL | PK                   | Identificador de la sede                |
-| SchoolCampus | SchoolId  | UNIQUEIDENTIFIER | NOT NULL | FK → School          | Colegio propietario                     |
-| SchoolCampus | Name      | VARCHAR(30)      | NOT NULL | —                    | Nombre de la sede                       |
-| SchoolCampus | Address   | VARCHAR(30)      | NOT NULL | —                    | Dirección de la sede                    |
-| SchoolCampus | Status    | VARCHAR(20)      | NOT NULL | —                    | Activa o inactiva                       |
-| Course       | Id        | UNIQUEIDENTIFIER | NOT NULL | PK                   | Identificador del curso                 |
-| Course       | CampusId  | UNIQUEIDENTIFIER | NOT NULL | FK → SchoolCampus    | Sede que ofrece el curso                |
-| Course       | Name      | VARCHAR(10)      | NOT NULL | —                    | Nombre del curso                        |
-| Course       | Status    | VARCHAR(20)      | NOT NULL | —                    | Activo o inactivo                       |
-| SchoolAdmin  | Id        | UNIQUEIDENTIFIER | NOT NULL | PK                   | Identificador de la asignación          |
-| SchoolAdmin  | SchoolId  | UNIQUEIDENTIFIER | NOT NULL | FK → School          | Colegio administrado                    |
-| SchoolAdmin  | ProfileId | UNIQUEIDENTIFIER | NOT NULL | FK → Profile, UNIQUE | Administrador asignado (uno por perfil) |
-| SchoolAdmin  | Status    | VARCHAR(20)      | NOT NULL | —                    | Activa o inactiva                       |
+| Table        | Column    | Type             | Nullability | PK/FK                | Description                             |
+| ------------ | --------- | ---------------- | ----------- | -------------------- | --------------------------------------- |
+| School       | Id        | UNIQUEIDENTIFIER | NOT NULL    | PK                   | School identifier                       |
+| School       | CityId    | UNIQUEIDENTIFIER | NOT NULL    | FK → City            | City of location                        |
+| School       | Logo      | VARBINARY(MAX)   | NOT NULL    | —                    | Institutional logo                      |
+| School       | Name      | VARCHAR(30)      | NOT NULL    | —                    | School name                             |
+| School       | Address   | VARCHAR(30)      | NOT NULL    | —                    | Address                                 |
+| School       | Phone     | INT              | NOT NULL    | —                    | Contact phone                           |
+| School       | Email     | VARCHAR(50)      | NOT NULL    | —                    | Institutional email                     |
+| School       | Website   | VARCHAR(100)     | Yes         | —                    | Institutional website                   |
+| School       | Theme     | VARCHAR(20)      | Yes         | —                    | Institutional visual theme              |
+| School       | Status    | VARCHAR(20)      | NOT NULL    | —                    | Active or inactive                      |
+| SchoolCampus | Id        | UNIQUEIDENTIFIER | NOT NULL    | PK                   | Campus identifier                       |
+| SchoolCampus | SchoolId  | UNIQUEIDENTIFIER | NOT NULL    | FK → School          | Owning school                           |
+| SchoolCampus | Name      | VARCHAR(30)      | NOT NULL    | —                    | Campus name                             |
+| SchoolCampus | Address   | VARCHAR(30)      | NOT NULL    | —                    | Campus address                          |
+| SchoolCampus | Status    | VARCHAR(20)      | NOT NULL    | —                    | Active or inactive                      |
+| Course       | Id        | UNIQUEIDENTIFIER | NOT NULL    | PK                   | Course identifier                       |
+| Course       | CampusId  | UNIQUEIDENTIFIER | NOT NULL    | FK → SchoolCampus    | Campus that offers the course           |
+| Course       | Name      | VARCHAR(10)      | NOT NULL    | —                    | Course name                             |
+| Course       | Status    | VARCHAR(20)      | NOT NULL    | —                    | Active or inactive                      |
+| SchoolAdmin  | Id        | UNIQUEIDENTIFIER | NOT NULL    | PK                   | Assignment identifier                   |
+| SchoolAdmin  | SchoolId  | UNIQUEIDENTIFIER | NOT NULL    | FK → School          | Administered school                     |
+| SchoolAdmin  | ProfileId | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile, UNIQUE | Assigned administrator (one per profile) |
+| SchoolAdmin  | Status    | VARCHAR(20)      | NOT NULL    | —                    | Active or inactive                      |
 
-## 5.5. Esquema Geographic — 1 tabla
+## 5.5. Geographic schema — 1 table
 
-**Tabla 23**. Columnas del esquema Geographic
+**Table 23**. Columns of the Geographic schema
 
-| Tabla | Columna | Tipo             | Nulidad  | PK/FK | Descripción                |
-| ----- | ------- | ---------------- | -------- | ----- | -------------------------- |
-| City  | Id      | UNIQUEIDENTIFIER | NOT NULL | PK    | Identificador de la ciudad |
-| City  | Name    | VARCHAR(40)      | NOT NULL | —     | Nombre de la ciudad        |
-| City  | Country | VARCHAR(30)      | NOT NULL | —     | País de la ciudad          |
-| City  | Status  | VARCHAR(20)      | NOT NULL | —     | Activa o inactiva          |
+| Table | Column  | Type             | Nullability | PK/FK | Description                |
+| ----- | ------- | ---------------- | ----------- | ----- | -------------------------- |
+| City  | Id      | UNIQUEIDENTIFIER | NOT NULL    | PK    | City identifier            |
+| City  | Name    | VARCHAR(40)      | NOT NULL    | —     | City name                  |
+| City  | Country | VARCHAR(30)      | NOT NULL    | —     | Country of the city        |
+| City  | Status  | VARCHAR(20)      | NOT NULL    | —     | Active or inactive         |
 
-## 5.6. Fleet Schema — 4 Tables
+## 5.6. Fleet schema — 4 tables
 
-**Tabla 24**. Columnas del esquema Fleet
+**Table 24**. Columns of the Fleet schema
 
-| Tabla            | Columna      | Tipo             | Nulidad  | PK/FK                  | Descripción                    |
-| ---------------- | ------------ | ---------------- | -------- | ---------------------- | ------------------------------ |
-| Brand            | Id           | TINYINT identity | NOT NULL | PK                     | Identificador de la marca      |
-| Brand            | Name         | VARCHAR(30)      | Sí       | —                      | Nombre de la marca             |
-| Brand            | Status       | VARCHAR(20)      | NOT NULL | —                      | Activa o inactiva              |
-| Model            | Id           | TINYINT identity | NOT NULL | PK                     | Identificador del modelo       |
-| Model            | BrandId      | TINYINT          | NOT NULL | FK → Brand             | Marca propietaria              |
-| Model            | Name         | VARCHAR(30)      | Sí       | —                      | Nombre del modelo              |
-| Model            | Status       | VARCHAR(20)      | NOT NULL | —                      | Activo o inactivo              |
-| Bus              | Id           | UNIQUEIDENTIFIER | NOT NULL | PK                     | Identificador del bus          |
-| Bus              | CampuseId    | UNIQUEIDENTIFIER | NOT NULL | FK → SchoolCampus      | Sede a la que pertenece        |
-| Bus              | SoatValidity | DATE             | NOT NULL | —                      | Vigencia del SOAT              |
-| Bus              | GpsDeviceId  | UNIQUEIDENTIFIER | NOT NULL | FK → GpsDevice, UNIQUE | Dispositivo de geolocalización |
-| Bus              | Capacity     | TINYINT          | NOT NULL | —                      | Capacidad de pasajeros         |
-| Bus              | Plate        | VARCHAR(15)      | NOT NULL | UNIQUE                 | Placa del vehículo             |
-| Bus              | ModelId      | TINYINT          | NOT NULL | FK → Model             | Modelo del vehículo            |
-| Bus              | Status       | VARCHAR(20)      | NOT NULL | —                      | Activo o inactivo              |
-| DriverAssignemts | Id           | UNIQUEIDENTIFIER | NOT NULL | PK                     | Identificador de la asignación |
-| DriverAssignemts | ProfileId    | UNIQUEIDENTIFIER | NOT NULL | FK → Profile           | Conductor asignado             |
-| DriverAssignemts | BusId        | UNIQUEIDENTIFIER | NOT NULL | FK → Bus               | Bus asignado                   |
-| DriverAssignemts | AssignedFrom | DATE             | NOT NULL | —                      | Inicio de la vigencia          |
-| DriverAssignemts | AssignedTo   | DATE             | Sí       | —                      | Fin de la vigencia             |
+| Table            | Column       | Type             | Nullability | PK/FK                  | Description                    |
+| ---------------- | ------------ | ---------------- | ----------- | ---------------------- | ------------------------------ |
+| Brand            | Id           | TINYINT identity | NOT NULL    | PK                     | Brand identifier               |
+| Brand            | Name         | VARCHAR(30)      | Yes         | —                      | Brand name                     |
+| Brand            | Status       | VARCHAR(20)      | NOT NULL    | —                      | Active or inactive             |
+| Model            | Id           | TINYINT identity | NOT NULL    | PK                     | Model identifier               |
+| Model            | BrandId      | TINYINT          | NOT NULL    | FK → Brand             | Owning brand                   |
+| Model            | Name         | VARCHAR(30)      | Yes         | —                      | Model name                     |
+| Model            | Status       | VARCHAR(20)      | NOT NULL    | —                      | Active or inactive             |
+| Bus              | Id           | UNIQUEIDENTIFIER | NOT NULL    | PK                     | Bus identifier                 |
+| Bus              | CampuseId    | UNIQUEIDENTIFIER | NOT NULL    | FK → SchoolCampus      | Campus to which it belongs     |
+| Bus              | SoatValidity | DATE             | NOT NULL    | —                      | SOAT validity                  |
+| Bus              | GpsDeviceId  | UNIQUEIDENTIFIER | NOT NULL    | FK → GpsDevice, UNIQUE | Geolocation device             |
+| Bus              | Capacity     | TINYINT          | NOT NULL    | —                      | Passenger capacity             |
+| Bus              | Plate        | VARCHAR(15)      | NOT NULL    | UNIQUE                 | Vehicle plate                  |
+| Bus              | ModelId      | TINYINT          | NOT NULL    | FK → Model             | Vehicle model                  |
+| Bus              | Status       | VARCHAR(20)      | NOT NULL    | —                      | Active or inactive             |
+| DriverAssignemts | Id           | UNIQUEIDENTIFIER | NOT NULL    | PK                     | Assignment identifier          |
+| DriverAssignemts | ProfileId    | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile           | Assigned driver                |
+| DriverAssignemts | BusId        | UNIQUEIDENTIFIER | NOT NULL    | FK → Bus               | Assigned bus                   |
+| DriverAssignemts | AssignedFrom | DATE             | NOT NULL    | —                      | Start of validity              |
+| DriverAssignemts | AssignedTo   | DATE             | Yes         | —                      | End of validity                |
 
-## 5.7. Route Schema — 7 Tables
+## 5.7. Route schema — 7 tables
 
-**Tabla 25**. Columnas del esquema Route
+**Table 25**. Columns of the Route schema
 
-| Tabla                   | Columna               | Tipo             | Nulidad  | PK/FK                    | Descripción                    |
-| ----------------------- | --------------------- | ---------------- | -------- | ------------------------ | ------------------------------ |
-| Route                   | Id                    | UNIQUEIDENTIFIER | NOT NULL | PK                       | Identificador de la ruta       |
-| Route                   | CampuseId             | UNIQUEIDENTIFIER | NOT NULL | FK → SchoolCampus        | Sede que opera la ruta         |
-| Route                   | Name                  | VARCHAR(30)      | NOT NULL | —                        | Nombre de la ruta              |
-| Route                   | TargetSector          | VARCHAR(30)      | NOT NULL | —                        | Sector o zona de cobertura     |
-| Route                   | StartTime             | TIME             | NOT NULL | —                        | Hora de inicio programada      |
-| Route                   | EndTime               | TIME             | NOT NULL | —                        | Hora de cierre programado      |
-| Route                   | Status                | VARCHAR(20)      | NOT NULL | —                        | Activa o inactiva              |
-| Stop                    | Id                    | UNIQUEIDENTIFIER | NOT NULL | PK                       | Identificador de la parada     |
-| Stop                    | CityId                | UNIQUEIDENTIFIER | NOT NULL | FK → City                | Ciudad de la parada            |
-| Stop                    | SchoolId              | UNIQUEIDENTIFIER | NOT NULL | FK → School              | Colegio de destino             |
-| Stop                    | Name                  | VARCHAR(30)      | NOT NULL | —                        | Nombre de la parada            |
-| Stop                    | Address               | VARCHAR(100)     | NOT NULL | —                        | Dirección de la parada         |
-| Stop                    | Longitude             | DECIMAL(10,7)    | NOT NULL | —                        | Longitud de la parada          |
-| Stop                    | Latitude              | DECIMAL(10,7)    | NOT NULL | —                        | Latitud de la parada           |
-| Stop                    | Status                | VARCHAR(20)      | NOT NULL | —                        | Activa o inactiva              |
-| RouteStop               | Id                    | UNIQUEIDENTIFIER | NOT NULL | PK                       | Identificador del paso         |
-| RouteStop               | RouteId               | UNIQUEIDENTIFIER | NOT NULL | FK → Route               | Ruta                           |
-| RouteStop               | StopId                | UNIQUEIDENTIFIER | NOT NULL | FK → Stop                | Parada                         |
-| RouteStop               | OrderSequence         | INT              | NOT NULL | —                        | Orden dentro del recorrido     |
-| RouteStop               | Status                | VARCHAR(20)      | NOT NULL | —                        | Activo o inactivo              |
-| RouteBusAssignments     | Id                    | UNIQUEIDENTIFIER | NOT NULL | PK                       | Identificador de la asignación |
-| RouteBusAssignments     | BusId                 | UNIQUEIDENTIFIER | NOT NULL | FK → Bus                 | Bus asignado                   |
-| RouteBusAssignments     | RouteId               | UNIQUEIDENTIFIER | NOT NULL | FK → Route               | Ruta asignada                  |
-| RouteBusAssignments     | Status                | VARCHAR(20)      | NOT NULL | —                        | Activa o inactiva              |
-| RouteStudentAssignments | Id                    | UNIQUEIDENTIFIER | NOT NULL | PK                       | Identificador de la asignación |
-| RouteStudentAssignments | ProfileId             | UNIQUEIDENTIFIER | NOT NULL | FK → Profile             | Estudiante asignado            |
-| RouteStudentAssignments | RouteStopId           | UNIQUEIDENTIFIER | NOT NULL | FK → RouteStop           | Parada de bajada               |
-| RouteStudentAssignments | Status                | VARCHAR(20)      | NOT NULL | —                        | Activa o inactiva              |
-| RouteSchedule           | Id                    | UNIQUEIDENTIFIER | NOT NULL | PK                       | Identificador del programado   |
-| RouteSchedule           | RouteBusAssignmentsId | UNIQUEIDENTIFIER | NOT NULL | FK → RouteBusAssignments | Asignación que se programa     |
-| RouteSchedule           | DayOfWeek             | VARCHAR(10)      | NOT NULL | CHECK (lunes a viernes)  | Día de la semana               |
-| RouteSchedule           | Direction             | VARCHAR(10)      | NOT NULL | —                        | Sentido del recorrido          |
-| RouteSchedule           | StartTime             | TIME             | NOT NULL | —                        | Hora de salida                 |
-| RouteSchedule           | Status                | VARCHAR(20)      | NOT NULL | —                        | Activo o inactivo              |
-| RouteExecution          | Id                    | UNIQUEIDENTIFIER | NOT NULL | PK                       | Identificador de la ejecución  |
-| RouteExecution          | RouteId               | UNIQUEIDENTIFIER | Sí       | FK → Route               | Ruta ejecutada                 |
-| RouteExecution          | BusId                 | UNIQUEIDENTIFIER | NOT NULL | FK → Bus                 | Bus utilizado                  |
-| RouteExecution          | DriverId              | UNIQUEIDENTIFIER | NOT NULL | FK → Profile             | Conductor del trayecto         |
-| RouteExecution          | StartDateTime         | DATETIME2        | NOT NULL | —                        | Inicio real del trayecto       |
-| RouteExecution          | EndDateTime           | DATETIME2        | Sí       | —                        | Fin real del trayecto          |
-| RouteExecution          | Status                | VARCHAR(20)      | NOT NULL | —                        | Estado de la ejecución         |
+| Table                   | Column                | Type             | Nullability | PK/FK                    | Description                    |
+| ----------------------- | --------------------- | ---------------- | ----------- | ------------------------ | ------------------------------ |
+| Route                   | Id                    | UNIQUEIDENTIFIER | NOT NULL    | PK                       | Route identifier               |
+| Route                   | CampuseId             | UNIQUEIDENTIFIER | NOT NULL    | FK → SchoolCampus        | Campus that operates the route |
+| Route                   | Name                  | VARCHAR(30)      | NOT NULL    | —                        | Route name                     |
+| Route                   | TargetSector          | VARCHAR(30)      | NOT NULL    | —                        | Coverage sector or zone        |
+| Route                   | StartTime             | TIME             | NOT NULL    | —                        | Scheduled start time           |
+| Route                   | EndTime               | TIME             | NOT NULL    | —                        | Scheduled end time             |
+| Route                   | Status                | VARCHAR(20)      | NOT NULL    | —                        | Active or inactive             |
+| Stop                    | Id                    | UNIQUEIDENTIFIER | NOT NULL    | PK                       | Stop identifier                |
+| Stop                    | CityId                | UNIQUEIDENTIFIER | NOT NULL    | FK → City                | City of the stop               |
+| Stop                    | SchoolId              | UNIQUEIDENTIFIER | NOT NULL    | FK → School              | Destination school             |
+| Stop                    | Name                  | VARCHAR(30)      | NOT NULL    | —                        | Stop name                      |
+| Stop                    | Address               | VARCHAR(100)     | NOT NULL    | —                        | Stop address                   |
+| Stop                    | Longitude             | DECIMAL(10,7)    | NOT NULL    | —                        | Stop longitude                 |
+| Stop                    | Latitude              | DECIMAL(10,7)    | NOT NULL    | —                        | Stop latitude                  |
+| Stop                    | Status                | VARCHAR(20)      | NOT NULL    | —                        | Active or inactive             |
+| RouteStop               | Id                    | UNIQUEIDENTIFIER | NOT NULL    | PK                       | Step identifier                |
+| RouteStop               | RouteId               | UNIQUEIDENTIFIER | NOT NULL    | FK → Route               | Route                          |
+| RouteStop               | StopId                | UNIQUEIDENTIFIER | NOT NULL    | FK → Stop                | Stop                           |
+| RouteStop               | OrderSequence         | INT              | NOT NULL    | —                        | Order within the journey       |
+| RouteStop               | Status                | VARCHAR(20)      | NOT NULL    | —                        | Active or inactive             |
+| RouteBusAssignments     | Id                    | UNIQUEIDENTIFIER | NOT NULL    | PK                       | Assignment identifier          |
+| RouteBusAssignments     | BusId                 | UNIQUEIDENTIFIER | NOT NULL    | FK → Bus                 | Assigned bus                   |
+| RouteBusAssignments     | RouteId               | UNIQUEIDENTIFIER | NOT NULL    | FK → Route               | Assigned route                 |
+| RouteBusAssignments     | Status                | VARCHAR(20)      | NOT NULL    | —                        | Active or inactive             |
+| RouteStudentAssignments | Id                    | UNIQUEIDENTIFIER | NOT NULL    | PK                       | Assignment identifier          |
+| RouteStudentAssignments | ProfileId             | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile             | Assigned student               |
+| RouteStudentAssignments | RouteStopId           | UNIQUEIDENTIFIER | NOT NULL    | FK → RouteStop           | Drop-off stop                  |
+| RouteStudentAssignments | Status                | VARCHAR(20)      | NOT NULL    | —                        | Active or inactive             |
+| RouteSchedule           | Id                    | UNIQUEIDENTIFIER | NOT NULL    | PK                       | Schedule identifier            |
+| RouteSchedule           | RouteBusAssignmentsId | UNIQUEIDENTIFIER | NOT NULL    | FK → RouteBusAssignments | Assignment that is scheduled   |
+| RouteSchedule           | DayOfWeek             | VARCHAR(10)      | NOT NULL    | CHECK (Monday to Friday) | Day of the week                |
+| RouteSchedule           | Direction             | VARCHAR(10)      | NOT NULL    | —                        | Direction of the journey       |
+| RouteSchedule           | StartTime             | TIME             | NOT NULL    | —                        | Departure time                 |
+| RouteSchedule           | Status                | VARCHAR(20)      | NOT NULL    | —                        | Active or inactive             |
+| RouteExecution          | Id                    | UNIQUEIDENTIFIER | NOT NULL    | PK                       | Execution identifier           |
+| RouteExecution          | RouteId               | UNIQUEIDENTIFIER | Yes         | FK → Route               | Executed route                 |
+| RouteExecution          | BusId                 | UNIQUEIDENTIFIER | NOT NULL    | FK → Bus                 | Bus used                       |
+| RouteExecution          | DriverId              | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile             | Driver of the trip             |
+| RouteExecution          | StartDateTime         | DATETIME2        | NOT NULL    | —                        | Actual start of the trip       |
+| RouteExecution          | EndDateTime           | DATETIME2        | Yes         | —                        | Actual end of the trip         |
+| RouteExecution          | Status                | VARCHAR(20)      | NOT NULL    | —                        | Execution status               |
 
-## 5.8. GPS Schema — 2 Tables
+## 5.8. Gps schema — 2 tables
 
-**Tabla 26**. Columnas del esquema Gps
+**Table 26**. Columns of the Gps schema
 
-| Tabla       | Columna        | Tipo             | Nulidad  | PK/FK          | Descripción                      |
-| ----------- | -------------- | ---------------- | -------- | -------------- | -------------------------------- |
-| GpsDevice   | Id             | UNIQUEIDENTIFIER | NOT NULL | PK             | Identificador del dispositivo    |
-| GpsDevice   | Imei           | VARCHAR(20)      | NOT NULL | UNIQUE         | Identificador del equipo         |
-| GpsDevice   | LastConnection | DATETIME2        | NOT NULL | —              | Última comunicación recibida     |
-| GpsDevice   | GpsStatus      | BIT              | NOT NULL | —              | Estado operativo del dispositivo |
-| GpsLocation | Id             | UNIQUEIDENTIFIER | NOT NULL | PK             | Identificador de la posición     |
-| GpsLocation | GpsDeviceId    | UNIQUEIDENTIFIER | NOT NULL | FK → GpsDevice | Dispositivo que reporta          |
-| GpsLocation | Latitude       | DECIMAL(10,7)    | NOT NULL | —              | Latitud reportada                |
-| GpsLocation | Longitude      | DECIMAL(10,7)    | NOT NULL | —              | Longitud reportada               |
-| GpsLocation | Speed          | DECIMAL(8,2)     | NOT NULL | —              | Velocidad instantánea            |
-| GpsLocation | Course         | DECIMAL(8,2)     | NOT NULL | —              | Rumbo del vehículo               |
-| GpsLocation | DateTime       | DATETIME2        | NOT NULL | —              | Marca de tiempo de la posición   |
+| Table       | Column         | Type             | Nullability | PK/FK          | Description                      |
+| ----------- | -------------- | ---------------- | ----------- | -------------- | -------------------------------- |
+| GpsDevice   | Id             | UNIQUEIDENTIFIER | NOT NULL    | PK             | Device identifier                |
+| GpsDevice   | Imei           | VARCHAR(20)      | NOT NULL    | UNIQUE         | Equipment identifier             |
+| GpsDevice   | LastConnection | DATETIME2        | NOT NULL    | —              | Last communication received      |
+| GpsDevice   | GpsStatus      | BIT              | NOT NULL    | —              | Operational status of the device |
+| GpsLocation | Id             | UNIQUEIDENTIFIER | NOT NULL    | PK             | Position identifier              |
+| GpsLocation | GpsDeviceId    | UNIQUEIDENTIFIER | NOT NULL    | FK → GpsDevice | Reporting device                 |
+| GpsLocation | Latitude       | DECIMAL(10,7)    | NOT NULL    | —              | Reported latitude                |
+| GpsLocation | Longitude      | DECIMAL(10,7)    | NOT NULL    | —              | Reported longitude               |
+| GpsLocation | Speed          | DECIMAL(8,2)     | NOT NULL    | —              | Instantaneous speed              |
+| GpsLocation | Course         | DECIMAL(8,2)     | NOT NULL    | —              | Vehicle heading                  |
+| GpsLocation | DateTime       | DATETIME2        | NOT NULL    | —              | Position timestamp               |
 
-## 5.9. Notification Schema — 5 Tables
+## 5.9. Notification schema — 5 tables
 
-**Tabla 27**. Columnas del esquema Notification
+**Table 27**. Columns of the Notification schema
 
-| Tabla          | Columna          | Tipo             | Nulidad  | PK/FK                       | Descripción                      |
-| -------------- | ---------------- | ---------------- | -------- | --------------------------- | -------------------------------- |
-| AlertType      | Id               | TINYINT identity | NOT NULL | PK                          | Identificador del tipo de alerta |
-| AlertType      | Name             | VARCHAR(30)      | NOT NULL | —                           | Nombre del tipo                  |
-| AlertType      | Description      | VARCHAR(100)     | NOT NULL | —                           | Descripción del tipo             |
-| AlertType      | UrgencyLevel     | TINYINT          | NOT NULL | —                           | Nivel de urgencia                |
-| Alert          | Id               | UNIQUEIDENTIFIER | NOT NULL | PK                          | Identificador de la alerta       |
-| Alert          | RouteExecutionId | UNIQUEIDENTIFIER | NOT NULL | FK → RouteExecution         | Ejecución que la origina         |
-| Alert          | AlertTypeId      | TINYINT          | NOT NULL | FK → AlertType              | Tipo de alerta                   |
-| Alert          | ProfileId        | UNIQUEIDENTIFIER | NOT NULL | FK → Profile                | Quien genera la alerta           |
-| Alert          | DateTime         | DATETIME2        | NOT NULL | —                           | Momento de generación            |
-| Alert          | Description      | VARCHAR(100)     | Sí       | —                           | Detalle del evento               |
-| Alert          | AcknowledgedAt   | DATETIME2        | Sí       | —                           | Momento de acuse de recibo       |
-| AlertRecipient | Id               | UNIQUEIDENTIFIER | NOT NULL | PK                          | Identificador del destinatario   |
-| AlertRecipient | AlertId          | UNIQUEIDENTIFIER | NOT NULL | FK → Alert                  | Alerta destinada                 |
-| AlertRecipient | ProfileId        | UNIQUEIDENTIFIER | NOT NULL | FK → Profile                | Perfil destinatario              |
-| AlertRecipient | DateTimeRead     | DATETIME2        | NOT NULL | —                           | Momento de lectura               |
-| Boarding       | Id               | UNIQUEIDENTIFIER | NOT NULL | PK                          | Identificador de la bordada      |
-| Boarding       | RouteExecutionId | UNIQUEIDENTIFIER | NOT NULL | FK → RouteExecution         | Ejecución en curso               |
-| Boarding       | ProfileId        | UNIQUEIDENTIFIER | NOT NULL | FK → Profile                | Estudiante que borda             |
-| Boarding       | RouteStopId      | UNIQUEIDENTIFIER | NOT NULL | FK → RouteStop              | Parada del evento                |
-| Boarding       | DateTime         | DATETIME2        | NOT NULL | —                           | Momento del escaneo              |
-| Boarding       | BoardingType     | VARCHAR(20)      | NOT NULL | CHECK (ON_BOARD, OFF_BOARD) | Subida o bajada                  |
-| DeviceToken    | Id               | UNIQUEIDENTIFIER | NOT NULL | PK                          | Identificador del token          |
-| DeviceToken    | ProfileId        | UNIQUEIDENTIFIER | NOT NULL | FK → Profile                | Perfil dueño del dispositivo     |
-| DeviceToken    | ExpoToken        | VARCHAR(300)     | NOT NULL | UNIQUE                      | Token de notificaciones push     |
-| DeviceToken    | UpdatedAt        | DATETIME2        | NOT NULL | —                           | Última actualización             |
+| Table          | Column           | Type             | Nullability | PK/FK                       | Description                      |
+| -------------- | ---------------- | ---------------- | ----------- | --------------------------- | -------------------------------- |
+| AlertType      | Id               | TINYINT identity | NOT NULL    | PK                          | Alert type identifier            |
+| AlertType      | Name             | VARCHAR(30)      | NOT NULL    | —                           | Type name                        |
+| AlertType      | Description      | VARCHAR(100)     | NOT NULL    | —                           | Type description                 |
+| AlertType      | UrgencyLevel     | TINYINT          | NOT NULL    | —                           | Urgency level                    |
+| Alert          | Id               | UNIQUEIDENTIFIER | NOT NULL    | PK                          | Alert identifier                 |
+| Alert          | RouteExecutionId | UNIQUEIDENTIFIER | NOT NULL    | FK → RouteExecution         | Execution that originates it     |
+| Alert          | AlertTypeId      | TINYINT          | NOT NULL    | FK → AlertType              | Alert type                       |
+| Alert          | ProfileId        | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile                | Who generates the alert          |
+| Alert          | DateTime         | DATETIME2        | NOT NULL    | —                           | Time of generation               |
+| Alert          | Description      | VARCHAR(100)     | Yes         | —                           | Detail of the event              |
+| Alert          | AcknowledgedAt   | DATETIME2        | Yes         | —                           | Time of acknowledgment          |
+| AlertRecipient | Id               | UNIQUEIDENTIFIER | NOT NULL    | PK                          | Recipient identifier             |
+| AlertRecipient | AlertId          | UNIQUEIDENTIFIER | NOT NULL    | FK → Alert                  | Target alert                     |
+| AlertRecipient | ProfileId        | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile                | Target profile                   |
+| AlertRecipient | DateTimeRead     | DATETIME2        | NOT NULL    | —                           | Time of reading                  |
+| Boarding       | Id               | UNIQUEIDENTIFIER | NOT NULL    | PK                          | Boarding identifier              |
+| Boarding       | RouteExecutionId | UNIQUEIDENTIFIER | NOT NULL    | FK → RouteExecution         | Execution in progress            |
+| Boarding       | ProfileId        | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile                | Student who boards               |
+| Boarding       | RouteStopId      | UNIQUEIDENTIFIER | NOT NULL    | FK → RouteStop              | Stop of the event                |
+| Boarding       | DateTime         | DATETIME2        | NOT NULL    | —                           | Time of the scan                 |
+| Boarding       | BoardingType     | VARCHAR(20)      | NOT NULL    | CHECK (ON_BOARD, OFF_BOARD) | Pick-up or drop-off              |
+| DeviceToken    | Id               | UNIQUEIDENTIFIER | NOT NULL    | PK                          | Token identifier                 |
+| DeviceToken    | ProfileId        | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile                | Profile that owns the device     |
+| DeviceToken    | ExpoToken        | VARCHAR(300)     | NOT NULL    | UNIQUE                      | Push notification token          |
+| DeviceToken    | UpdatedAt        | DATETIME2        | NOT NULL    | —                           | Last update                      |
 
-## 5.10. Exceptional Schema — 2 Tables
+## 5.10. Exceptional schema — 2 tables
 
-**Tabla 28**. Columnas del esquema Exceptional
+**Table 28**. Columns of the Exceptional schema
 
-| Tabla                  | Columna       | Tipo             | Nulidad  | PK/FK        | Descripción                     |
-| ---------------------- | ------------- | ---------------- | -------- | ------------ | ------------------------------- |
-| ExceptionalDriverUsage | Id            | UNIQUEIDENTIFIER | NOT NULL | PK           | Identificador del registro      |
-| ExceptionalDriverUsage | BusId         | UNIQUEIDENTIFIER | NOT NULL | FK → Bus     | Bus utilizado                   |
-| ExceptionalDriverUsage | ProfileId     | UNIQUEIDENTIFIER | NOT NULL | FK → Profile | Persona que lo solicita         |
-| ExceptionalDriverUsage | DateTime      | DATETIME2        | NOT NULL | —            | Momento del uso                 |
-| ExceptionalDriverUsage | Reason        | VARCHAR(200)     | NOT NULL | —            | Motivo del uso excepcional      |
-| ExceptionalRouteUsage  | Id            | UNIQUEIDENTIFIER | NOT NULL | PK           | Identificador del registro      |
-| ExceptionalRouteUsage  | ProfileId     | UNIQUEIDENTIFIER | NOT NULL | FK → Profile | Persona que lo solicita         |
-| ExceptionalRouteUsage  | RouteId       | UNIQUEIDENTIFIER | NOT NULL | FK → Route   | Ruta afectada                   |
-| ExceptionalRouteUsage  | StartDateTime | DATETIME         | NOT NULL | —            | Inicio de la ventana autorizada |
-| ExceptionalRouteUsage  | EndDateTime   | DATETIME         | NOT NULL | —            | Fin de la ventana autorizada    |
-| ExceptionalRouteUsage  | Reason        | VARCHAR(200)     | NOT NULL | —            | Motivo del desvío               |
+| Table                  | Column        | Type             | Nullability | PK/FK        | Description                     |
+| ---------------------- | ------------- | ---------------- | ----------- | ------------ | ------------------------------- |
+| ExceptionalDriverUsage | Id            | UNIQUEIDENTIFIER | NOT NULL    | PK           | Record identifier               |
+| ExceptionalDriverUsage | BusId         | UNIQUEIDENTIFIER | NOT NULL    | FK → Bus     | Bus used                        |
+| ExceptionalDriverUsage | ProfileId     | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile | Person who requests it          |
+| ExceptionalDriverUsage | DateTime      | DATETIME2        | NOT NULL    | —            | Time of use                     |
+| ExceptionalDriverUsage | Reason        | VARCHAR(200)     | NOT NULL    | —            | Reason for the exceptional use  |
+| ExceptionalRouteUsage  | Id            | UNIQUEIDENTIFIER | NOT NULL    | PK           | Record identifier               |
+| ExceptionalRouteUsage  | ProfileId     | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile | Person who requests it          |
+| ExceptionalRouteUsage  | RouteId       | UNIQUEIDENTIFIER | NOT NULL    | FK → Route   | Affected route                  |
+| ExceptionalRouteUsage  | StartDateTime | DATETIME         | NOT NULL    | —            | Start of the authorized window  |
+| ExceptionalRouteUsage  | EndDateTime   | DATETIME         | NOT NULL    | —            | End of the authorized window    |
+| ExceptionalRouteUsage  | Reason        | VARCHAR(200)     | NOT NULL    | —            | Reason for the deviation        |
 
-## 5.11. Settings Schema — 2 Tables
+## 5.11. Settings schema — 2 tables
 
-**Tabla 29**. Columnas del esquema Settings
+**Table 29**. Columns of the Settings schema
 
-| Tabla            | Columna                | Tipo             | Nulidad  | PK/FK  | Descripción                                      |
-| ---------------- | ---------------------- | ---------------- | -------- | ------ | ------------------------------------------------ |
-| PasswordPolicies | Id                     | TINYINT identity | NOT NULL | PK     | Identificador de la política de contraseñas      |
-| PasswordPolicies | MinLongitude           | TINYINT          | NOT NULL | —      | Longitud mínima de la política de contraseñas    |
-| PasswordPolicies | MaxLongitude           | TINYINT          | NOT NULL | —      | Longitud máxima de la política de contraseñas    |
-| PasswordPolicies | RequiresCapitalLetters | TINYINT          | NOT NULL | —      | Exige mayúsculas en la política de contraseñas   |
-| PasswordPolicies | RequiresNumbers        | TINYINT          | NOT NULL | —      | Exige números en la política de contraseñas      |
-| PasswordPolicies | RequiresSymbols        | TINYINT          | NOT NULL | —      | Exige símbolos en la política de contraseñas     |
-| PasswordPolicies | ExpirationDays         | TINYINT          | NOT NULL | —      | Días de expiración de la política de contraseñas |
-| SecuritySettings | Id                     | TINYINT identity | NOT NULL | PK     | Identificador del parámetro                      |
-| SecuritySettings | NameSettings           | VARCHAR(100)     | NOT NULL | UNIQUE | Nombre del parámetro de seguridad                |
-| SecuritySettings | ValueSettings          | VARCHAR(100)     | NOT NULL | —      | Valor del parámetro de seguridad                 |
-| SecuritySettings | Description            | VARCHAR(150)     | NOT NULL | —      | Descripción del parámetro de seguridad           |
+| Table            | Column                 | Type             | Nullability | PK/FK  | Description                                      |
+| ---------------- | ---------------------- | ---------------- | ----------- | ------ | ------------------------------------------------ |
+| PasswordPolicies | Id                     | TINYINT identity | NOT NULL    | PK     | Password policy identifier                       |
+| PasswordPolicies | MinLongitude           | TINYINT          | NOT NULL    | —      | Minimum length of the password policy            |
+| PasswordPolicies | MaxLongitude           | TINYINT          | NOT NULL    | —      | Maximum length of the password policy            |
+| PasswordPolicies | RequiresCapitalLetters | TINYINT          | NOT NULL    | —      | Requires uppercase letters in the password policy |
+| PasswordPolicies | RequiresNumbers        | TINYINT          | NOT NULL    | —      | Requires numbers in the password policy          |
+| PasswordPolicies | RequiresSymbols        | TINYINT          | NOT NULL    | —      | Requires symbols in the password policy          |
+| PasswordPolicies | ExpirationDays         | TINYINT          | NOT NULL    | —      | Expiration days of the password policy           |
+| SecuritySettings | Id                     | TINYINT identity | NOT NULL    | PK     | Parameter identifier                             |
+| SecuritySettings | NameSettings           | VARCHAR(100)     | NOT NULL    | UNIQUE | Name of the security parameter                   |
+| SecuritySettings | ValueSettings          | VARCHAR(100)     | NOT NULL    | —      | Value of the security parameter                  |
+| SecuritySettings | Description            | VARCHAR(150)     | NOT NULL    | —      | Description of the security parameter            |
 
-## 5.12. Esquema Audit — 2 tablas
+## 5.12. Audit schema — 2 tables
 
-**Tabla 30**. Columnas del esquema Audit
+**Table 30**. Columns of the Audit schema
 
-| Tabla     | Columna     | Tipo             | Nulidad  | PK/FK        | Descripción                        |
-| --------- | ----------- | ---------------- | -------- | ------------ | ---------------------------------- |
-| Audit     | Id          | BIGINT identity  | NOT NULL | PK           | Identificador del evento           |
-| Audit     | ProfileId   | UNIQUEIDENTIFIER | NOT NULL | FK → Profile | Actor que ejecuta la acción        |
-| Audit     | Action      | VARCHAR(255)     | NOT NULL | —            | Acción realizada                   |
-| Audit     | DateTime    | DATETIME2        | NOT NULL | —            | Momento de la acción               |
-| Audit     | Description | VARCHAR(500)     | NOT NULL | —            | Detalle de la acción               |
-| Audit     | IPAddress   | VARCHAR(50)      | NOT NULL | —            | Origen de la acción                |
-| Audit     | Application | VARCHAR(255)     | NOT NULL | —            | Aplicación desde la que se ejecuta |
-| LogErrors | Id          | BIGINT identity  | NOT NULL | PK           | Identificador del error            |
-| LogErrors | TypeError   | VARCHAR(100)     | NOT NULL | —            | Clasificación del error            |
-| LogErrors | Description | VARCHAR(150)     | NOT NULL | —            | Descripción del error              |
-| LogErrors | IPAddress   | VARCHAR(50)      | NOT NULL | —            | Origen del error                   |
-| LogErrors | OccurredAt  | DATETIME2        | NOT NULL | —            | Momento en que ocurrió             |
+| Table     | Column      | Type             | Nullability | PK/FK        | Description                        |
+| --------- | ----------- | ---------------- | ----------- | ------------ | ---------------------------------- |
+| Audit     | Id          | BIGINT identity  | NOT NULL    | PK           | Event identifier                   |
+| Audit     | ProfileId   | UNIQUEIDENTIFIER | NOT NULL    | FK → Profile | Actor who performs the action      |
+| Audit     | Action      | VARCHAR(255)     | NOT NULL    | —            | Action performed                   |
+| Audit     | DateTime    | DATETIME2        | NOT NULL    | —            | Time of the action                 |
+| Audit     | Description | VARCHAR(500)     | NOT NULL    | —            | Detail of the action               |
+| Audit     | IPAddress   | VARCHAR(50)      | NOT NULL    | —            | Origin of the action               |
+| Audit     | Application | VARCHAR(255)     | NOT NULL    | —            | Application from which it runs     |
+| LogErrors | Id          | BIGINT identity  | NOT NULL    | PK           | Error identifier                   |
+| LogErrors | TypeError   | VARCHAR(100)     | NOT NULL    | —            | Classification of the error        |
+| LogErrors | Description | VARCHAR(150)     | NOT NULL    | —            | Description of the error           |
+| LogErrors | IPAddress   | VARCHAR(50)      | NOT NULL    | —            | Origin of the error                |
+| LogErrors | OccurredAt  | DATETIME2        | NOT NULL    | —            | Time at which it occurred          |
 
-## 5.13. Enums y datos semilla
+## 5.13. Enums and seed data
 
-Los conjuntos de valores cerrados se protegen con restricciones en línea:
+The sets of closed values are protected with inline restrictions:
 
-**Tabla 31**. Conjuntos de valores admitidos
+**Table 31**. Sets of admitted values
 
-| Conjunto                | Valores admitidos                           | Tabla                               |
+| Set                     | Admitted values                             | Table                               |
 | ----------------------- | ------------------------------------------- | ----------------------------------- |
-| Estado de ciclo de vida | ACTIVE, INACTIVE                            | Casi todas las entidades de negocio |
-| Rol                     | SUPER_ADMIN, ADMIN, DRIVER, PARENT, STUDENT | Role                                |
-| Tipo de identificación  | TI, CC                                      | Person                              |
-| Relación familiar       | Parent, Student                             | FamilyMember                        |
-| Tipo de bordada         | ON_BOARD, OFF_BOARD                         | Boarding                            |
-| Día de la semana        | Monday … Friday                             | RouteSchedule                       |
+| Lifecycle status        | ACTIVE, INACTIVE                            | Almost all business entities        |
+| Role                    | SUPER_ADMIN, ADMIN, DRIVER, PARENT, STUDENT | Role                                |
+| Identification type     | TI, CC                                      | Person                              |
+| Family relationship     | Parent, Student                             | FamilyMember                        |
+| Boarding type           | ON_BOARD, OFF_BOARD                         | Boarding                            |
+| Day of the week         | Monday … Friday                             | RouteSchedule                       |
 
-Datos semilla con los que arranca el sistema:
+Seed data with which the system starts:
 
-**Tabla 32**. Datos semilla y tablas afectadas
+**Table 32**. Seed data and affected tables
 
-| Contenido             | Reglas semilla                                                                                                                     | Tablas afectadas                                                                                    |
+| Content               | Seed rules                                                                                                                       | Affected tables                                                                                     |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Roles y permisos      | Cinco roles canónicos; 20 permisos de dominio (recurso.acción) y sus asignaciones por rol                                          | Role, Permissions, PermissionsRole                                                                  |
-| Identidades de prueba | Personas y perfiles de prueba para desarrollo y demostración                                                                       | Person, Profile, SessionProfile                                                                     |
-| Ubicación             | 20 ciudades con país                                                                                                               | City                                                                                                |
-| Instituciones         | 3 colegios, 15 sedes y 90 cursos                                                                                                   | School, SchoolCampus, Course                                                                        |
-| Flota                 | 20 marcas, 20 modelos, 20 buses y 20 asignaciones de conductor                                                                     | Brand, Model, Bus, DriverAssignemts                                                                 |
-| Rutas                 | 20 rutas, 20 paradas, 60 pasos de ruta, 20 asignaciones de bus, 20 asignaciones de estudiantes, 40 programaciones y 20 ejecuciones | Route, Stop, RouteStop, RouteBusAssignments, RouteStudentAssignments, RouteSchedule, RouteExecution |
-| Geolocalización       | 20 dispositivos y 20 posiciones de referencia                                                                                      | GpsDevice, GpsLocation                                                                              |
-| Notificaciones        | 20 tipos de alerta, 20 alertas, 20 destinatarios y 20 bordadas                                                                     | AlertType, Alert, AlertRecipient, Boarding                                                          |
-| Familias y licencias  | 20 familias, 40 miembros y 20 licencias de conducir                                                                                | Family, FamilyMember, DriverLicense                                                                 |
-| Usos excepcionales    | 20 registros de uso de bus y 20 registros de desvío de ruta                                                                        | ExceptionalDriverUsage, ExceptionalRouteUsage                                                       |
+| Roles and permissions | Five canonical roles; 20 domain permissions (resource.action) and their assignments per role                                     | Role, Permissions, PermissionsRole                                                                  |
+| Test identities       | Test persons and profiles for development and demonstration                                                                      | Person, Profile, SessionProfile                                                                     |
+| Location              | 20 cities with country                                                                                                           | City                                                                                                |
+| Institutions          | 3 schools, 15 campuses and 90 courses                                                                                            | School, SchoolCampus, Course                                                                        |
+| Fleet                 | 20 brands, 20 models, 20 buses and 20 driver assignments                                                                         | Brand, Model, Bus, DriverAssignemts                                                                 |
+| Routes                | 20 routes, 20 stops, 60 route steps, 20 bus assignments, 20 student assignments, 40 schedules and 20 executions                  | Route, Stop, RouteStop, RouteBusAssignments, RouteStudentAssignments, RouteSchedule, RouteExecution |
+| Geolocation           | 20 devices and 20 reference positions                                                                                            | GpsDevice, GpsLocation                                                                              |
+| Notifications         | 20 alert types, 20 alerts, 20 recipients and 20 boardings                                                                        | AlertType, Alert, AlertRecipient, Boarding                                                          |
+| Families and licenses | 20 families, 40 members and 20 driver licenses                                                                                   | Family, FamilyMember, DriverLicense                                                                 |
+| Exceptional uses      | 20 bus use records and 20 route deviation records                                                                                | ExceptionalDriverUsage, ExceptionalRouteUsage                                                       |
 
-## 5.14. Índices y restricciones
+## 5.14. Indexes and constraints
 
-**Tabla 33**. Índices y restricciones del modelo
+**Table 33**. Indexes and constraints of the model
 
-| Mecanismo                            | Aplicación                                                                                                                                           | Purpose                                           |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| IDX_Role_Name                        | Búsqueda por nombre de rol                                                                                                                           | Resolver el rol por nombre en autorización          |
-| IDX_Profile_RoleId_PersonId          | Perfil por rol y persona                                                                                                                             | Consultas de listado por rol                        |
-| IDX_Person_Email                     | Persona por correo                                                                                                                                   | Búsqueda y evolución de credenciales                |
-| IDX_Person_Name, IDX_Person_LastName | Persona por nombre y apellido                                                                                                                        | Búsqueda en listados administrativos                |
-| IDX_Person_IdentificationNumber      | Persona por documento                                                                                                                                | Verification de duplicados                          |
-| IDX_Person_Phone                     | Persona por teléfono                                                                                                                                 | Búsqueda y contacto                                 |
-| Unicidad declarada                   | Person.IdentificationNumber, Bus.Plate, GpsDevice.Imei, DriverLicense.LicenseNumber, DeviceToken.ExpoToken, Role.Name, SecuritySettings.NameSettings | Evita registros duplicados a nivel de base de datos |
-| Unicidad de negocio                  | SchoolAdmin.ProfileId (un administrador administra un solo colegio)                                                                                  | Regla de negocio garantizada en el motor            |
-| Restricciones de dominio             | Estados, tipos de documento, relación familiar, tipo de bordada y día de la semana                                                                   | Impide valores fuera de catálogo                    |
-| Integridad referencial               | 45 claves foráneas declaradas entre esquemas                                                                                                         | Evita huérfanos entre contextos de dominio          |
+| Mechanism                            | Application                                                                                                                                          | Purpose                                              |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| IDX_Role_Name                        | Search by role name                                                                                                                                  | Resolve the role by name in authorization             |
+| IDX_Profile_RoleId_PersonId          | Profile by role and person                                                                                                                           | Listing queries by role                              |
+| IDX_Person_Email                     | Person by email                                                                                                                                      | Credential lookup and rotation                       |
+| IDX_Person_Name, IDX_Person_LastName | Person by first and last name                                                                                                                        | Search in administrative listings                    |
+| IDX_Person_IdentificationNumber      | Person by document                                                                                                                                   | Duplicate verification                                |
+| IDX_Person_Phone                     | Person by phone                                                                                                                                      | Search and contact                                   |
+| Declared uniqueness                  | Person.IdentificationNumber, Bus.Plate, GpsDevice.Imei, DriverLicense.LicenseNumber, DeviceToken.ExpoToken, Role.Name, SecuritySettings.NameSettings | Prevents duplicate records at the database level     |
+| Business uniqueness                  | SchoolAdmin.ProfileId (an administrator administers a single school)                                                                                 | Business rule guaranteed in the engine               |
+| Domain restrictions                  | Statuses, document types, family relationship, boarding type and day of the week                                                                     | Prevents out-of-catalog values                       |
+| Referential integrity                | 45 foreign keys declared between schemas                                                                                                             | Prevents orphans between domain contexts             |
 
-## 5.15. Reglas de negocio y retención
+## 5.15. Business rules and retention
 
-**Tabla 34**. Reglas de negocio y retención de datos
+**Table 34**. Business rules and data retention
 
-| Regla                        | Expresión en el modelo                                                                                                                                                          |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Baja lógica                  | La inhabilitación de una entidad se realiza con Status = INACTIVE; los listados operativos filtran por ACTIVE.                                                                  |
-| Un perfil por sede           | Profile.CampuseId enlaza al perfil con una sede concreta; el colegio se deriva de esa sede.                                                                                     |
-| Un colegio por administrador | La restricción única sobre SchoolAdmin.ProfileId impide que un administrador atienda varias instituciones.                                                                      |
-| Vigencia de asignaciones     | DriverAssignemts.AssignedTo admite NULL, lo que indica vigencia abierta; el conductor activo es el que contiene la fecha actual.                                                |
-| Orden de paradas             | RouteStop.OrderSequence es el orden efectivo del recorrido; no puede haber dos paradas con el mismo orden en una ruta.                                                          |
-| Ejecución contenedora        | Las bordadas y las alertas siempre referencian una RouteExecution; no pueden existir sin un trayecto real.                                                                      |
-| Parada de bajada             | RouteStudentAssignments.RouteStopId fija la parada de descargo del estudiante dentro de la ruta.                                                                                |
-| Ruta de la ejecución         | RouteExecution.RouteId se permite nulo para no bloquear el registro de un trayecto cuando la ruta se reordena en caliente; se completa al cierre del trayecto.                  |
-| Fin de trayecto              | RouteExecution.EndDateTime admite NULL mientras el trayecto está en curso y se escribe al finalizar.                                                                            |
-| Dispositivo exclusivo        | Un bus tiene un solo dispositivo de geolocalización y un dispositivo no se comparte entre buses.                                                                                |
-| Expiración de licencia       | DriverLicense.LicenseExpirationDate habilita el bloqueo de asignación de conducción cuando la licencia está vencida.                                                            |
-| Registro de uso excepcional  | Todo uso de bus fuera del plan y todo desvío de ruta exigen motivo y ventana de tiempo.                                                                                         |
-| Retención de auditoría       | Los eventos de Audit y los registros de LogErrors no se eliminan por operación de negocio; su ciclo de vida se define por política de respaldo y archivamiento de la base.      |
-| Retención operativa          | Las posiciones de GpsLocation y las sesiones de SessionProfile son datos de volumen creciente y se depuran por antigüedad conforme a la política de retención de la plataforma. |
-| Copias de seguridad          | La base se respalda de forma programada con restauración verificada; el esquema se reconstruye con migraciones si la restauración no es posible.                                |
+| Rule                        | Expression in the model                                                                                                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Soft delete                 | The disabling of an entity is done with Status = INACTIVE; operational listings filter by ACTIVE.                                                                                |
+| One profile per campus      | Profile.CampuseId links the profile with a specific campus; the school is derived from that campus.                                                                              |
+| One school per administrator | The unique constraint on SchoolAdmin.ProfileId prevents an administrator from serving several institutions.                                                                    |
+| Validity of assignments     | DriverAssignemts.AssignedTo admits NULL, which indicates an open validity; the active driver is the one that contains the current date.                                        |
+| Stop order                  | RouteStop.OrderSequence is the effective order of the journey; there cannot be two stops with the same order on a route.                                                        |
+| Container execution         | Boardings and alerts always reference a RouteExecution; they cannot exist without a real trip.                                                                                  |
+| Drop-off stop               | RouteStudentAssignments.RouteStopId sets the student's drop-off stop within the route.                                                                                           |
+| Route of the execution      | RouteExecution.RouteId is allowed to be null so as not to block the recording of a trip when the route is reordered on the fly; it is completed at the close of the trip.       |
+| End of trip                 | RouteExecution.EndDateTime admits NULL while the trip is in progress and is written when it finishes.                                                                           |
+| Exclusive device            | A bus has a single geolocation device and a device is not shared between buses.                                                                                                  |
+| License expiration          | DriverLicense.LicenseExpirationDate enables the blocking of driving assignment when the license is expired.                                                                      |
+| Exceptional use record      | Every use of a bus outside the plan and every route deviation require a reason and a time window.                                                                                |
+| Audit retention             | Audit events and LogErrors records are not deleted by business operation; their lifecycle is defined by the database backup and archiving policy.                               |
+| Operational retention       | GpsLocation positions and SessionProfile sessions are data of growing volume and are purged by age according to the platform's retention policy.                                |
+| Backups                     | The database is backed up on a scheduled basis with verified restoration; the schema is rebuilt with migrations if restoration is not possible.                                  |
 
-# 6 Contratos de interfaz
+# 6 Interface contracts
 
-Los contratos se agrupan en tres familias: recursos REST versionados bajo el prefijo /api/v1 y expuestos a través del paso de API, eventos de dominio publicados en el broker, y llamadas RPC internas de baja latencia. La autorización se evalúa por rol y permiso tanto en el paso de API como en cada servicio, de modo que la columna de rol de la tabla siguiente representa la matriz de acceso efectiva.
+The contracts are grouped into three families: versioned REST resources under the /api/v1 prefix and exposed through the API gateway, domain events published to the broker, and internal low-latency RPC calls. Authorization is evaluated by role and permission both at the API gateway and in each service, so that the role column of the following table represents the effective access matrix.
 
-## 6.1. Resources REST
+## 6.1. REST resources
 
-**Tabla 35**. Resources REST y roles autorizados
+**Table 35**. REST resources and authorized roles
 
-| Verbo            | Ruta                                             | Rol                   | Descripción                                                                               |
+| Verb             | Path                                             | Role                  | Description                                                                               |
 | ---------------- | ------------------------------------------------ | --------------------- | ----------------------------------------------------------------------------------------- |
-| POST             | /api/v1/iam/auth/login                           | Público               | Autentica y emite token de acceso y de refresco                                           |
-| POST             | /api/v1/iam/auth/refresh                         | Público               | Rota el token de refresco y renueva la sesión                                             |
-| POST             | /api/v1/iam/auth/logout                          | Autenticado           | Revoca la sesión vigente                                                                  |
-| POST             | /api/v1/iam/auth/forgot-password                 | Público               | Inicia la recuperación conforme a la política de contraseñas                              |
-| POST             | /api/v1/iam/auth/reset-password                  | Público               | Restablece la contraseña verificando el código de longitud seis                           |
-| POST             | /api/v1/iam/auth/change-password                 | Autenticado           | Cambia la contraseña vigente aplicando la política de contraseñas                         |
-| GET              | /api/v1/iam/jwks                                 | Público               | Publica las llaves para verificar la firma de los tokens                                  |
-| GET, POST        | /api/v1/iam/roles                                | SUPER_ADMIN           | Consulta y creación de roles                                                              |
-| GET              | /api/v1/iam/permissions                          | SUPER_ADMIN           | Consulta del catálogo de permisos                                                         |
-| GET, PATCH       | /api/v1/iam/profiles\[/{id}/status\]             | ADMIN                 | Listado de perfiles de la institución y activación o inactivación de un perfil            |
-| POST, DELETE     | /api/v1/users/persons\[/{id}\]                   | ADMIN                 | Alta de personas (estudiante, acudiente, conductor, administrador) y baja lógica          |
-| POST             | /api/v1/users/families                           | ADMIN                 | Creación de un grupo familiar                                                             |
-| POST             | /api/v1/users/families/{id}/members              | ADMIN                 | Vinculación de un miembro al grupo familiar                                               |
-| POST             | /api/v1/users/driver-licenses                    | ADMIN                 | Registro de licencia de conducir con vigencia                                             |
-| POST, PUT        | /api/v1/schools/schools\[/{id}\]                 | SUPER_ADMIN           | Alta y actualización de la institución educativa                                          |
-| POST             | /api/v1/schools/campuses                         | SUPER_ADMIN           | Alta de sede                                                                              |
-| POST             | /api/v1/schools/courses                          | ADMIN                 | Alta de curso en una sede                                                                 |
-| POST             | /api/v1/schools/cities                           | SUPER_ADMIN           | Alta de ciudad de referencia                                                              |
-| GET              | /api/v1/buses/brands, /models                    | ADMIN                 | Catálogos de marcas y modelos                                                             |
-| POST, PUT        | /api/v1/buses/buses\[/{id}\]                     | ADMIN                 | Alta y actualización de bus con placa, capacidad y dispositivo                            |
-| DELETE           | /api/v1/buses/buses/{id}/driver                  | ADMIN                 | Retiro del conductor asignado                                                             |
-| POST, DELETE     | /api/v1/routes/routes\[/{id}\]                   | ADMIN                 | Alta de ruta con sector y horario, y baja de la ruta                                      |
-| POST             | /api/v1/routes/routes/{id}/stops                 | ADMIN                 | Incorporación de parada en orden dentro de la ruta                                        |
-| POST             | /api/v1/routes/routes/{id}/students              | ADMIN                 | Asignación de estudiante a una parada                                                     |
-| POST             | /api/v1/routes/routes/{id}/bus                   | ADMIN                 | Asignación de bus a la ruta                                                               |
-| GET              | /api/v1/routes/routes/{id}/schedules             | ADMIN                 | Programación semanal de la ruta                                                           |
-| POST             | /api/v1/routes/executions                        | ADMIN, DRIVER         | Apertura de la ejecución real de un trayecto                                              |
-| GET              | /api/v1/notifications/alert-types                | ADMIN                 | Catálogo de tipos de alerta y nivel de urgencia                                           |
-| POST, PATCH      | /api/v1/notifications/alerts\[/{id}/status\]     | ADMIN, DRIVER         | Generación de una alerta sobre una ejecución y acuse de recibo                            |
-| GET              | /api/v1/notifications/boarding                   | ADMIN, DRIVER         | Consulta de eventos de bordada                                                            |
-| GET              | /api/v1/notifications/recipients                 | ADMIN                 | Consulta de destinatarios y lectura de alertas                                            |
-| POST, GET, PATCH | /api/v1/gps/devices\[/{id}\[/status\]\]          | ADMIN                 | Registro, consulta de estado y última conexión, y activación o suspensión del dispositivo |
-| GET              | /api/v1/gps/locations                            | ADMIN, DRIVER, PARENT | Consulta de posiciones registradas                                                        |
-| POST             | /api/v1/exceptional/driver-usages, /route-usages | ADMIN                 | Registro de uso excepcional de bus o de desvío de ruta con motivo y ventana               |
-| GET, PUT         | /api/v1/config/password-policies, /settings      | SUPER_ADMIN           | Consulta y ajuste de la política de contraseñas y de los parámetros de seguridad          |
-| POST             | /api/v1/audit/entries                            | Interno               | Ingesta de eventos de auditoría desde los servicios                                       |
-| GET              | /api/v1/audit/errors                             | SUPER_ADMIN           | Consulta del registro de errores                                                          |
-| GET              | /health (paso de API)                            | Público               | Verification de salud del punto de entrada                                                |
+| POST             | /api/v1/iam/auth/login                           | Public                | Authenticates and issues access and refresh token                                         |
+| POST             | /api/v1/iam/auth/refresh                         | Public                | Rotates the refresh token and renews the session                                          |
+| POST             | /api/v1/iam/auth/logout                          | Authenticated         | Revokes the current session                                                               |
+| POST             | /api/v1/iam/auth/forgot-password                 | Public                | Starts recovery in accordance with the password policy                                    |
+| POST             | /api/v1/iam/auth/reset-password                  | Public                | Resets the password by verifying the six-length code                                      |
+| POST             | /api/v1/iam/auth/change-password                 | Authenticated         | Changes the current password applying the password policy                                 |
+| GET              | /api/v1/iam/jwks                                 | Public                | Publishes the keys to verify the token signature                                          |
+| GET, POST        | /api/v1/iam/roles                                | SUPER_ADMIN           | Query and creation of roles                                                               |
+| GET              | /api/v1/iam/permissions                          | SUPER_ADMIN           | Query of the permission catalog                                                           |
+| GET, PATCH       | /api/v1/iam/profiles\[/{id}/status\]             | ADMIN                 | Listing of the institution's profiles and activation or deactivation of a profile          |
+| POST, DELETE     | /api/v1/users/persons\[/{id}\]                   | ADMIN                 | Registration of persons (student, guardian, driver, administrator) and soft delete        |
+| POST             | /api/v1/users/families                           | ADMIN                 | Creation of a family group                                                                |
+| POST             | /api/v1/users/families/{id}/members              | ADMIN                 | Linking of a member to the family group                                                   |
+| POST             | /api/v1/users/driver-licenses                    | ADMIN                 | Registration of a driver license with validity                                             |
+| POST, PUT        | /api/v1/schools/schools\[/{id}\]                 | SUPER_ADMIN           | Registration and update of the educational institution                                    |
+| POST             | /api/v1/schools/campuses                         | SUPER_ADMIN           | Registration of a campus                                                                  |
+| POST             | /api/v1/schools/courses                          | ADMIN                 | Registration of a course in a campus                                                      |
+| POST             | /api/v1/schools/cities                           | SUPER_ADMIN           | Registration of a reference city                                                          |
+| GET              | /api/v1/buses/brands, /models                    | ADMIN                 | Brand and model catalogs                                                                  |
+| POST, PUT        | /api/v1/buses/buses\[/{id}\]                     | ADMIN                 | Registration and update of a bus with plate, capacity and device                           |
+| DELETE           | /api/v1/buses/buses/{id}/driver                  | ADMIN                 | Removal of the assigned driver                                                            |
+| POST, DELETE     | /api/v1/routes/routes\[/{id}\]                   | ADMIN                 | Registration of a route with sector and schedule, and deletion of the route                |
+| POST             | /api/v1/routes/routes/{id}/stops                 | ADMIN                 | Incorporation of a stop in order within the route                                         |
+| POST             | /api/v1/routes/routes/{id}/students              | ADMIN                 | Assignment of a student to a stop                                                         |
+| POST             | /api/v1/routes/routes/{id}/bus                   | ADMIN                 | Assignment of a bus to the route                                                          |
+| GET              | /api/v1/routes/routes/{id}/schedules             | ADMIN                 | Weekly schedule of the route                                                              |
+| POST             | /api/v1/routes/executions                        | ADMIN, DRIVER         | Opening of the real execution of a trip                                                   |
+| GET              | /api/v1/notifications/alert-types                | ADMIN                 | Catalog of alert types and urgency level                                                  |
+| POST, PATCH      | /api/v1/notifications/alerts\[/{id}/status\]     | ADMIN, DRIVER         | Generation of an alert on an execution and acknowledgment                                  |
+| GET              | /api/v1/notifications/boarding                   | ADMIN, DRIVER         | Query of boarding events                                                                  |
+| GET              | /api/v1/notifications/recipients                 | ADMIN                 | Query of recipients and reading of alerts                                                 |
+| POST, GET, PATCH | /api/v1/gps/devices\[/{id}\[/status\]\]          | ADMIN                 | Registration, status and last-connection query, and activation or suspension of the device |
+| GET              | /api/v1/gps/locations                            | ADMIN, DRIVER, PARENT | Query of recorded positions                                                               |
+| POST             | /api/v1/exceptional/driver-usages, /route-usages | ADMIN                 | Registration of exceptional bus use or route deviation with reason and window              |
+| GET, PUT         | /api/v1/config/password-policies, /settings      | SUPER_ADMIN           | Query and adjustment of the password policy and the security parameters                    |
+| POST             | /api/v1/audit/entries                            | Internal              | Ingestion of audit events from the services                                               |
+| GET              | /api/v1/audit/errors                             | SUPER_ADMIN           | Query of the error log                                                                    |
+| GET              | /health (API gateway)                            | Public                | Health check of the entry point                                                           |
 
-Todas las rutas de negocio se protegen con token Bearer salvo las declaradas como públicas; las respuestas de error siguen una estructura común con marca de tiempo, mensaje y detalle del camino, y las listas se sirven con paginación por página y tamaño.
+All business routes are protected with a Bearer token except those declared as public; error responses follow a common structure with a timestamp, message and path detail, and lists are served with pagination by page and size.
 
-## 6.2. Eventos de dominio (Kafka)
+## 6.2. Domain events (Kafka)
 
-El broker opera en modo KRaft sin componente de coordinación externo y publica seis tópicos verificados en el entorno de ejecución. La llave de partición es el identificador de la entidad, para conservar el orden por agregado.
+The broker operates in KRaft mode without an external coordination component and publishes six topics verified in the runtime environment. The partition key is the entity identifier, to preserve order per aggregate.
 
-**Tabla 36**. Eventos de dominio y sus consumidores
+**Table 36**. Domain events and their consumers
 
-| Evento          | Productor                           | Consumidor                          | Payload resumen                                                                              |
-| --------------- | ----------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------- |
-| student.created | Servicio de gestión de usuarios     | Servicio de identificación y acceso | Identificador del evento, persona, correo, número de documento y sede                        |
-| driver.created  | Servicio de gestión de usuarios     | Servicio de identificación y acceso | Mismo contenido que el alta de estudiante, con el rol de conductor                           |
-| admin.created   | Servicio de gestión de usuarios     | Servicio de identificación y acceso | Mismo contenido con el colegio a administrar en lugar de sede                                |
-| parent.created  | Servicio de gestión de usuarios     | Servicio de identificación y acceso | Identificador del evento, persona, correo, documento y sede                                  |
-| profile.created | Servicio de identificación y acceso | Sin consumidor registrado           | Confirmación de la creación del perfil de acceso para una persona                            |
-| student.scanned | Servicio de notificaciones          | Servicio de notificaciones          | Bordada, alerta, perfil del estudiante, ejecución de ruta, tipo de bordada y marca de tiempo |
+| Event           | Producer                               | Consumer                              | Summary payload                                                                              |
+| --------------- | -------------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------- |
+| student.created | User management service                | Identification and access service     | Event identifier, person, email, document number and campus                                  |
+| driver.created  | User management service                | Identification and access service     | Same content as student registration, with the driver role                                   |
+| admin.created   | User management service                | Identification and access service     | Same content with the school to administer instead of campus                                 |
+| parent.created  | User management service                | Identification and access service     | Event identifier, person, email, document and campus                                         |
+| profile.created | Identification and access service      | No registered consumer                | Confirmation of the creation of the access profile for a person                              |
+| student.scanned | Notification service                   | Notification service                  | Boarding, alert, student profile, route execution, boarding type and timestamp               |
 
-Contrato del payload de alta de personas (EventId, PersonId, Email, IdentificationNumber, CampusId opcional y SchoolId solo en el alta de administradores) y del escaneo (BoardingId, AlertId, StudentProfileId, RouteExecutionId, BoardingType, Timestamp): los campos son aditivos, los consumidores toleran campos desconocidos y el productor es dueño del esquema.
+Payload contract for person registration (EventId, PersonId, Email, IdentificationNumber, optional CampusId and SchoolId only in administrator registration) and for scanning (BoardingId, AlertId, StudentProfileId, RouteExecutionId, BoardingType, Timestamp): the fields are additive, consumers tolerate unknown fields and the producer owns the schema.
 
-Reglas de consumo: un consumidor que falle vuelve a leer el mensaje según la política de reintentos y la contraparte no se bloquea; la creación del perfil de acceso y la generación de la notificación son operaciones idempotentes respecto al identificador del evento.
+Consumption rules: a consumer that fails reads the message again according to the retry policy and the counterpart is not blocked; the creation of the access profile and the generation of the notification are idempotent operations with respect to the event identifier.
 
-## 6.3. Flujo gRPC
+## 6.3. gRPC flow
 
-Las llamadas internas de baja latencia usan RPC sobre canal persistente en el puerto 5001, en texto plano (h2c) dentro de la red privada de la plataforma; el transporte cifrado hacia el exterior lo termina el paso de API.
+Internal low-latency calls use RPC over a persistent channel on port 5001, in plain text (h2c) within the platform's private network; the encrypted transport toward the outside is terminated by the API gateway.
 
 +--------------------------------+ +----------------------------------+
 
-| Servicio de identificación | | Servicio de gestión escolar |
+| Identification service | | School management service |
 
-| y acceso (cliente) | RPC | (servidor, puerto 5001) |
+| and access (client) | RPC | (server, port 5001) |
 
-| tras consumir admin.created: +--------->| SchoolManagementService |
+| after consuming admin.created: +--------->| SchoolManagementService |
 
 | LinkAdminSchool, GetCampus, | h2c | GetSchool, GetCampus, |
 
@@ -1638,27 +1638,27 @@ Las llamadas internas de baja latencia usan RPC sobre canal persistente en el pu
 
 +--------------------------------+ | LinkAdminSchool |
 
-| Servicio de gestión de usuarios| +----------------------------------+
+| User management service| +----------------------------------+
 
-| (cliente) consulta sede y |
+| (client) queries campus and |
 
-| colegio al registrar personas |
+| school when registering persons |
 
 +--------------------------------+
 
 +--------------------------------+ +----------------------------------+
 
-| Servicio de rutas (servidor) | | Servicio de gestión de usuarios |
+| Route service (server) | | User management service |
 
 | RouteService | | FamilyService |
 
 | CreateRoute, GetRoute, | | RegisterFamilyGroup |
 
-| ListRoutes, UpdateRoute, | | (nombre del grupo, |
+| ListRoutes, UpdateRoute, | | (group name, |
 
-| DeleteRoute, GetCurrentRoute,| | observaciones y miembros |
+| DeleteRoute, GetCurrentRoute,| | observations and members |
 
-| GetStudentRoute, StartTrip, | | con tipo de relación) |
+| GetStudentRoute, StartTrip, | | with relationship type) |
 
 | EndTrip, AssignStudentToRoute| +----------------------------------+
 
@@ -1668,27 +1668,25 @@ Las llamadas internas de baja latencia usan RPC sobre canal persistente en el pu
 
 +--------------------------------+
 
-**Figura 19**. Flujo de llamadas gRPC entre servicios
+**Figure 19**. Flow of gRPC calls between services
 
-Comportamiento del cliente: canal compartido con ciclo de vida gestionado por el contenedor, tiempo límite por llamada, reintento acotado ante fallo transitorio y transformación del error remoto a un error de dominio que la capa de API traduce a una respuesta de problema. Los mensajes de solicitud y respuesta transportan identificadores como cadenas y estados como valores booleanos o de catálogo, evitando estructuras anidadas profundas.
+Client behavior: shared channel with lifecycle managed by the container, timeout per call, bounded retry on transient failure, and transformation of the remote error into a domain error that the API layer translates into a problem response. The request and response messages carry identifiers as strings and statuses as boolean or catalog values, avoiding deeply nested structures.
 
-# 7 Decisiones y trade-offs de diseño
+# 7 Design decisions and trade-offs
 
-**Tabla 37**. Decisiones de diseño y alternativas descartadas
+**Table 37**. Design decisions and discarded alternatives
 
-| Decisión                                                                                | Alternativa descartada                    | Criterio y contrapartida                                                                                                                                                                        |
+| Decision                                                                                | Discarded alternative                     | Criterion and trade-off                                                                                                                                                                         |
 | --------------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Una sola base relacional con esquema por servicio                                       | Base de datos independiente por servicio  | Se gana integridad referencial transversal y operación de respaldo única; se asume la disciplina de no leer datos ajenos y el acoplamiento en las migraciones.                                  |
-| Paso de API único con enrutamiento                                                      | Exponer cada servicio directamente        | Se ganan política de seguridad, límite de tasa y CORS comunes; se acepta un punto único que debe escalar y estar disponible.                                                                    |
-| Orientación a eventos para el alta de usuarios y los escaneos                           | Encadenamiento síncrono de llamadas       | Se desacoplan productor y consumidor en el tiempo y se toleran caídas puntuales; se asume consistencia eventual entre persona y perfil de acceso.                                               |
-| RPC interna para consultas y trayectos de baja latencia                                 | Todo por REST                             | Se reducen tiempos de respuesta en el camino caliente; se acepta un segundo contrato que debe versionarse con la misma disciplina.                                                              |
-| Token de acceso firmado con RS256 y llave privada solo en el servicio de identificación | Llave simétrica compartida                | Cualquier servicio puede verificar sin custodiar la llave; se añade la gestión de renovación y publicación de llaves públicas.                                                                  |
-| Arquitectura hexagonal dentro de cada servicio                                          | Modelo MVC de capas únicas                | Se aísla el dominio de marcos y bases de datos a cambio de más tipos y más archivos por caso de uso.                                                                                            |
-| Baja lógica con ACTIVE/INACTIVE                                                         | Borrado físico                            | Se conserva trazabilidad y reversibilidad; se asume que los listados deben filtrar y que el volumen crece.                                                                                      |
-| Identificadores globales únicos como llave primaria                                     | Identidad secuencial compartida           | Permite crear registros sin consultar al centro de secuencia y fusionar datos entre servicios; se pierde la localidad de las claves en las búsquedas por rango.                                 |
-| Aplicación web para administración y aplicación móvil para operación de campo           | Una sola aplicación web responsiva        | Cada superficie se optimiza para su contexto (tablas y formularios frente a acciones grandes y registro sin conexión); se mantiene un sistema de diseño común para no duplicar lenguaje visual. |
-| Contrato de datos por transferencia de datos separado del modelo interno                | Exponer entidades de dominio directamente | Se evita que los cambios internos rompan a los clientes; se paga con mapeos adicionales en cada operación.                                                                                      |
-| Design Tokens con ocho temas cerrados                                                   | Personalización libre de colores          | Se garantiza contraste y coherencia visual; se limita la expresividad de la personalización institucional.                                                                                      |
-| Programación por catálogos parametrizados                                               | Condiciones fijas en código               | Nuevos tipos de alerta o parámetros de seguridad se habilitan como datos; se requiere cuidado para no convertir el catálogo en una fuente de reglas opacas.                                     |
-
-Cierre de la sección: cada decisión queda asociada a su contrapartida, de modo que el costo de mantenerla sea explícito para quien evolucione la plataforma; los trade-offs relacionados con la comunicación y con la estructura de datos son los que mayor efecto tienen sobre el rendimiento y sobre el costo de cambio, por lo que se revisan primero cuando cambian los requisitos.
+| A single relational database with schema per service                                    | Independent database per service          | Cross-cutting referential integrity and a single backup operation are gained; the discipline of not reading other services' data and coupling in migrations are accepted.                       |
+| Single API gateway with routing                                                         | Exposing each service directly            | Common security policy, rate limit and CORS are gained; a single point that must scale and be available is accepted.                                                                            |
+| Event orientation for user registration and scans                                       | Synchronous chaining of calls             | Producer and consumer are decoupled in time and occasional outages are tolerated; eventual consistency between person and access profile is accepted.                                            |
+| Internal RPC for low-latency queries and trips                                          | Everything over REST                      | Response times on the hot path are reduced; a second contract that must be versioned with the same discipline is accepted.                                                                      |
+| Access token signed with RS256 and private key only in the identification service        | Shared symmetric key                      | Any service can verify without holding the key; renewal management and publication of public keys are added.                                                                                    |
+| Hexagonal architecture within each service                                              | Single-layer MVC model                    | The domain is isolated from frameworks and databases at the cost of more types and more files per use case.                                                                                     |
+| Soft delete with ACTIVE/INACTIVE                                                        | Physical deletion                         | Traceability and reversibility are preserved; it is accepted that listings must filter and that volume grows.                                                                                   |
+| Globally unique identifiers as primary key                                              | Shared sequential identity                | Allows creating records without querying the sequence center and merging data between services; key locality in range lookups is lost.                                                          |
+| Web application for administration and mobile application for field operations           | A single responsive web application       | Each surface is optimized for its context (tables and forms versus large actions and offline recording); a common design system is maintained to avoid duplicating visual language.              |
+| Data transfer contract separated from the internal model                                | Exposing domain entities directly         | Internal changes are prevented from breaking clients; the cost is additional mappings in each operation.                                                                                        |
+| Design tokens with eight closed themes                                                  | Free color customization                  | Contrast and visual coherence are guaranteed; the expressiveness of institutional customization is limited.                                                                                     |
+| Scheduling through parameterized catalogs                                              | Fixed conditions in code                  | New alert types or security parameters are enabled as data; care is required not to turn the catalog into a source of opaque rules.                                                             |
