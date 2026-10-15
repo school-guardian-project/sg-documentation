@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guardian Escolar - Información del Administrador</title>
+<!-- Tailwind CSS v3 CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              800: '#1e3a8a',
+              900: '#172554',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-full bg-[#f1f5f9] text-slate-700 antialiased font-sans flex flex-col select-none">
+<!-- BEGIN: TopBar -->
+<header class="bg-[#195de6] h-14 flex items-center justify-between px-4 z-20 shadow-sm relative flex-shrink-0" data-purpose="top-navigation">
+<!-- Back Button -->
+<button aria-label="Volver" class="text-white hover:bg-white/10 p-2 rounded-full transition-colors flex items-center justify-center" type="button">
+<svg class="w-6 h-6 stroke-[2.2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<!-- Centered System Title -->
+<h1 class="text-white font-medium text-lg tracking-wide absolute left-1/2 transform -translate-x-1/2">
+      Guardian Escolar
+    </h1>
+<!-- Spacer for center alignment -->
+<div class="w-10"></div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: MainContainer -->
+<div class="flex-1 flex overflow-hidden">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-56 bg-[#195de6] flex flex-col justify-between py-6 px-3 flex-shrink-0" data-purpose="sidebar-navigation">
+<div class="space-y-6">
+<!-- Section Title -->
+<div class="px-3">
+<p class="text-white/80 text-[11px] font-bold tracking-wider uppercase">ADMINISTRAR</p>
+</div>
+<!-- Navigation Menu -->
+<nav aria-label="Menú principal" class="space-y-1.5">
+<!-- Item: Usuarios -->
+<a class="flex items-center gap-3.5 px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg text-sm font-medium transition-all group" href="#">
+<svg class="w-5 h-5 fill-current opacity-90 group-hover:opacity-100" viewbox="0 0 24 24">
+<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path>
+</svg>
+<span>Usuarios</span>
+</a>
+<!-- Item: Buses -->
+<a class="flex items-center gap-3.5 px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg text-sm font-medium transition-all group" href="#">
+<svg class="w-5 h-5 fill-current opacity-90 group-hover:opacity-100" viewbox="0 0 24 24">
+<path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"></path>
+</svg>
+<span>Buses</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Navigation Item (Active: Perfil) -->
+<div class="pt-4">
+<a class="flex items-center gap-3 px-4 py-2.5 bg-white/20 text-white rounded-full text-sm font-medium shadow-inner backdrop-blur-sm transition-all hover:bg-white/25" href="#">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
+</svg>
+<span>Perfil</span>
+</a>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 overflow-y-auto p-4 md:p-8 flex items-center justify-center bg-[#f1f4fa]" data-purpose="main-dashboard-body">
+<!-- Profile Card Container -->
+<section class="w-full max-w-5xl bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 p-7 md:p-10 transition-all" data-purpose="admin-profile-card">
+<!-- Card Header: Title and Utility Action Buttons -->
+<div class="flex items-center justify-between pb-6 border-b border-slate-100 mb-8">
+<h2 class="text-xl md:text-2xl font-semibold text-slate-800 tracking-tight">
+            Información del administrador
+          </h2>
+<!-- Top-Right Actions (Language and Theme) -->
+<div class="flex items-center space-x-2.5">
+<!-- Language Selector Button -->
+<button aria-label="Cambiar idioma" class="p-2 text-slate-600 hover:text-blue-600 border border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50/50 transition-all" type="button">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+<path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"></path>
+</svg>
+</button>
+<!-- Theme / Color Palette Button -->
+<button aria-label="Cambiar tema de color" class="p-2 text-slate-600 hover:text-blue-600 border border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50/50 transition-all" type="button">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+<path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l2.06-2.06C9.17 19.47 10.53 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path>
+</svg>
+</button>
+</div>
+</div>
+<!-- Details Grid: Left Avatar Column & Right Attributes Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+<!-- Left Column: Avatar & Personal Info -->
+<div class="lg:col-span-4 flex flex-col items-center text-center pr-0 lg:pr-6 lg:border-r lg:border-slate-100" data-purpose="profile-card-summary">
+<!-- Profile Avatar with Camera Icon Overlay -->
+<div class="relative mb-5">
+<div class="w-28 h-28 rounded-full bg-[#e2e8f0] flex items-center justify-center overflow-hidden">
+<svg class="w-24 h-24 text-[#cbd5e1] mt-3.5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+</svg>
+</div>
+<!-- Camera Badge Button -->
+<button aria-label="Subir foto de perfil" class="absolute bottom-0 right-0 p-2 bg-[#195de6] hover:bg-blue-700 text-white rounded-full shadow-md transition transform hover:scale-105" type="button">
+<svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+<path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"></path>
+</svg>
+</button>
+</div>
+<!-- Full Name -->
+<h3 class="font-bold text-slate-800 text-base md:text-lg mb-2">
+              Carlos Andrés Pérez Gómez
+            </h3>
+<!-- Role Badge -->
+<span class="inline-flex items-center px-4 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 mb-6">
+              Administrador
+            </span>
+<!-- Identification & Birthdate Metadata -->
+<div class="w-full space-y-3 pt-2 text-xs md:text-sm text-slate-500 font-normal flex flex-col items-center">
+<div class="flex items-center gap-2">
+<svg class="w-4 h-4 text-slate-500 fill-current" viewbox="0 0 24 24">
+<path d="M20 7h-4V4c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1v3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 5h4v2h-4V5zm10 15H4V9h16v11z"></path>
+</svg>
+<span>C.C 90000001</span>
+</div>
+<div class="flex items-center gap-2">
+<svg class="w-4 h-4 text-slate-500 fill-current" viewbox="0 0 24 24">
+<path d="M12 6a2 2 0 0 0 2-2c0-.38-.1-.73-.29-1.03l-.04-.06-.82-.91h-.7l-.82.91-.04.06C12.1 3.27 12 3.62 12 4a2 2 0 0 0 2 2zm6 3h-1V7.5c0-.28-.22-.5-.5-.5s-.5.22-.5.5V9h-3V7.5c0-.28-.22-.5-.5-.5s-.5.22-.5.5V9H8V7.5c0-.28-.22-.5-.5-.5s-.5.22-.5.5V9H6c-1.1 0-2 .9-2 2v2c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-2c0-1.1-.9-2-2-2zm1 6H5v5c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-5z"></path>
+</svg>
+<span>1985-03-15</span>
+</div>
+</div>
+</div>
+<!-- Right Column: Detail Information Fields Grid -->
+<div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-7" data-purpose="profile-fields-grid">
+<!-- Field: Correo electrónico (Editable) -->
+<div class="pb-3 border-b border-slate-200 group">
+<div class="flex items-center justify-between mb-1.5">
+<div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+<svg class="w-4 h-4 text-slate-600 fill-current" viewbox="0 0 24 24">
+<path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"></path>
+</svg>
+<span>Correo electrónico</span>
+</div>
+<button aria-label="Editar correo electrónico" class="p-1 text-slate-500 hover:text-blue-600 rounded border border-slate-300 hover:border-blue-500 transition-colors" type="button">
+<svg class="w-3.5 h-3.5 fill-current" viewbox="0 0 24 24">
+<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+</svg>
+</button>
+</div>
+<p class="text-sm text-slate-600 pl-6">ejemplo@gmail.com</p>
+</div>
+<!-- Field: Teléfono (Editable) -->
+<div class="pb-3 border-b border-slate-200 group">
+<div class="flex items-center justify-between mb-1.5">
+<div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+<svg class="w-4 h-4 text-slate-600 fill-current" viewbox="0 0 24 24">
+<path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"></path>
+</svg>
+<span>Teléfono</span>
+</div>
+<button aria-label="Editar teléfono" class="p-1 text-slate-500 hover:text-blue-600 rounded border border-slate-300 hover:border-blue-500 transition-colors" type="button">
+<svg class="w-3.5 h-3.5 fill-current" viewbox="0 0 24 24">
+<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+</svg>
+</button>
+</div>
+<p class="text-sm text-slate-600 pl-6">+57 310555100</p>
+</div>
+<!-- Field: Dirección -->
+<div class="pb-3 border-b border-slate-200">
+<div class="flex items-center gap-2 mb-1.5 text-slate-700 font-semibold text-sm">
+<svg class="w-4 h-4 text-slate-600 fill-current" viewbox="0 0 24 24">
+<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+</svg>
+<span>Dirección</span>
+</div>
+<p class="text-sm text-slate-600 pl-6">Calle 10 #8-20</p>
+</div>
+<!-- Field: Ciudad -->
+<div class="pb-3 border-b border-slate-200">
+<div class="flex items-center gap-2 mb-1.5 text-slate-700 font-semibold text-sm">
+<svg class="w-4 h-4 text-slate-600 fill-current" viewbox="0 0 24 24">
+<path d="M15 11V5l-3-3-3 3v2H3v14h18V11h-6zm-8 8H5v-2h2v2zm0-4H5v-2h2v2zm0-4H5V9h2v2zm6 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V9h2v2zm0-4h-2V5h2v2zm6 12h-2v-2h2v2zm0-4h-2v-2h2v2z"></path>
+</svg>
+<span>Ciudad</span>
+</div>
+<p class="text-sm text-slate-600 pl-6">Calle 55 #20-40</p>
+</div>
+<!-- Field: Escuela -->
+<div class="pb-3 border-b border-slate-200">
+<div class="flex items-center gap-2 mb-1.5 text-slate-700 font-semibold text-sm">
+<svg class="w-4 h-4 text-slate-600 fill-current" viewbox="0 0 24 24">
+<path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"></path>
+</svg>
+<span>Escuela</span>
+</div>
+<p class="text-sm text-slate-600 pl-6">Colegio Técnico Neiva</p>
+</div>
+<!-- Field: Contraseña (Editable) -->
+<div class="pb-3 border-b border-slate-200 group">
+<div class="flex items-center justify-between mb-1.5">
+<div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+<svg class="w-4 h-4 text-slate-600 fill-current" viewbox="0 0 24 24">
+<path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"></path>
+</svg>
+<span>Contraseña</span>
+</div>
+<button aria-label="Editar contraseña" class="p-1 text-slate-500 hover:text-blue-600 rounded border border-slate-300 hover:border-blue-500 transition-colors" type="button">
+<svg class="w-3.5 h-3.5 fill-current" viewbox="0 0 24 24">
+<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+</svg>
+</button>
+</div>
+<p class="text-sm font-black tracking-widest text-slate-700 pl-6 leading-none pt-1">••••••••</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- END: MainContent -->
+</div>
+<!-- END: MainContainer -->
+</body></html>

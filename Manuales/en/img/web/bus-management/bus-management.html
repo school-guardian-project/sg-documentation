@@ -1,0 +1,607 @@
+<!doctype html>
+
+<html class="h-full" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Guardian Escolar - Gestión de Buses</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: "#eff6ff",
+                100: "#dbeafe",
+                500: "#3b82f6",
+                600: "#2563eb",
+                700: "#1d4ed8",
+                800: "#1e40af",
+                900: "#1e3a8a",
+              },
+            },
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <style data-purpose="custom-scrollbars">
+      /* Custom clean scrollbar styling for high aesthetic fidelity */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+    </style>
+  </head>
+  <body
+    class="h-full bg-[#edf2f9] font-sans antialiased text-slate-800 flex flex-col overflow-x-hidden"
+  >
+    <!-- BEGIN: TopBar -->
+    <header
+      class="h-16 bg-brand-600 flex-shrink-0 flex items-center justify-between px-6 shadow-sm z-30"
+      data-purpose="global-header"
+    >
+      <!-- Back button -->
+      <button
+        aria-label="Volver"
+        class="text-white hover:bg-white/15 p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-white/40"
+        type="button"
+      >
+        <svg
+          class="w-6 h-6 stroke-current stroke-2 fill-none"
+          viewbox="0 0 24 24"
+        >
+          <path
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+      </button>
+      <!-- Centered Header Title -->
+      <h1 class="text-xl font-semibold text-white tracking-wide">
+        Guardian Escolar
+      </h1>
+      <!-- Spacer to balance header alignment -->
+      <div class="w-10"></div>
+    </header>
+    <!-- END: TopBar -->
+    <!-- BEGIN: MainContainerWrapper -->
+    <div class="flex-1 flex overflow-hidden">
+      <!-- BEGIN: Sidebar -->
+      <aside
+        class="w-64 bg-brand-600 flex-shrink-0 flex flex-col justify-between py-6 px-4 select-none"
+        data-purpose="primary-sidebar"
+      >
+        <div class="space-y-7">
+          <!-- Navigation Section: USUARIOS -->
+          <div>
+            <span
+              class="px-3 text-xs font-semibold tracking-wider text-blue-200/80 uppercase"
+              >USUARIOS</span
+            >
+            <nav class="mt-3 space-y-1">
+              <a
+                class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 hover:text-white transition-all text-sm font-medium"
+                href="#"
+              >
+                <!-- User Icon -->
+                <svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+                  <path
+                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                  ></path>
+                </svg>
+                <span>Estudiantes</span>
+              </a>
+              <a
+                class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 hover:text-white transition-all text-sm font-medium"
+                href="#"
+              >
+                <!-- Users Icon -->
+                <svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+                  <path
+                    d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                  ></path>
+                </svg>
+                <span>Acudientes</span>
+              </a>
+              <a
+                class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 hover:text-white transition-all text-sm font-medium"
+                href="#"
+              >
+                <!-- Driver / Badge Icon -->
+                <svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                  ></path>
+                </svg>
+                <span>Conductores</span>
+              </a>
+              <a
+                class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 hover:text-white transition-all text-sm font-medium"
+                href="#"
+              >
+                <!-- Family Icon -->
+                <svg
+                  class="w-5 h-5 fill-none stroke-current stroke-2"
+                  viewbox="0 0 24 24"
+                >
+                  <circle cx="9" cy="7" r="3"></circle>
+                  <circle cx="17" cy="8" r="2.5"></circle>
+                  <path
+                    d="M3 19c0-3 3-5 6-5s6 2 6 5v1H3v-1zm11-1c0-1.8 1.6-3.2 3.8-3.2 1.5 0 3.2.9 3.2 3.2"
+                  ></path>
+                </svg>
+                <span>Familia</span>
+              </a>
+            </nav>
+          </div>
+          <!-- Navigation Section: TRANSPORTE -->
+          <div>
+            <span
+              class="px-3 text-xs font-semibold tracking-wider text-blue-200/80 uppercase"
+              >TRANSPORTE</span
+            >
+            <nav class="mt-3 space-y-1">
+              <!-- Active item: Buses -->
+              <a
+                class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl bg-white/20 text-white font-medium shadow-sm transition-all"
+                href="#"
+              >
+                <!-- Bus Icon -->
+                <svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+                  <path
+                    d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"
+                  ></path>
+                </svg>
+                <span>Buses</span>
+              </a>
+              <a
+                class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 hover:text-white transition-all text-sm font-medium"
+                href="#"
+              >
+                <!-- Routes Icon -->
+                <svg
+                  class="w-5 h-5 fill-none stroke-current stroke-2"
+                  viewbox="0 0 24 24"
+                >
+                  <circle cx="6" cy="19" r="3"></circle>
+                  <path
+                    d="M9 19h8.5a4.5 4.5 0 004.5-4.5v0A4.5 4.5 0 0017.5 10H6.5A4.5 4.5 0 012 5.5v0A4.5 4.5 0 016.5 1H15"
+                  ></path>
+                  <circle cx="18" cy="5" r="3"></circle>
+                </svg>
+                <span>Rutas</span>
+              </a>
+              <a
+                class="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-blue-100 hover:bg-white/10 hover:text-white transition-all text-sm font-medium"
+                href="#"
+              >
+                <!-- Location pin icon -->
+                <svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+                  <path
+                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+                  ></path>
+                </svg>
+                <span>Paradas</span>
+              </a>
+            </nav>
+          </div>
+        </div>
+        <!-- Profile Button at bottom with light blue translucent background and filled white icon -->
+        <div class="pt-4" data-purpose="user-profile-navigation">
+          <button
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-blue-400/25 hover:bg-blue-400/35 border border-white/20 text-white font-medium transition-colors shadow-sm focus:outline-none"
+            type="button"
+          >
+            <!-- Filled white user avatar icon -->
+            <svg
+              class="w-6 h-6 fill-white text-white flex-shrink-0"
+              viewbox="0 0 24 24"
+            >
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+              ></path>
+            </svg>
+            <span class="text-sm tracking-wide">Perfil</span>
+          </button>
+        </div>
+      </aside>
+      <!-- END: Sidebar -->
+      <!-- BEGIN: MainContentArea -->
+      <main
+        class="flex-1 p-6 md:p-8 overflow-y-auto flex flex-col"
+        data-purpose="main-dashboard-content"
+      >
+        <!-- Grid stretching full height -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1 items-stretch">
+          <!-- BEGIN: LeftCard - Registrar Bus -->
+          <section
+            class="bg-white rounded-3xl shadow-sm border border-slate-200/70 p-6 md:p-8 flex flex-col justify-between"
+            data-purpose="bus-registration-form"
+          >
+            <div>
+              <h2
+                class="text-xl font-bold text-center text-slate-800 tracking-tight"
+              >
+                Registrar bus
+              </h2>
+              <hr class="mt-4 mb-6 border-slate-200" />
+              <form
+                class="space-y-4"
+                id="form-registrar-bus"
+                onsubmit="event.preventDefault()"
+              >
+                <!-- Matrícula -->
+                <div>
+                  <label
+                    class="block text-sm font-medium text-slate-700 mb-1.5"
+                    for="matricula"
+                    >Matrícula</label
+                  >
+                  <input
+                    class="w-full rounded-xl border-slate-200 bg-[#f8fafc] focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 py-2.5 px-3.5 text-sm transition-colors text-slate-800"
+                    id="matricula"
+                    name="matricula"
+                    placeholder=""
+                    type="text"
+                  />
+                </div>
+                <!-- Conductor -->
+                <div>
+                  <label
+                    class="block text-sm font-medium text-slate-700 mb-1.5"
+                    for="conductor"
+                    >Conductor</label
+                  >
+                  <div class="relative">
+                    <select
+                      class="w-full appearance-none rounded-xl border-slate-200 bg-[#f8fafc] focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 py-2.5 px-3.5 pr-10 text-sm transition-colors text-slate-700 cursor-pointer"
+                      id="conductor"
+                      name="conductor"
+                    >
+                      <option disabled="" selected="" value=""></option>
+                      <option value="1">Pedro Daniel Rodríguez</option>
+                      <option value="2">Luis Fernando García</option>
+                      <option value="3">Carlos Alberto Mendoza</option>
+                    </select>
+                    <div
+                      class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-500"
+                    >
+                      <svg
+                        class="w-4 h-4 fill-none stroke-current stroke-2"
+                        viewbox="0 0 24 24"
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <!-- Modelo -->
+                <div>
+                  <label
+                    class="block text-sm font-medium text-slate-700 mb-1.5"
+                    for="modelo"
+                    >Modelo</label
+                  >
+                  <input
+                    class="w-full rounded-xl border-slate-200 bg-[#f8fafc] focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 py-2.5 px-3.5 text-sm transition-colors text-slate-800"
+                    id="modelo"
+                    name="modelo"
+                    placeholder=""
+                    type="text"
+                  />
+                </div>
+                <!-- Marca -->
+                <div>
+                  <label
+                    class="block text-sm font-medium text-slate-700 mb-1.5"
+                    for="marca"
+                    >Marca</label
+                  >
+                  <input
+                    class="w-full rounded-xl border-slate-200 bg-[#f8fafc] focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 py-2.5 px-3.5 text-sm transition-colors text-slate-800"
+                    id="marca"
+                    name="marca"
+                    placeholder=""
+                    type="text"
+                  />
+                </div>
+                <!-- Capacidad -->
+                <div>
+                  <label
+                    class="block text-sm font-medium text-slate-700 mb-1.5"
+                    for="capacidad"
+                    >Capacidad</label
+                  >
+                  <input
+                    class="w-full rounded-xl border-slate-200 bg-[#f8fafc] focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 py-2.5 px-3.5 text-sm transition-colors text-slate-800"
+                    id="capacidad"
+                    name="capacidad"
+                    placeholder=""
+                    type="text"
+                  />
+                </div>
+                <!-- Two column row: Vigencia SOAT & Estado GPS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                  <!-- Vigencia SOAT -->
+                  <div>
+                    <label
+                      class="block text-sm font-medium text-slate-700 mb-1.5"
+                      for="soat"
+                      >Vigencia SOAT</label
+                    >
+                    <div class="relative">
+                      <input
+                        class="w-full rounded-xl border-slate-200 bg-[#f8fafc] focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 py-2.5 px-3.5 pr-10 text-sm text-slate-600 placeholder-slate-400"
+                        id="soat"
+                        name="soat"
+                        placeholder="dd / mm / aaaa"
+                        type="text"
+                      />
+                      <div
+                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-600"
+                      >
+                        <svg
+                          class="w-4 h-4 fill-none stroke-current stroke-2"
+                          viewbox="0 0 24 24"
+                        >
+                          <rect
+                            height="18"
+                            rx="2"
+                            ry="2"
+                            width="18"
+                            x="3"
+                            y="4"
+                          ></rect>
+                          <line x1="16" x2="16" y1="2" y2="6"></line>
+                          <line x1="8" x2="8" y1="2" y2="6"></line>
+                          <line x1="3" x2="21" y1="10" y2="10"></line>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Estado GPS -->
+                  <div>
+                    <label
+                      class="block text-sm font-medium text-slate-700 mb-1.5"
+                      for="gps"
+                      >Estado GPS</label
+                    >
+                    <div class="relative">
+                      <select
+                        class="w-full appearance-none rounded-xl border-slate-200 bg-[#f8fafc] focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 py-2.5 px-3.5 pr-10 text-sm text-slate-700 cursor-pointer"
+                        id="gps"
+                        name="gps"
+                      >
+                        <option disabled="" selected="" value=""></option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                        <option value="mantenimiento">En mantenimiento</option>
+                      </select>
+                      <div
+                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-500"
+                      >
+                        <svg
+                          class="w-4 h-4 fill-none stroke-current stroke-2"
+                          viewbox="0 0 24 24"
+                        >
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <!-- Submit Button at bottom -->
+            <div class="pt-6 mt-4">
+              <button
+                class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-3 px-6 rounded-xl shadow transition duration-150 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2"
+                form="form-registrar-bus"
+                type="submit"
+              >
+                Registrar
+              </button>
+            </div>
+          </section>
+          <!-- END: LeftCard -->
+          <!-- BEGIN: RightCard - Buses Registrados -->
+          <section
+            class="bg-white rounded-3xl shadow-sm border border-slate-200/70 p-6 md:p-8 flex flex-col"
+            data-purpose="registered-buses-catalog"
+          >
+            <!-- Heading with big counter -->
+            <div class="text-center">
+              <h2 class="text-xl font-bold text-slate-800 tracking-tight">
+                Buses registrados
+              </h2>
+              <div class="text-3xl font-extrabold text-brand-700 mt-1 mb-6">
+                2
+              </div>
+              <hr class="border-slate-200 mb-6" />
+            </div>
+            <!-- Search Bar -->
+            <div class="relative mb-6">
+              <input
+                class="w-full rounded-xl border-slate-200 bg-[#f8fafc] focus:bg-white focus:border-brand-600 focus:ring-1 focus:ring-brand-600 py-2.5 pl-4 pr-10 text-sm text-slate-700 placeholder-slate-400 transition-colors"
+                placeholder="Buscar..."
+                type="text"
+              />
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500"
+              >
+                <svg
+                  class="w-4 h-4 fill-none stroke-current stroke-2"
+                  viewbox="0 0 24 24"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" x2="16.65" y1="21" y2="16.65"></line>
+                </svg>
+              </div>
+            </div>
+            <!-- Registered Buses List -->
+            <div class="space-y-4 flex-1">
+              <!-- Bus Item 1: CND-2024 -->
+              <article
+                class="border border-slate-200 rounded-2xl p-4 md:p-5 bg-white hover:border-slate-300 transition-shadow hover:shadow-xs flex items-center justify-between gap-4"
+              >
+                <div class="flex items-center gap-4">
+                  <!-- Bus icon thumbnail -->
+                  <div class="text-brand-600 p-2">
+                    <svg class="w-6 h-6 fill-current" viewbox="0 0 24 24">
+                      <path
+                        d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <!-- Bus Details -->
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-800">CND-2024</h3>
+                    <p class="text-xs text-slate-600 mt-0.5">
+                      Pedro Daniel Rodríguez
+                    </p>
+                    <p class="text-xs text-slate-500 mt-0.5">Mercedes Benz</p>
+                  </div>
+                </div>
+                <!-- Year & Actions -->
+                <div class="flex items-center gap-6 md:gap-10">
+                  <span class="text-xs text-slate-600 font-medium">2022</span>
+                  <!-- Action Buttons -->
+                  <div class="flex items-center gap-3 text-slate-600">
+                    <!-- Delete button -->
+                    <button
+                      aria-label="Eliminar"
+                      class="hover:text-red-600 transition-colors p-1 rounded"
+                      type="button"
+                    >
+                      <svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+                        <path
+                          d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                        ></path>
+                      </svg>
+                    </button>
+                    <!-- View details button -->
+                    <button
+                      aria-label="Ver detalles"
+                      class="hover:text-brand-600 transition-colors p-1 rounded"
+                      type="button"
+                    >
+                      <svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+                        <path
+                          d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                        ></path>
+                      </svg>
+                    </button>
+                    <!-- Edit button -->
+                    <button
+                      aria-label="Editar"
+                      class="hover:text-brand-600 transition-colors p-1 rounded"
+                      type="button"
+                    >
+                      <svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+                        <path
+                          d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </article>
+              <!-- Bus Item 2: MVL-2023 -->
+              <article
+                class="border border-slate-200 rounded-2xl p-4 md:p-5 bg-white hover:border-slate-300 transition-shadow hover:shadow-xs flex items-center justify-between gap-4"
+              >
+                <div class="flex items-center gap-4">
+                  <!-- Bus icon thumbnail -->
+                  <div class="text-brand-600 p-2">
+                    <svg class="w-6 h-6 fill-current" viewbox="0 0 24 24">
+                      <path
+                        d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <!-- Bus Details -->
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-800">MVL-2023</h3>
+                    <p class="text-xs text-slate-600 mt-0.5">
+                      Luis Fernando García
+                    </p>
+                    <p class="text-xs text-slate-500 mt-0.5">Chevrolet</p>
+                  </div>
+                </div>
+                <!-- Year & Actions -->
+                <div class="flex items-center gap-6 md:gap-10">
+                  <span class="text-xs text-slate-600 font-medium">2021</span>
+                  <!-- Action Buttons -->
+                  <div class="flex items-center gap-3 text-slate-600">
+                    <!-- Delete button -->
+                    <button
+                      aria-label="Eliminar"
+                      class="hover:text-red-600 transition-colors p-1 rounded"
+                      type="button"
+                    >
+                      <svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+                        <path
+                          d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                        ></path>
+                      </svg>
+                    </button>
+                    <!-- View details button -->
+                    <button
+                      aria-label="Ver detalles"
+                      class="hover:text-brand-600 transition-colors p-1 rounded"
+                      type="button"
+                    >
+                      <svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+                        <path
+                          d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                        ></path>
+                      </svg>
+                    </button>
+                    <!-- Edit button -->
+                    <button
+                      aria-label="Editar"
+                      class="hover:text-brand-600 transition-colors p-1 rounded"
+                      type="button"
+                    >
+                      <svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+                        <path
+                          d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+          <!-- END: RightCard -->
+        </div>
+      </main>
+      <!-- END: MainContentArea -->
+    </div>
+    <!-- END: MainContainerWrapper -->
+  </body>
+</html>

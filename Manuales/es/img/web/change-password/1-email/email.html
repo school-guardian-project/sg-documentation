@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guardian Escolar - Cambiar contraseña</title>
+<!-- Tailwind CSS CDN with forms and container plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Custom Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#edf2f9',
+              100: '#e5edf7',
+              500: '#1d4ed8',
+              600: '#1e40af',
+              700: '#1a3fa4',
+              800: '#153285',
+              900: '#0f2563'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Google Fonts Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="custom-enhancements">
+    /* Subtle smooth body styling */
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#eef3f9] text-gray-800">
+<!-- BEGIN: TopHeader -->
+<header class="w-full bg-white border-b border-gray-200/75 py-3 px-6 sm:px-10 flex items-center shadow-sm relative">
+<!-- Brand Logo and Icon container -->
+<div class="flex items-center gap-4">
+<div aria-label="Logo Escudo" class="w-10 h-10 rounded-xl bg-[#1351b4] flex items-center justify-center text-white shadow-sm">
+<!-- Shield with Bus SVG icon -->
+<svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24">
+<path clip-rule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.209 11.209 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 00.374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 00-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08zm-3.766 6.33a1.5 1.5 0 011.5-1.5h3.5a1.5 1.5 0 011.5 1.5v4.5a1.5 1.5 0 01-.5 1.118V15a.75.75 0 01-.75.75h-.5a.75.75 0 01-.75-.75v-.5h-3v.5a.75.75 0 01-.75.75h-.5a.75.75 0 01-.75-.75v-.882a1.5 1.5 0 01-.5-1.118V8.5zm1.5.5a.5.5 0 00-.5.5v2h6v-2a.5.5 0 00-.5-.5h-5zm0 4.5a.75.75 0 100-1.5.75.75 0 000 1.5zm5 0a.75.75 0 100-1.5.75.75 0 000 1.5z" fill-rule="evenodd"></path>
+</svg>
+</div>
+</div>
+<!-- Centered Platform Title -->
+<div class="absolute inset-x-0 mx-auto text-center pointer-events-none">
+<h1 class="text-xl sm:text-2xl font-bold tracking-tight text-[#162a52]">
+        Guardian Escolar
+      </h1>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
+<!-- Center Card Container -->
+<div class="w-full max-w-[890px] bg-white rounded-2xl shadow-xl shadow-blue-900/5 overflow-hidden flex flex-col md:flex-row min-h-[570px] border border-gray-100">
+<!-- BEGIN: LeftInfoPanel -->
+<section aria-label="Información y Requisitos" class="md:w-[42%] bg-gradient-to-b from-[#1848a8] to-[#1c53be] text-white p-8 sm:p-9 flex flex-col justify-between">
+<div>
+<!-- Mail icon container -->
+<div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-6 text-white shadow-inner">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24">
+<path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z"></path>
+<path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z"></path>
+</svg>
+</div>
+<!-- Section title -->
+<h2 class="text-2xl font-bold leading-tight tracking-tight mb-3">
+            Cambiar<br/>contraseña
+          </h2>
+<!-- Description paragraph -->
+<p class="text-blue-100 text-sm leading-relaxed max-w-[240px]">
+            Ingresa tu correo para recibir un código de recuperación.
+          </p>
+</div>
+<!-- Requirements Box -->
+<div class="mt-8 bg-[#0f3484]/70 rounded-xl p-5 border border-white/10 backdrop-blur-sm">
+<p class="text-xs font-semibold text-white/95 mb-2.5">
+            La contraseña debe contener:
+          </p>
+<ul class="text-[11px] sm:text-xs text-blue-100/90 space-y-1.5 list-disc list-inside leading-snug">
+<li>Mínimo 8 dígitos</li>
+<li>Números y letras</li>
+<li>Combinación de minúsculas y mayúsculas</li>
+<li>Caracteres especiales (. - _ @ *)</li>
+</ul>
+</div>
+</section>
+<!-- END: LeftInfoPanel -->
+<!-- BEGIN: RightFormPanel -->
+<section aria-label="Formulario de recuperación" class="md:w-[58%] bg-white p-8 sm:p-12 flex flex-col justify-between">
+<div>
+<!-- Step Indicator -->
+<div class="flex items-center gap-2 mb-8">
+<!-- Step Bars -->
+<div class="h-1 w-7 rounded-full bg-[#1b50bd]"></div>
+<div class="h-1 w-7 rounded-full bg-gray-200"></div>
+<div class="h-1 w-7 rounded-full bg-gray-200"></div>
+<!-- Step Label -->
+<span class="text-xs text-gray-400 font-medium ml-3">
+              1 de 3
+            </span>
+</div>
+<!-- Step Title & Help -->
+<div class="mb-7">
+<h3 class="text-xl font-bold text-gray-900 tracking-tight">
+              Paso 1
+            </h3>
+<p class="text-sm text-gray-500 mt-1">
+              Debes proporcionar tu correo registrado.
+            </p>
+</div>
+<!-- Email Input Form -->
+<form action="#" id="recovery-form" method="POST" onsubmit="event.preventDefault();">
+<div class="space-y-2">
+<label class="block text-sm font-medium text-gray-800" for="recovery-email">
+                Correo electrónico
+              </label>
+<input class="w-full rounded-md border-gray-300 shadow-sm px-3.5 py-2.5 text-gray-900 text-sm focus:border-[#1b50bd] focus:ring-2 focus:ring-[#1b50bd]/20 transition duration-150 outline-none" id="recovery-email" name="email" placeholder="" required="" type="email"/>
+<p class="text-xs text-gray-500 pt-1">
+                Recibirás un código para restablecer tu contraseña.
+              </p>
+</div>
+<!-- Submit Button container -->
+<div class="mt-12 sm:mt-14 flex justify-center">
+<button class="px-8 py-2.5 rounded-full bg-[#1752cd] hover:bg-[#1344a8] active:bg-[#0f378a] text-white font-medium text-sm transition-colors duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1752cd]" type="submit">
+                Enviar código
+              </button>
+</div>
+</form>
+</div>
+<!-- Back Navigation Link -->
+<div class="mt-10 sm:mt-12 text-center">
+<a class="text-xs sm:text-sm font-medium text-[#1752cd] hover:text-[#0f378a] transition-colors duration-150 inline-flex items-center gap-1.5 focus:outline-none focus:underline" href="#">
+<span>←</span> Volver
+          </a>
+</div>
+</section>
+<!-- END: RightFormPanel -->
+</div>
+</main>
+<!-- END: MainContent -->
+</body></html>

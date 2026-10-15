@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Seleccionar idioma</title>
+<!-- Tailwind CSS CDN with forms and container queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Font: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              DEFAULT: '#1961e6',
+              hover: '#134ec2',
+              light: '#f0f5ff',
+            },
+            modal: {
+              border: '#dbe3f0',
+              textDark: '#0e1726',
+              textMuted: '#64748b',
+              subtleGray: '#8d9dae'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom styles for radio selection states -->
+<style data-purpose="card-selection-styles">
+    /* Checked card appearance */
+    .lang-card:has(input[type="radio"]:checked) {
+      border-color: #1961e6;
+      border-width: 2px;
+    }
+
+    /* Target custom radio inner dot indicator */
+    .lang-card input[type="radio"]:checked ~ .custom-radio-indicator {
+      border-color: #1961e6;
+      border-width: 2px;
+    }
+
+    .lang-card input[type="radio"]:checked ~ .custom-radio-indicator::after {
+      content: "";
+      display: block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #1961e6;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 font-sans antialiased text-slate-800">
+<!-- BEGIN: ModalContainer -->
+<main class="w-full max-w-[530px] bg-white rounded-2xl p-7 md:p-9 shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-slate-100" data-purpose="language-modal">
+<!-- BEGIN: ModalHeader -->
+<!-- Header title and subtitle section -->
+<header class="text-center mb-7">
+<h1 class="text-xl md:text-[22px] font-bold text-[#0c2340] tracking-tight mb-2">
+        Seleccionar idioma
+      </h1>
+<p class="text-sm md:text-[14.5px] text-[#64748b] font-normal leading-relaxed">
+        Por favor, elija su idioma preferido para continuar
+      </p>
+</header>
+<!-- END: ModalHeader -->
+<!-- BEGIN: LanguageSelectionForm -->
+<form id="languageForm" onsubmit="event.preventDefault();">
+<!-- Grid container for the 2x2 language options -->
+<fieldset class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-7" data-purpose="language-options-grid">
+<legend class="sr-only">Elija un idioma</legend>
+<!-- Option 1: Español (ES) -->
+<label class="lang-card relative flex items-center justify-between px-5 py-3.5 rounded-xl border border-[#dbe3f0] bg-white cursor-pointer transition-all duration-150 select-none hover:border-slate-300">
+<input checked="" class="sr-only peer" name="language" type="radio" value="es"/>
+<div class="flex items-center space-x-4">
+<!-- Language Country Code -->
+<span class="text-[17px] font-bold text-[#0c2340] tracking-wide w-7">ES</span>
+<!-- Language Names -->
+<div class="flex flex-col">
+<span class="text-[14.5px] font-semibold text-[#0c2340] leading-snug">Español</span>
+<span class="text-[13px] text-[#8292a4] leading-snug">Español</span>
+</div>
+</div>
+<!-- Radio Indicator -->
+<span class="custom-radio-indicator w-[22px] h-[22px] rounded-full border border-[#d1dbe8] flex items-center justify-center shrink-0"></span>
+</label>
+<!-- Option 2: English (US) -->
+<label class="lang-card relative flex items-center justify-between px-5 py-3.5 rounded-xl border border-[#dbe3f0] bg-white cursor-pointer transition-all duration-150 select-none hover:border-slate-300">
+<input class="sr-only peer" name="language" type="radio" value="en"/>
+<div class="flex items-center space-x-4">
+<!-- Language Country Code -->
+<span class="text-[17px] font-bold text-[#0c2340] tracking-wide w-7">US</span>
+<!-- Language Names -->
+<div class="flex flex-col">
+<span class="text-[14.5px] font-semibold text-[#0c2340] leading-snug">English</span>
+<span class="text-[13px] text-[#8292a4] leading-snug">Ingles</span>
+</div>
+</div>
+<!-- Radio Indicator -->
+<span class="custom-radio-indicator w-[22px] h-[22px] rounded-full border border-[#d1dbe8] flex items-center justify-center shrink-0"></span>
+</label>
+<!-- Option 3: Português (PT) -->
+<label class="lang-card relative flex items-center justify-between px-5 py-3.5 rounded-xl border border-[#dbe3f0] bg-white cursor-pointer transition-all duration-150 select-none hover:border-slate-300">
+<input class="sr-only peer" name="language" type="radio" value="pt"/>
+<div class="flex items-center space-x-4">
+<!-- Language Country Code -->
+<span class="text-[17px] font-bold text-[#0c2340] tracking-wide w-7">PT</span>
+<!-- Language Names -->
+<div class="flex flex-col">
+<span class="text-[14.5px] font-semibold text-[#0c2340] leading-snug">Português</span>
+<span class="text-[13px] text-[#8292a4] leading-snug">Portugués</span>
+</div>
+</div>
+<!-- Radio Indicator -->
+<span class="custom-radio-indicator w-[22px] h-[22px] rounded-full border border-[#d1dbe8] flex items-center justify-center shrink-0"></span>
+</label>
+<!-- Option 4: Français (FR) -->
+<label class="lang-card relative flex items-center justify-between px-5 py-3.5 rounded-xl border border-[#dbe3f0] bg-white cursor-pointer transition-all duration-150 select-none hover:border-slate-300">
+<input class="sr-only peer" name="language" type="radio" value="fr"/>
+<div class="flex items-center space-x-4">
+<!-- Language Country Code -->
+<span class="text-[17px] font-bold text-[#0c2340] tracking-wide w-7">FR</span>
+<!-- Language Names -->
+<div class="flex flex-col">
+<span class="text-[14.5px] font-semibold text-[#0c2340] leading-snug">Français</span>
+<span class="text-[13px] text-[#8292a4] leading-snug">Francés</span>
+</div>
+</div>
+<!-- Radio Indicator -->
+<span class="custom-radio-indicator w-[22px] h-[22px] rounded-full border border-[#d1dbe8] flex items-center justify-center shrink-0"></span>
+</label>
+</fieldset>
+<!-- BEGIN: ActionButtons -->
+<!-- Action buttons: Cancelar & Confirmar -->
+<div class="grid grid-cols-2 gap-3.5" data-purpose="modal-actions">
+<button class="w-full py-3 px-5 text-[15px] font-semibold text-[#5a6e85] bg-white border border-[#dbe3f0] rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-colors duration-150" id="btnCancel" type="button">
+          Cancelar
+        </button>
+<button class="w-full py-3 px-5 text-[15px] font-semibold text-white bg-[#1961e6] hover:bg-[#134ec2] active:bg-[#0f40a1] rounded-xl shadow-sm transition-colors duration-150" id="btnConfirm" type="submit">
+          Confirmar
+        </button>
+</div>
+<!-- END: ActionButtons -->
+</form>
+<!-- END: LanguageSelectionForm -->
+</main>
+<!-- END: ModalContainer -->
+<!-- BEGIN: InteractiveHandlers -->
+<script data-purpose="event-handlers">
+    document.addEventListener('DOMContentLoaded', () => {
+      const confirmButton = document.getElementById('btnConfirm');
+      const cancelButton = document.getElementById('btnCancel');
+      
+      confirmButton.addEventListener('click', () => {
+        const selectedLanguage = document.querySelector('input[name="language"]:checked')?.value;
+        console.log(`Selected language: ${selectedLanguage}`);
+      });
+
+      cancelButton.addEventListener('click', () => {
+        console.log('Language selection cancelled');
+      });
+    });
+  </script>
+<!-- END: InteractiveHandlers -->
+</body></html>

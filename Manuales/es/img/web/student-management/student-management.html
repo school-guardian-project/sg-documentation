@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guardian Escolar</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Custom Tailwind Config -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              main: '#1d5bd8',
+              activeNav: '#296cf2',
+              hoverNav: '#1e54c7',
+              bgMain: '#eef3fb',
+              inputBg: '#f8fafd',
+              cardSelect: '#93b7fa'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-inputs">
+    /* Remove default calendar indicator styling quirks and unify with mock */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.7;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="bg-brand-bgMain font-sans min-h-screen flex flex-col antialiased text-slate-700">
+<!-- BEGIN: Topbar -->
+<header class="bg-brand-main text-white h-14 w-full flex items-center px-4 relative flex-shrink-0 z-20 shadow-sm">
+<!-- Back arrow button -->
+<button aria-label="Volver atrás" class="text-white hover:bg-white/10 p-2 rounded-lg transition-colors inline-flex items-center justify-center" type="button">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</button>
+<!-- Centered Brand Title -->
+<h1 class="absolute left-1/2 -translate-x-1/2 text-lg md:text-xl font-bold tracking-normal pointer-events-none">
+      Guardian Escolar
+    </h1>
+</header>
+<!-- END: Topbar -->
+<!-- BEGIN: App Body Layout -->
+<div class="flex flex-1 overflow-hidden">
+<!-- BEGIN: Sidebar -->
+<aside class="w-64 bg-brand-main text-white flex flex-col justify-between py-5 px-3 flex-shrink-0">
+<nav class="space-y-6">
+<!-- Section: Users -->
+<div>
+<h2 class="text-xs font-bold tracking-wider uppercase text-blue-200 px-3 mb-2">USERS</h2>
+<ul class="space-y-1">
+<li>
+<!-- Active Item: Students -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-full bg-brand-activeNav text-white font-medium shadow-sm transition-all" href="#">
+<svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+</svg>
+<span>Students</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-full text-white/90 hover:bg-white/10 hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewbox="0 0 24 24">
+<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path>
+</svg>
+<span>Guardians</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-full text-white/90 hover:bg-white/10 hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2a5 5 0 1 0 5 5 5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3zm9 11v-1a7 7 0 0 0-7-7h-4a7 7 0 0 0-7 7v1h2v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1z M17 11l3.5 3.5-1.4 1.4L16 12.8V11h1z"></path>
+</svg>
+<span>Drivers</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-full text-white/90 hover:bg-white/10 hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 5.5a2.5 2.5 0 1 0-2.5-2.5A2.5 2.5 0 0 0 12 5.5zm-5 1.5a2 2 0 1 0-2-2 2 2 0 0 0 2 2zm10 0a2 2 0 1 0-2-2 2 2 0 0 0 2 2zm-10 4c-1.67 0-5 .83-5 2.5V17h10v-3.5c0-1.67-3.33-2.5-5-2.5zm10 0c-.25 0-.54.02-.85.06 1.05.77 1.85 1.84 1.85 3.44V17h4v-3.5c0-1.67-3.33-2.5-5-2.5zm-5 1c-1.33 0-4 .67-4 2V19h8v-3.5c0-1.33-2.67-2-4-2z"></path>
+</svg>
+<span>Family</span>
+</a>
+</li>
+</ul>
+</div>
+<!-- Section: Transport -->
+<div>
+<h2 class="text-xs font-bold tracking-wider uppercase text-blue-200 px-3 mb-2">TRANSPORT</h2>
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-full text-white/90 hover:bg-white/10 hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M8 17h.01M16 17h.01M5 19h14a2 2 0 002-2V7a3 3 0 00-3-3H6a3 3 0 00-3 3v10a2 2 0 002 2zm0-10h14M8 22v-3m8 3v-3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Buses</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-full text-white/90 hover:bg-white/10 hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM18 10l3 3m0 0l-3 3m3-3h-6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Routes</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-full text-white/90 hover:bg-white/10 hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"></path>
+</svg>
+<span>Stops</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Bottom Profile Link -->
+<div>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors" href="#">
+<svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-medium text-sm">Profile</span>
+</a>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: Main Content -->
+<main class="flex-1 p-6 md:p-8 overflow-y-auto">
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-7 items-start">
+<!-- BEGIN: Register Student Form Card -->
+<section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+<!-- Card Header -->
+<div class="text-center pb-4 mb-5 border-b border-slate-100">
+<h2 class="text-xl font-semibold text-slate-800 tracking-tight">Register student</h2>
+</div>
+<!-- Registration Form -->
+<form action="#" class="space-y-4" method="POST">
+<!-- Names Field -->
+<div>
+<label class="block text-sm font-medium text-slate-600 mb-1" for="names">Names</label>
+<input class="w-full rounded-xl border border-slate-200 bg-brand-inputBg px-3.5 py-2 text-slate-800 text-sm focus:bg-white focus:border-brand-main focus:ring-1 focus:ring-brand-main outline-none transition-all" id="names" name="names" type="text"/>
+</div>
+<!-- Last Names Field -->
+<div>
+<label class="block text-sm font-medium text-slate-600 mb-1" for="last_names">Last names</label>
+<input class="w-full rounded-xl border border-slate-200 bg-brand-inputBg px-3.5 py-2 text-slate-800 text-sm focus:bg-white focus:border-brand-main focus:ring-1 focus:ring-brand-main outline-none transition-all" id="last_names" name="last_names" type="text"/>
+</div>
+<!-- ID Type Dropdown -->
+<div>
+<label class="block text-sm font-medium text-slate-600 mb-1" for="id_type">ID type</label>
+<select class="w-full rounded-xl border border-slate-200 bg-brand-inputBg px-3.5 py-2 text-slate-800 text-sm focus:bg-white focus:border-brand-main focus:ring-1 focus:ring-brand-main outline-none transition-all" id="id_type" name="id_type">
+<option value=""></option>
+<option value="ti">Tarjeta de Identidad</option>
+<option value="cc">Cédula de Ciudadanía</option>
+<option value="rc">Registro Civil</option>
+<option value="ce">Cédula de Extranjería</option>
+</select>
+</div>
+<!-- Identification Number Field -->
+<div>
+<label class="block text-sm font-medium text-slate-600 mb-1" for="id_number">Identification number</label>
+<input class="w-full rounded-xl border border-slate-200 bg-brand-inputBg px-3.5 py-2 text-slate-800 text-sm focus:bg-white focus:border-brand-main focus:ring-1 focus:ring-brand-main outline-none transition-all" id="id_number" name="id_number" type="text"/>
+</div>
+<!-- Date of Birth Field -->
+<div>
+<label class="block text-sm font-medium text-slate-600 mb-1" for="dob">Date of birth</label>
+<input class="w-full rounded-xl border border-slate-200 bg-brand-inputBg px-3.5 py-2 text-slate-800 text-sm focus:bg-white focus:border-brand-main focus:ring-1 focus:ring-brand-main outline-none transition-all" id="dob" name="dob" placeholder="dd / mm / aaaa" type="date"/>
+</div>
+<!-- Grade & Phone Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium text-slate-600 mb-1" for="grade">Grade</label>
+<select class="w-full rounded-xl border border-slate-200 bg-brand-inputBg px-3.5 py-2 text-slate-800 text-sm focus:bg-white focus:border-brand-main focus:ring-1 focus:ring-brand-main outline-none transition-all" id="grade" name="grade">
+<option value=""></option>
+<option value="6">6°</option>
+<option value="7">7°</option>
+<option value="8">8°</option>
+<option value="9">9°</option>
+<option value="10">10°</option>
+<option value="11">11°</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-600 mb-1" for="phone">Phone</label>
+<input class="w-full rounded-xl border border-slate-200 bg-brand-inputBg px-3.5 py-2 text-slate-800 text-sm focus:bg-white focus:border-brand-main focus:ring-1 focus:ring-brand-main outline-none transition-all" id="phone" name="phone" type="tel"/>
+</div>
+</div>
+<!-- Address Field -->
+<div>
+<label class="block text-sm font-medium text-slate-600 mb-1" for="address">Address</label>
+<input class="w-full rounded-xl border border-slate-200 bg-brand-inputBg px-3.5 py-2 text-slate-800 text-sm focus:bg-white focus:border-brand-main focus:ring-1 focus:ring-brand-main outline-none transition-all" id="address" name="address" type="text"/>
+</div>
+<!-- Email Field -->
+<div>
+<label class="block text-sm font-medium text-slate-600 mb-1" for="email">Email</label>
+<input class="w-full rounded-xl border border-slate-200 bg-brand-inputBg px-3.5 py-2 text-slate-800 text-sm focus:bg-white focus:border-brand-main focus:ring-1 focus:ring-brand-main outline-none transition-all" id="email" name="email" type="email"/>
+</div>
+<!-- Submit Button -->
+<div class="pt-2">
+<button class="w-full py-3 bg-brand-main hover:bg-brand-activeNav text-white font-medium text-base rounded-xl shadow-sm transition-all duration-150 active:scale-[0.99]" type="submit">
+                Register
+              </button>
+</div>
+</form>
+</section>
+<!-- END: Register Student Form Card -->
+<!-- BEGIN: Registered Students List Card -->
+<section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+<!-- Card Header & Badge Counter -->
+<div class="text-center mb-5">
+<h2 class="text-xl font-semibold text-slate-800 tracking-tight mb-1">Registered Students</h2>
+<span class="text-3xl md:text-4xl font-black text-brand-main tracking-tight">4</span>
+</div>
+<!-- Search Input -->
+<div class="relative mb-6">
+<input class="w-full rounded-xl border border-slate-200 bg-brand-inputBg pl-4 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:bg-white focus:border-brand-main focus:ring-1 focus:ring-brand-main outline-none transition-all" placeholder="Search..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<!-- Student Cards List -->
+<div class="space-y-3.5">
+<!-- Student 1: Selected / Highlighted Card -->
+<article class="bg-brand-cardSelect/80 border border-blue-300 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm transition-all">
+<div class="flex items-center gap-3.5">
+<!-- Avatar box -->
+<div class="w-10 h-10 rounded-lg bg-white/90 flex items-center justify-center text-brand-main shadow-xs flex-shrink-0">
+<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+</svg>
+</div>
+<!-- Student Info -->
+<div>
+<h3 class="text-sm font-bold text-slate-900 leading-tight">Juan Carlos García</h3>
+<p class="text-xs text-slate-700 font-medium">1234567890</p>
+<p class="text-xs text-slate-700 font-medium">9°</p>
+</div>
+</div>
+<!-- Contact & Actions -->
+<div class="flex items-center justify-between sm:justify-end gap-5">
+<span class="text-xs text-slate-800 font-medium whitespace-nowrap">+57 321 456 7890</span>
+<div class="flex items-center gap-2.5 text-slate-800">
+<button aria-label="Eliminar a Juan Carlos García" class="hover:text-red-700 transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+</svg>
+</button>
+<button aria-label="Ver detalles de Juan Carlos García" class="hover:text-brand-main transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+</svg>
+</button>
+<button aria-label="Editar a Juan Carlos García" class="hover:text-brand-main transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+</svg>
+</button>
+</div>
+</div>
+</article>
+<!-- Student 2 -->
+<article class="bg-white border border-slate-200/80 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-all">
+<div class="flex items-center gap-3.5">
+<div class="w-10 h-10 rounded-lg flex items-center justify-center text-brand-main flex-shrink-0">
+<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+</svg>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-slate-800 leading-tight">María Elena Ruiz</h3>
+<p class="text-xs text-slate-500">9876543210</p>
+<p class="text-xs text-slate-500">8°</p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-5">
+<span class="text-xs text-slate-600 whitespace-nowrap">+57 312 345 6789</span>
+<div class="flex items-center gap-2.5 text-slate-700">
+<button aria-label="Eliminar a María Elena Ruiz" class="hover:text-red-600 transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+</svg>
+</button>
+<button aria-label="Ver detalles de María Elena Ruiz" class="hover:text-brand-main transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+</svg>
+</button>
+<button aria-label="Editar a María Elena Ruiz" class="hover:text-brand-main transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+</svg>
+</button>
+</div>
+</div>
+</article>
+<!-- Student 3 -->
+<article class="bg-white border border-slate-200/80 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-all">
+<div class="flex items-center gap-3.5">
+<div class="w-10 h-10 rounded-lg flex items-center justify-center text-brand-main flex-shrink-0">
+<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+</svg>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-slate-800 leading-tight">Carlos Andrés Silva</h3>
+<p class="text-xs text-slate-500">1111222233</p>
+<p class="text-xs text-slate-500">10°</p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-5">
+<span class="text-xs text-slate-600 whitespace-nowrap">+57 315 678 9012</span>
+<div class="flex items-center gap-2.5 text-slate-700">
+<button aria-label="Eliminar a Carlos Andrés Silva" class="hover:text-red-600 transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+</svg>
+</button>
+<button aria-label="Ver detalles de Carlos Andrés Silva" class="hover:text-brand-main transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+</svg>
+</button>
+<button aria-label="Editar a Carlos Andrés Silva" class="hover:text-brand-main transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+</svg>
+</button>
+</div>
+</div>
+</article>
+<!-- Student 4 -->
+<article class="bg-white border border-slate-200/80 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-all">
+<div class="flex items-center gap-3.5">
+<div class="w-10 h-10 rounded-lg flex items-center justify-center text-brand-main flex-shrink-0">
+<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+</svg>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-slate-800 leading-tight">Ana Patricia Gómez</h3>
+<p class="text-xs text-slate-500">4444555566</p>
+<p class="text-xs text-slate-500">9°</p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-5">
+<span class="text-xs text-slate-600 whitespace-nowrap">+57 318 901 2345</span>
+<div class="flex items-center gap-2.5 text-slate-700">
+<button aria-label="Eliminar a Ana Patricia Gómez" class="hover:text-red-600 transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+</svg>
+</button>
+<button aria-label="Ver detalles de Ana Patricia Gómez" class="hover:text-brand-main transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+</svg>
+</button>
+<button aria-label="Editar a Ana Patricia Gómez" class="hover:text-brand-main transition-colors p-1" type="button">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+</svg>
+</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- END: Registered Students List Card -->
+</div>
+</main>
+<!-- END: Main Content -->
+</div>
+<!-- END: App Body Layout -->
+</body></html>
