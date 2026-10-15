@@ -75,7 +75,7 @@ The mobile app allows users to monitor the school bus location in real time, rec
 
 **Screenshot:**
 
-![sesion](./images/iniciar%20sesion.jpeg)
+![sesion](./img/iniciar%20sesion.jpeg)
 
 **Expected result:** The system validates the credentials and displays the main GPS tracking screen corresponding to the user's role.
 
@@ -99,11 +99,11 @@ The mobile app allows users to monitor the school bus location in real time, rec
 
 **Screenshot:**
 
-![RC/1](./images/restablecer-contraseña.jpeg)
+![RC/1](./img/restablecer-contraseña.jpeg)
 
-![RC/2](./images/restablecer-contraseña-2.jpeg)
+![RC/2](./img/restablecer-contraseña-2.jpeg)
 
-![RC/3](./images/restablecer-contraseña-3.jpeg)
+![RC/3](./img/restablecer-contraseña-3.jpeg)
 
 **Expected result:** The system displays the message "Password updated" and allows the user to log in with the new password.
 
@@ -157,7 +157,7 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 
 - **Screen / Parent view**
 
-![ubi-padre/1](./images/ubicacion-padre.jpeg)
+![ubi-padre/1](./img/ubicacion-padre.jpeg)
 
 
 **Expected result:** The user sees the bus position, status and speed in real time.
@@ -181,7 +181,7 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 
 **Screenshot:**
 
-![MP/1](./images/mainpage.jpeg)
+![MP/1](./img/mainpage.jpeg)
 
 **Expected result:** The user knows all the operational details of their assigned route.
 
@@ -206,7 +206,7 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 
 **Screenshot:**
 
-![alerta](./images/alertas.jpeg)
+![alerta](./img/alertas.jpeg)
 
 **Expected result:** The user stays informed of any relevant incident during the bus trip.
 
@@ -252,7 +252,7 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 
 **Screenshot:**
 
-![perfil](./images/perfil.jpeg)
+![perfil](./img/perfil.jpeg)
 
 **Expected result:** The user accesses the set of configuration options for their account.
 
@@ -276,27 +276,27 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 
 **Screenshot:**
 
-![mis datos](./images/mis-datos.jpeg)
+![mis datos](./img/mis-datos.jpeg)
 
 **Update phone number**
 --
-![ACT-1](./images/actualizar-telefono.jpeg)
+![ACT-1](./img/actualizar-telefono.jpeg)
 
-![ACT-2](./images/actualizar-telefono-2.jpeg)
+![ACT-2](./img/actualizar-telefono-2.jpeg)
 
-![ACT-3](./images/actualizar-telefono-3.jpeg)
+![ACT-3](./img/actualizar-telefono-3.jpeg)
 
-![ACT-4](./images/actualizar-telefono-4.jpeg)
+![ACT-4](./img/actualizar-telefono-4.jpeg)
 
 **Update email**
 --
-![ACC-1](./images/actualizar-correo.jpeg)
+![ACC-1](./img/actualizar-correo.jpeg)
 
-![ACC-2](./images/actualizar-correo-2.jpeg)
+![ACC-2](./img/actualizar-correo-2.jpeg)
 
-![ACC-3](./images/actualizar-correo-3.jpeg)
+![ACC-3](./img/actualizar-correo-3.jpeg)
 
-![ACC-4](./images/actualizar-correo-4.jpeg)
+![ACC-4](./img/actualizar-correo-4.jpeg)
 
 **Expected result:** The system displays the message "Number updated" or "Email updated" and reflects the new data.
 
@@ -318,7 +318,7 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 
 **Screenshot:**
 
-![Familia](./images/familia.jpeg)
+![Familia](./img/familia.jpeg)
 
 **Expected result:** The user sees the family unit associated with their account.
 
@@ -342,7 +342,7 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 
 **Screenshot:**
 
-![seguridad](./images/seguridad.jpeg)
+![seguridad](./img/seguridad.jpeg)
 
 **Expected result:** The account is configured according to the options chosen by the user.
 
@@ -364,9 +364,9 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 
 **Screenshot:**
 
-![tema](./images/tema.jpeg)
+![tema](./img/tema.jpeg)
 
-![idioma](./images/idioma.jpeg)
+![idioma](./img/idioma.jpeg)
 
 **Expected result:** The interface updates with the selected appearance or language.
 
@@ -390,12 +390,12 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 **About us:**
 --
 
-![politicas](./images/politicas.jpeg)
+![politicas](./img/politicas.jpeg)
 
 **Who we are**
 --
 
-![quienes-somos](./images/sobrenosotros.jpeg)
+![quienes-somos](./img/sobrenosotros.jpeg)
 
 **Expected result:** The user learns about the purpose of the project and how their data is protected.
 
@@ -419,7 +419,7 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 
 **Screenshot:**
 
-![ACC-1](./images/soporte.jpeg)
+![ACC-1](./img/soporte.jpeg)
 
 **Expected result:** The report is sent to the support team for handling.
 
@@ -445,7 +445,7 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 
 **Screenshot:**
 
-![califi](./images/calificanos.jpeg)
+![califi](./img/calificanos.jpeg)
 
 **Expected result:** The report is sent to the support team for handling.
 
@@ -455,7 +455,7 @@ The app is navigated using a bottom bar with three tabs (Route, Location and Pro
 
 To exit safely, the user must go to "My profile" and select the log out option. The system ends the active session and returns to the Log in screen. It is recommended to always log out when using a shared device.
 
-![califi](./images/cerrar.jpeg)
+![califi](./img/cerrar.jpeg)
 
 # Part II — Web app (administration panel)
 
@@ -465,7 +465,7 @@ Panel intended for the administrative staff of educational institutions, for man
 
 The public site (landing page) presents the Guardian Escolar system, its features (real-time GPS, administration panel, instant alerts, app for families, attendance control and secure data) and allows users to download the app or contact the sales team. From there, the administration panel login is also accessible.
 
-![main](./images/web/landing/landing.png)
+![main](./img/web/landing/landing.png)
 
 ## 2. Requirements to use the web panel
 
@@ -492,7 +492,7 @@ The public site (landing page) presents the Guardian Escolar system, its feature
 
 - Click the "Log in" button.
 
-![login](./images/web/login/login.png)
+![login](./img/web/login/login.png)
 
 **Expected result:** The system validates the credentials and displays the administration panel corresponding to the role (Admin dashboard or Superadmin dashboard).
 
@@ -513,11 +513,11 @@ The public site (landing page) presents the Guardian Escolar system, its feature
 
 - Step 3 of 3: create a new password following the security recommendations (minimum 8 characters, numbers and letters, uppercase and lowercase letters, special characters) and confirm it; click "Save new password".
 
-![FP-1](./images/web/forgot-password/1-email/email.png)
+![FP-1](./img/web/forgot-password/1-email/email.png)
 --
-![FP-2](./images/web/forgot-password/2-code/code.png)
+![FP-2](./img/web/forgot-password/2-code/code.png)
 --
-![FP-3](./images/web/forgot-password/3-reset/reset.png)
+![FP-3](./img/web/forgot-password/3-reset/reset.png)
 
 
 
@@ -556,7 +556,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 - Check the "Latest alerts" list (type of incident, driver, route, plate and time).
 
-![dash-admin](./images/web/dashboard-admin/dashboard-admin.png  )
+![dash-admin](./img/web/dashboard-admin/dashboard-admin.png  )
 
 
 
@@ -581,7 +581,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 **Screenshot:**
 
-![FP-1](./images/web/dashboard-superadmin/dashboard-superadmin.png)
+![FP-1](./img/web/dashboard-superadmin/dashboard-superadmin.png)
 
 **Expected result:** The superadministrator gets an overview of how the platform is operating across all registered institutions.
 
@@ -604,7 +604,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 - To edit: open the student's details and update the necessary fields.
 
-![student](./images/web/student-management/student-management.png)
+![student](./img/web/student-management/student-management.png)
 
 **Expected result:** The system displays the message "Record created successfully" or "Record updated successfully", and the student becomes available in the list.
 
@@ -627,7 +627,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 **Screenshot:**
 
-![parent](./images/web/guardian-management/guardian-management.png)
+![parent](./img/web/guardian-management/guardian-management.png)
 
 **Expected result:** The guardian is registered and available to be associated with a family and with one or more students.
 
@@ -650,7 +650,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 **Screenshot:**
 
-![driver](./images/web/driver-management/driver-management.png)
+![driver](./img/web/driver-management/driver-management.png)
 
 **Expected result:** The driver is registered and available to be assigned to a bus and a route.
 
@@ -675,7 +675,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 **Screenshot:**
 
-![family](./images/family.png)
+![family](./img/family.png)
 
 **Expected result:** The family is registered with its members correctly associated.
 
@@ -698,7 +698,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 **Screenshot:**
 
-![bus](./images/bus-managemnt.png)
+![bus](./img/bus-managemnt.png)
 
 **Expected result:** The bus is registered and available to be assigned to a route.
 
@@ -723,7 +723,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 **Screenshot:**
 
-![stop](./images/stop.png)
+![stop](./img/stop.png)
 
 **Expected result:** The system displays the message "Record created/updated/deleted successfully" depending on the operation performed.
 
@@ -746,7 +746,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 **Screenshot:**
 
-![route](./images/route.png)
+![route](./img/route.png)
 
 **Expected result:** The route is registered with its stops and schedules, available to be assigned to a bus and a driver.
 
@@ -767,7 +767,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 **Screenshot:**
 
-![admin](./images/web/admin-management/admin-management.png)
+![admin](./img/web/admin-management/admin-management.png)
 
 **Expected result:** The administrator account is created and available to log in to the panel of their institution.
 
@@ -790,7 +790,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 **Screenshot:**
 
-![school](./images/school.png)
+![school](./img/school.png)
 
 **Expected result:** The educational institution is registered and available to associate administrators, students and routes.
 
@@ -815,7 +815,7 @@ The web panel organizes its options under the "MANAGE" menu, with the following 
 
 **Screenshot:**
 
-![profile](./images/web/profile/profile.png)
+![profile](./img/web/profile/profile.png)
 
 **Expected result:** The system displays a confirmation message ("Phone updated", "Email updated" or "Password reset") and reflects the new data or preferences.
 

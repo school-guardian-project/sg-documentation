@@ -76,7 +76,7 @@ La aplicación móvil permite monitorear en tiempo real la ubicación del bus es
 
 **Captura de pantalla:**
 
-![sesion](./images/iniciar%20sesion.jpeg)
+![sesion](./img/iniciar%20sesion.jpeg)
 
 **Resultado esperado:** El sistema valida las credenciales y muestra la pantalla principal de rastreo GPS correspondiente al rol del usuario.
 
@@ -100,11 +100,11 @@ La aplicación móvil permite monitorear en tiempo real la ubicación del bus es
 
 **Captura de pantalla:**
 
-![RC/1](./images/restablecer-contraseña.jpeg)
+![RC/1](./img/restablecer-contraseña.jpeg)
 
-![RC/2](./images/restablecer-contraseña-2.jpeg)
+![RC/2](./img/restablecer-contraseña-2.jpeg)
 
-![RC/3](./images/restablecer-contraseña-3.jpeg)
+![RC/3](./img/restablecer-contraseña-3.jpeg)
 
 **Resultado esperado:** El sistema muestra el mensaje "Contraseña actualizada" y permite iniciar sesión con la nueva contraseña.
 
@@ -159,7 +159,7 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 
 - **Pantalla / Vista Padres**
 
-![ubi-padre/1](./images/ubicacion-padre.jpeg)
+![ubi-padre/1](./img/ubicacion-padre.jpeg)
 
 
 **Resultado esperado:** El usuario visualiza en tiempo real la posición del bus, su estado y su velocidad.
@@ -183,7 +183,7 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 
 **Captura de pantalla:**
 
-![MP/1](./images/mainpage.jpeg)
+![MP/1](./img/mainpage.jpeg)
 
 **Resultado esperado:** El usuario conoce todos los detalles operativos de su ruta asignada.
 
@@ -208,7 +208,7 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 
 **Captura de pantalla:**
 
-![alerta](./images/alertas.jpeg)
+![alerta](./img/alertas.jpeg)
 
 **Resultado esperado:** El usuario se mantiene informado de cualquier novedad relevante durante el trayecto del bus.
 
@@ -254,7 +254,7 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 
 **Captura de pantalla:**
 
-![perfil](./images/perfil.jpeg)
+![perfil](./img/perfil.jpeg)
 
 **Resultado esperado:** El usuario accede al conjunto de opciones de configuración de su cuenta.
 
@@ -278,27 +278,27 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 
 **Captura de pantalla:**
 
-![mis datos](./images/mis-datos.jpeg)
+![mis datos](./img/mis-datos.jpeg)
 
 **Actualizar número telefonico**
 --
-![ACT-1](./images/actualizar-telefono.jpeg)
+![ACT-1](./img/actualizar-telefono.jpeg)
 
-![ACT-2](./images/actualizar-telefono-2.jpeg)
+![ACT-2](./img/actualizar-telefono-2.jpeg)
 
-![ACT-3](./images/actualizar-telefono-3.jpeg)
+![ACT-3](./img/actualizar-telefono-3.jpeg)
 
-![ACT-4](./images/actualizar-telefono-4.jpeg)
+![ACT-4](./img/actualizar-telefono-4.jpeg)
 
 **Actualizar correo electrónico**
 --
-![ACC-1](./images/actualizar-correo.jpeg)
+![ACC-1](./img/actualizar-correo.jpeg)
 
-![ACC-2](./images/actualizar-correo-2.jpeg)
+![ACC-2](./img/actualizar-correo-2.jpeg)
 
-![ACC-3](./images/actualizar-correo-3.jpeg)
+![ACC-3](./img/actualizar-correo-3.jpeg)
 
-![ACC-4](./images/actualizar-correo-4.jpeg)
+![ACC-4](./img/actualizar-correo-4.jpeg)
 
 **Resultado esperado:** El sistema muestra el mensaje "Número actualizado" o "Correo actualizado" y refleja los nuevos datos.
 
@@ -320,7 +320,7 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 
 **Captura de pantalla:**
 
-![Familia](./images/familia.jpeg)
+![Familia](./img/familia.jpeg)
 
 **Resultado esperado:** El usuario visualiza el núcleo familiar asociado a su cuenta.
 
@@ -344,7 +344,7 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 
 **Captura de pantalla:**
 
-![seguridad](./images/seguridad.jpeg)
+![seguridad](./img/seguridad.jpeg)
 
 **Resultado esperado:** La cuenta queda configurada según las opciones elegidas por el usuario.
 
@@ -366,9 +366,9 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 
 **Captura de pantalla:**
 
-![tema](./images/tema.jpeg)
+![tema](./img/tema.jpeg)
 
-![idioma](./images/idioma.jpeg)
+![idioma](./img/idioma.jpeg)
 
 **Resultado esperado:** La interfaz se actualiza con la apariencia o el idioma seleccionado.
 
@@ -392,12 +392,12 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 **Sobre nosotros:**
 --
 
-![politicas](./images/politicas.jpeg)
+![politicas](./img/politicas.jpeg)
 
 **Quienes somos**
 --
 
-![quienes-somos](./images/sobrenosotros.jpeg)
+![quienes-somos](./img/sobrenosotros.jpeg)
 
 **Resultado esperado:** El usuario conoce el propósito del proyecto y cómo se protegen sus datos.
 
@@ -421,7 +421,7 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 
 **Captura de pantalla:**
 
-![ACC-1](./images/soporte.jpeg)
+![ACC-1](./img/soporte.jpeg)
 
 **Resultado esperado:** El reporte queda enviado al equipo de soporte para su atención.
 
@@ -447,7 +447,7 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 
 **Captura de pantalla:**
 
-![califi](./images/calificanos.jpeg)
+![califi](./img/calificanos.jpeg)
 
 **Resultado esperado:** El reporte queda enviado al equipo de soporte para su atención.
 
@@ -458,7 +458,7 @@ La aplicación se navega con una barra inferior de tres pestañas (Ruta, Ubicaci
 
 Para salir de forma segura, el usuario debe ingresar a "Mi perfil" y seleccionar la opción de cerrar sesión. El sistema finaliza la sesión activa y regresa a la pantalla de Inicio de sesión. Se recomienda cerrar sesión siempre que se use un dispositivo compartido.
 
-![califi](./images/cerrar.jpeg)
+![califi](./img/cerrar.jpeg)
 
 # Parte II — Aplicativo web (panel de administración)
 
@@ -468,7 +468,7 @@ Panel dirigido al personal administrativo de las instituciones educativas, para 
 
 El sitio público (landing page) presenta el sistema Guardian Escolar, sus funcionalidades (GPS en tiempo real, panel de administración, alertas instantáneas, app para familias, control de asistencia y datos seguros) y permite descargar la app o contactar al equipo comercial. Desde allí también se accede al inicio de sesión del panel de administración.
 
-![main](./images/web/landing/landing.png)
+![main](./img/web/landing/landing.png)
 
 ## 2. Requisitos para usar el panel web
 
@@ -495,7 +495,7 @@ El sitio público (landing page) presenta el sistema Guardian Escolar, sus funci
 
 - Pulsar el botón "Iniciar sesión".
 
-![login](./images/web/login/login.png)
+![login](./img/web/login/login.png)
 
 **Resultado esperado:** El sistema valida las credenciales y muestra el panel de administración correspondiente al rol (Dashboard admin o Dashboard superadmin).
 
@@ -516,11 +516,11 @@ El sitio público (landing page) presenta el sistema Guardian Escolar, sus funci
 
 - Paso 3 de 3: crear una nueva contraseña seguindo las recomendaciones de seguridad (mínimo 8 caracteres, números y letras, mayúsculas y minúsculas, caracteres especiales) y confirmarla; pulsar "Guardar nueva contraseña".
 
-![FP-1](./images/web/forgot-password/1-email/email.png)
+![FP-1](./img/web/forgot-password/1-email/email.png)
 --
-![FP-2](./images/web/forgot-password/2-code/code.png)
+![FP-2](./img/web/forgot-password/2-code/code.png)
 --
-![FP-3](./images/web/forgot-password/3-reset/reset.png)
+![FP-3](./img/web/forgot-password/3-reset/reset.png)
 
 
 
@@ -559,7 +559,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 - Consultar el listado de "Últimas alertas" (tipo de novedad, conductor, ruta, placa y hora).
 
-![dash-admin](./images/web/dashboard-admin/dashboard-admin.png  )
+![dash-admin](./img/web/dashboard-admin/dashboard-admin.png  )
 
 
 
@@ -584,7 +584,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 **Captura de pantalla:**
 
-![FP-1](./images/web/dashboard-superadmin/dashboard-superadmin.png)
+![FP-1](./img/web/dashboard-superadmin/dashboard-superadmin.png)
 
 **Resultado esperado:** El superadministrador obtiene una visión general del funcionamiento de la plataforma a nivel de todas las instituciones registradas.
 
@@ -607,7 +607,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 - Para editar: abrir el detalle del estudiante y actualizar los campos necesarios.
 
-![student](./images/web/student-management/student-management.png)
+![student](./img/web/student-management/student-management.png)
 
 **Resultado esperado:** El sistema muestra el mensaje "Registro creado exitosamente" o "Registro actualizado exitosamente", y el estudiante queda disponible en el listado.
 
@@ -630,7 +630,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 **Captura de pantalla:**
 
-![parent](./images/web/guardian-management/guardian-management.png)
+![parent](./img/web/guardian-management/guardian-management.png)
 
 **Resultado esperado:** El acudiente queda registrado y disponible para asociarse a una familia y a uno o más estudiantes.
 
@@ -653,7 +653,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 **Captura de pantalla:**
 
-![driver](./images/web/driver-management/driver-management.png)
+![driver](./img/web/driver-management/driver-management.png)
 
 **Resultado esperado:** El conductor queda registrado y disponible para asignarse a un bus y una ruta.
 
@@ -678,7 +678,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 **Captura de pantalla:**
 
-![family](./images/family.png)
+![family](./img/family.png)
 
 **Resultado esperado:** La familia queda registrada con sus integrantes asociados correctamente.
 
@@ -701,7 +701,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 **Captura de pantalla:**
 
-![bus](./images/bus-managemnt.png)
+![bus](./img/bus-managemnt.png)
 
 **Resultado esperado:** El bus queda registrado y disponible para asignarse a una ruta.
 
@@ -726,7 +726,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 **Captura de pantalla:**
 
-![stop](./images/stop.png)
+![stop](./img/stop.png)
 
 **Resultado esperado:** El sistema muestra el mensaje "Registro creado/actualizado/eliminado exitosamente" según la operación realizada.
 
@@ -749,7 +749,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 **Captura de pantalla:**
 
-![route](./images/route.png)
+![route](./img/route.png)
 
 **Resultado esperado:** La ruta queda registrada con sus paradas y horarios, disponible para asignarse a un bus y un conductor.
 
@@ -770,7 +770,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 **Captura de pantalla:**
 
-![admin](./images/web/admin-management/admin-management.png)
+![admin](./img/web/admin-management/admin-management.png)
 
 **Resultado esperado:** La cuenta de administrador queda creada y disponible para iniciar sesión en el panel de su institución.
 
@@ -793,7 +793,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 **Captura de pantalla:**
 
-![school](./images/school.png)
+![school](./img/school.png)
 
 **Resultado esperado:** La institución educativa queda registrada y disponible para asociar administradores, estudiantes y rutas.
 
@@ -818,7 +818,7 @@ El panel web organiza sus opciones bajo el menú "ADMINISTRAR", con las siguient
 
 **Captura de pantalla:**
 
-![profile](./images/web/profile/profile.png)
+![profile](./img/web/profile/profile.png)
 
 **Resultado esperado:** El sistema muestra un mensaje de confirmación ("Teléfono actualizado", "Correo actualizado" o "Contraseña restablecida") y refleja los nuevos datos o preferencias.
 
