@@ -16,1068 +16,311 @@ Centro de formación de Neiva (Huila)
 Instructor: José de Jesús Motta Vargas  
 Neiva, 6 de octubre de 2026
 
-# Control de versiones
+# Procedimiento de implementación de Guardian Escolar
 
-**Tabla 1**. Control de versiones del documento
+**Documento operativo — formato de trabajo académico APA 7**
 
-| Versión | Fecha      | Autor                   | Descripción del cambio        |
-| ------- | ---------- | ----------------------- | ----------------------------- |
-| 1.0     | 06/10/2026 | Equipo Guardian Escolar | Versión inicial del documento |
+| Dato de control | Información |
+|---|---|
+| Software | Guardian Escolar |
+| Versión | Repositorios locales disponibles al 13 de octubre de 2026; no se identificó un tag único de release |
+| Fecha | 13 de octubre de 2026 |
+| Responsables | [Integrantes o responsable de despliegue] |
+| Objetivo | Preparar, ejecutar y verificar el entorno de desarrollo local |
 
-**Tabla de contenido**
+> **Advertencia.** Este procedimiento describe el entorno de desarrollo observado, no un despliegue de producción. Los secretos se configuran en archivos `.env` locales ignorados por Git; nunca se deben copiar a este documento, a capturas, al historial de Git ni a mensajes de error. La arquitectura, los requisitos y el estado funcional se detallan en [Diseño de software de Guardian Escolar](./01-diseno-software-guardian-escolar.md); aquí se documentan los pasos de ejecución para no duplicar esa descripción.
 
-Presione F9 (o clic derecho → Actualizar campo) para generar el índice.
+## Información general
 
-# 1 Propósito y alcance
+El repositorio de trabajo está organizado en carpetas separadas para frontend, gateway, microservicios, base de datos e infraestructura. Cada `docker-compose.yml` debe ejecutarse desde la carpeta que lo contiene, porque usa rutas relativas para el contexto de build, `Dockerfile`, volúmenes y `.env`.
 
-## 1.1 Propósito
+No se encontró un commit/tag común que identifique una versión instalable de todos los componentes. Para una entrega formal, anotar el hash o tag de cada repositorio usado y evitar mezclar ramas incompatibles.
 
-Este procedimiento establece la secuencia reproducible mediante la cual la plataforma **Guardian Escolar** se implanta en un entorno de destino, se verifica su funcionamiento y se entrega a la institución educativa para su operación. La plataforma comprende una aplicación web de administración, aplicaciones móviles para conductor y acudiente, una puerta de enlace única, nueve microservicios de dominio, un broker de eventos, un canal de comunicación de baja latencia y una base de datos relacional única organizada en esquemas.
+## Requisitos previos
 
-Los resultados verificables que persigue el procedimiento son cuatro:
+### Software
 
-- Infraestructura configurada de forma idéntica en cada entorno, sin diferencias no documentadas.
-- Base de datos completa —**11 esquemas** y **38 tablas**— mediante migraciones versionadas y verificables.
-- Cada componente expuesto únicamente en los puertos autorizados y respondiendo a sus comprobaciones de salud.
-- Evidencia objetiva de aceptación, con veredicto **PASS/FAIL** por punto, antes de declarar la implantación concluida.
+- Windows 10/11 con Docker Desktop y motor Linux funcionando; WSL2 se documenta como entorno de desarrollo.
+- Docker Engine y Docker Compose V2 (`docker compose`).
+- Git y acceso a los repositorios.
+- .NET SDK 10 para compilar/probar servicios ASP.NET Core.
+- JDK 21 para el servicio IAM Java.
+- Node.js 20 y npm 10 para frontend web y móvil; la imagen del frontend web usa Node 20.
+- Dispositivo Android o emulador compatible con Expo para verificar la aplicación móvil. Para geolocalización, conceder permisos explícitos y usar datos de prueba.
+- Conectividad a Internet para obtener imágenes y paquetes durante la primera instalación y para acceder a SMTP/Twilio cuando se validen esas integraciones.
 
-## 1.2 Alcance
+Las versiones de Angular 21, Expo 57, React Native 0.86, SQL Server 2022, Kafka 4.1.0, Kong 3.9 y Liquibase 4.29 corresponden a versiones/configuraciones observadas en manifiestos o Compose. Antes de actualizar una dependencia, revisar compatibilidad en el repositorio del componente.
 
-Incluye: preparación de prerrequisitos; infraestructura base; migraciones; despliegue de los nueve servicios de dominio; publicación de las aplicaciones cliente; configuración inicial de políticas, catálogos y usuarios semilla; verificación posdespliegue; versionado; reversión; canal de integración y publicación continua; monitoreo y soporte; matriz de responsabilidades y cronograma; gestión de cambios y aceptación.
+### Hardware
 
-Excluye: el desarrollo de funcionalidad y las pruebas de nivel de código, ejecutados en las fases previas del ciclo de vida; la adquisición de licencias de terceros; y el aprovisionamiento de terminales móviles y dispositivos de geolocalización, responsabilidad de la institución receptora.
+No hay evidencia de una especificación mínima certificada ni de una prueba de carga que permita fijarla. Se recomienda disponer de memoria y almacenamiento suficientes para Docker Desktop, SQL Server, Kafka, el gateway y los proyectos Java/.NET, además de reservar disco para el volumen persistente de la base de datos. Registrar la configuración usada durante las pruebas del equipo.
 
-## 1.3 Público y responsables
+## Obtención del código fuente
 
-**Tabla 2**. Perfiles de usuario del procedimiento
+La carpeta de trabajo actual contiene los proyectos en directorios independientes. Clonar cada repositorio en una estructura equivalente y mantener rutas y nombres de carpetas coherentes con los ejemplos siguientes. No se debe asumir que `GuardianEscolar` es la raíz Git de todos los servicios.
 
-| Perfil                          | Uso del procedimiento                                       |
-| ------------------------------- | ----------------------------------------------------------- |
-| Líder técnico                   | Aprueba etapas y publicaciones; decide sobre reversión.     |
-| Ingeniero de plataforma         | Ejecuta infraestructura, servicios, borde y clientes.       |
-| Responsable de base de datos    | Ejecuta y verifica migraciones, respaldos y recuperaciones. |
-| Responsable de calidad          | Ejecuta la verificación posdespliegue y emite el veredicto. |
-| Responsable de operaciones      | Recibe el sistema; opera monitoreo, alertas e incidentes.   |
-| Cliente (institución educativa) | Formula observaciones y firma la aceptación.                |
+```text
+Proyecto\
+├── database\
+├── kafka\
+├── sg-ms-api-gateway\
+├── sg-ms-iam\
+├── sg-ms-user-management\
+├── sg-ms-school-management\
+├── sg-ms-fleet\
+├── sg-ms-route\
+├── sg-ms-notification\
+├── sg-ms-forgot-information\
+└── GuardianEscolar\
+    └── dvlp-front\
+        ├── dvlp-web\
+        └── dvlp-movil\guardian-escolar
+```
 
-## 1.4 Convenciones de uso
+En cada repositorio, usar la rama/tag acordada por el equipo. Antes de desplegar, comparar la revisión del gateway con los paths de cada servicio y comprobar que comparten los contratos API esperados.
 
-- Los valores entre marcadores angulares, por ejemplo &lt;SA_PASSWORD&gt; o &lt;ADMIN_EMAIL&gt;, son **sustitutos de secretos**: nunca se escriben valores reales en este documento ni en los registros de implantación.
-- Toda orden técnica se reproduce en un bloque bash; los resultados esperados se describen en prosa o en tabla.
-- Un paso cierre con una comprobación; si esta no se cumple, el paso falla y no se avanza.
-- Los plazos del cronograma son **estimaciones de planificación**; los compromisos contractuales se fijan en el acta de aceptación.
-- «Entorno» designa al conjunto de componentes desplegados con la misma finalidad; «componente», a cualquier unidad desplegable.
+Las rutas absolutas de los comandos de este procedimiento corresponden a la estación donde se preparó el documento. En otra máquina, se deben reemplazar por la ubicación local de `Proyecto`.
 
-# 2 Prerrequisitos
+## Configuración del entorno
 
-## 2.1 Recursos de hardware
+### Archivos `.env`
 
-El dimensionamiento se acuerda con la institución según el volumen esperado de estudiantes, rutas y dispositivos. El host de implantación debe cumplir:
+1. En cada componente que provea `.env.example`, copiarlo al archivo `.env` de esa misma carpeta. Hay plantillas en [IAM](./sg-ms-iam/.env.example), [usuarios](./sg-ms-user-management/.env.example), [colegios](./sg-ms-school-management/.env.example), [flota](./sg-ms-fleet/.env.example), [rutas](./sg-ms-route/.env.example), [notificaciones](./sg-ms-notification/.env.example), [recuperación](./sg-ms-forgot-information/.env.example) y [Expo](./GuardianEscolar/dvlp-front/dvlp-movil/guardian-escolar/.env.example). En este checkout no hay `.env.example` para la base de datos: prepara el archivo local según las variables descritas en el paso 4.
+   Desde el directorio del componente, crear el archivo sin sobrescribir una configuración existente:
 
-**Tabla 3**. Requisitos de hardware del host de implantación
+   ```powershell
+   if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+   ```
+2. Completar localmente los valores requeridos con datos de desarrollo. No colocar secretos reales en un `.env.example`.
+3. Comprobar los nombres de variables contra el Compose y el README del componente. Compose interpolará `.env` desde el directorio del proyecto de Compose.
+4. Para la base de datos, configurar `MSSQL_DATABASE`, `MSSQL_USER` y `MSSQL_SA_PASSWORD`, además de `SCHOOL_GUARDIAN_DB_DIR` solo si los changelogs no están en la ruta predeterminada. El usuario definido en `MSSQL_USER` debe ser un principal SQL Server existente con permisos de migración. El Compose crea la base con `sa`, pero Liquibase intenta autenticarse con `MSSQL_USER`; no se debe asumir que un usuario llamado `user` existe automáticamente.
+5. Para IAM, usuarios, escuelas, flota, rutas y notificaciones, configurar la conexión compartida SQL Server y los valores de mensajería/autenticación requeridos por sus `.env.example`.
+6. Para recuperación, completar cadena `ConnectionStrings__DefaultConnection`, `INTERNAL_API_KEY`, `OTP_HASH_PEPPER`, variables SMTP y, solo si se probará cambio de teléfono, credenciales Twilio.
+7. Para frontend web, revisar `API_URL` y `API_FORGOT_INFORMATION_URL`.
+8. Para Expo, revisar `EXPO_PUBLIC_API_URL` y `EXPO_PUBLIC_FORGOT_INFORMATION_API_URL`. Son URLs que quedan accesibles en el bundle cliente; no se deben usar para secretos.
 
-| Recurso              | Requisito funcional                                                                                                              | Criterio de comprobación                                           |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Procesador y memoria | Ejecutar simultáneamente motor de datos, broker, puerta de enlace y servicios sin saturación sostenida ni intercambio de memoria | Uso estable bajo el umbral de alerta durante la ventana de pruebas |
-| Almacenamiento       | Volumen persistente para base de datos y broker, con espacio para respaldos completos y de registro                              | Espacio libre por encima del umbral de alerta                      |
-| Sistema operativo    | Plataforma con ejecución de contenedores y cliente de orquestación operativo                                                     | Versión y estado del servicio verificados                          |
-| Terminales móviles   | Cámara para escaneo QR y notificaciones push, uno por conductor en servicio                                                      | Verificación funcional en el paso 4.6                              |
+No publicar valores de conexión, contraseñas, JWT secrets, API keys, OTP pepper, contraseñas SMTP ni credenciales Twilio. Para un dispositivo físico, `localhost` apunta al propio teléfono: la API debe apuntar a una dirección accesible desde el móvil, como la IP privada del computador en la misma red o un túnel HTTPS activo. La IP privada puede cambiar al reconectar la red.
 
-## 2.2 Software de base
+## Preparación de la base de datos
 
-**Tabla 4**. Software de base y versiones mínimas
+La configuración inspeccionada usa **Microsoft SQL Server 2022**, no PostgreSQL. Los esquemas y migraciones están bajo [database](./database/docker-compose.yaml); Liquibase aplica los changelogs por dominio.
 
-| Componente                     | Versión mínima  | Finalidad                                | Comprobación                            |
-| ------------------------------ | --------------- | ---------------------------------------- | --------------------------------------- |
-| Motor de contenedores          | 24.0            | Ejecución de componentes                 | docker --version                        |
-| Orquestador de contenedores    | 2.20            | Definición e inversión de conjuntos      | docker compose version                  |
-| Control de versiones           | 2.40            | Obtención de la línea base del código    | git --version                           |
-| SQL Server                     | 2022            | Persistencia relacional única            | Contenedor saludable                    |
-| Apache Kafka                   | 4.1.0 (KRaft)   | Eventos de dominio                       | Consumo de tópicos operativo            |
-| Kong                           | 3.9             | Enrutamiento, límite de tasa y CORS      | Respuesta en el puerto público          |
-| Liquibase                      | 4.29            | Cambios de esquema versionados           | Cero cambiosets pendientes              |
-| Java con Maven                 | 21              | Identificación y acceso; geolocalización | Compilación sin errores                 |
-| .NET                           | 10              | Servicios de dominio restantes           | Compilación sin errores                 |
-| Node.js con gestor de paquetes | LTS             | Construcción de aplicaciones cliente     | Compilación sin errores                 |
-| Angular con Angular Material   | 21 y Material 3 | Aplicación web                           | Compilación de producción satisfactoria |
-| React con Expo                 | Versión activa  | Aplicaciones móviles                     | Binario generado satisfactoriamente     |
+1. Verificar que el archivo `.env` exista en `database` y contenga los valores requeridos, sin imprimirlos en terminales compartidos.
+2. Asegurarse de que existe la red Docker externa. Si aún no está creada:
 
-## 2.3 Red y puertos
+   ```powershell
+   docker network inspect sg-services-network
+   # Si el comando confirma que no existe:
+   docker network create sg-services-network
+   ```
 
-**Tabla 5**. Puertos autorizados por componente
+3. Iniciar SQL Server y los servicios de inicialización/migración desde la carpeta `database`:
 
-| Puerto      | Componente                              | Alcance permitido                               |
-| ----------- | --------------------------------------- | ----------------------------------------------- |
-| 8000        | Puerta de enlace (proxy)                | Público: único punto de entrada                 |
-| 8443        | Puerta de enlace (proxy TLS)            | Público: terminación de TLS                     |
-| 8001 y 8002 | API e interfaz administrativa del borde | Solo red interna                                |
-| 8080        | Servicios de dominio                    | Solo red de contenedores, resueltos por nombre  |
-| 5001        | Canal gRPC de geolocalización           | Solo red interna                                |
-| 1433        | SQL Server                              | Solo red interna; no expuesto a Internet        |
-| 9092        | Apache Kafka                            | Solo red interna; no expuesto a Internet        |
-| 6379        | Redis                                   | Solo red interna: caché y lista negra de tokens |
-| 8090        | Herramienta de consulta de datos        | Solo desarrollo; prohibida en producción        |
-| 4200        | Servidor de desarrollo web              | Solo desarrollo: origen de referencia de CORS   |
+   ```powershell
+   Set-Location C:\Users\Admin\Desktop\Proyecto\database
+   docker compose up -d
+   ```
 
-Antes de iniciar se confirma que ningún puerto (en particular 8000, 1433 y 9092) esté ocupado por otro proceso del host, con lsof -i :&lt;puerto&gt;.
+4. Comprobar primero el estado del contenedor SQL Server y luego los logs de `liquibase-*`. No iniciar las APIs si alguna migración necesaria terminó con error.
 
-## 2.4 Permisos, secretos y accesos
+   ```powershell
+   docker ps -a
+   docker logs --tail 100 school-guardian-db-dev
+   docker logs --tail 100 liquibase-iam
+   ```
 
-**Tabla 6**. Permisos, secretos y accesos requeridos
+5. Mantener el volumen `school-guardian-sqlserver-data` si se requiere conservar la base local. No eliminar volúmenes como método rutinario de solución de problemas; esa acción puede borrar datos.
 
-| Elemento                                                          | Requisito                                                   | Manejo                                            |
-| ----------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------- |
-| Acceso al host                                                    | Privilegios de administración del sistema de contenedores   | Cuenta personal con trazabilidad                  |
-| Clave del motor (&lt;SA_PASSWORD&gt;) y usuario (&lt;SA_USER&gt;) | Generados antes del primer arranque y distintos por entorno | Almacén de secretos; nunca en el código           |
-| Llave privada de firma (&lt;JWT_PRIVATE_KEY&gt;)                  | Exclusiva del servicio de identificación y acceso           | RS256: acceso de 15 minutos y refresco de 30 días |
-| Llave pública de verificación                                     | Distribuida a los demás servicios y al borde                | Configuración declarada                           |
-| Credenciales de mensajería móvil (&lt;PUSH_CREDENTIALS&gt;)       | Provisionadas por el proveedor                              | Almacén de secretos del entorno                   |
-| Origen web permitido (&lt;WEB_ORIGIN&gt;)                         | Dominio público de la aplicación web                        | Configuración declarada del borde                 |
-| Registro de imágenes                                              | Permiso de publicación y descarga                           | Credenciales rotadas por entorno                  |
+El Compose de base de datos define dependencias entre migraciones. Si un changeset falla, revisar primero el error específico y la tabla de historial de Liquibase. No editar un changeset ya aplicado en un entorno compartido sin una migración correctiva revisada.
 
-## 2.5 Validación previa a la implantación
+## Instalación y configuración del backend
 
-docker info
+### Gateway y servicios
 
-docker compose version
+Los servicios se comunican por nombre de contenedor sobre `sg-services-network`; para tráfico interno usan normalmente el puerto 8080. La entrada HTTP del gateway se publica en el puerto 8000. Para cada servicio, abrir PowerShell y ejecutar desde el directorio correspondiente:
 
-df -h
-
-docker network ls
-
-docker images
-
-La implantación no comienza si alguna comprobación falla o si la línea base de código no corresponde a la versión aprobada para publicación.
-
-# 3 Arquitectura de entornos
-
-## 3.1 Entornos soportados
-
-**Tabla 7**. Entornos soportados y su finalidad
-
-| Entorno                 | Finalidad                                   | Actualización                                   | Acceso                                     | Datos                         |
-| ----------------------- | ------------------------------------------- | ----------------------------------------------- | ------------------------------------------ | ----------------------------- |
-| Desarrollo              | Construcción individual                     | Manual                                          | Equipo técnico                             | Sintéticos de demostración    |
-| Integración             | Validación continua de cada cambio aprobado | Automática al integrar en la rama de desarrollo | Equipo técnico                             | Sintéticos                    |
-| Pruebas (preproducción) | Verificación, demostración y aceptación     | Automática al integrar en la rama principal     | Equipo técnico y responsable de producto   | Anonimizados desde producción |
-| Producción              | Operación con usuarios reales               | Manual con aprobación formal                    | Responsable técnico y equipo de plataforma | Reales                        |
-
-## 3.2 Topología de despliegue
-
-Acudiente (móvil) Conductor (móvil) Administrador (web)
-
-\\ | /
-
-+-------+-------+--------+--------+
-
-| TLS/HTTP :8000 |
-
-v |
-
-+------------------+ |
-
-| Puerta de enlace |--- CORS, límite de tasa, JWT
-
-| (Kong OSS) |
-
-+--------+---------+
-
-| red de contenedores, cada servicio :8080
-
-+---------+-------+------+----------+----------+-----------+
-
-v v v v v v
-
-+-----+ +--------+ +---------+ +---------+ +----------+ +----------+
-
-| IAM | |Usuarios| | Escolar | | Flota | | Rutas | |Notificac.|
-
-+--+--+ +---+----+ +----+-----+ +----+----+ +----+-----+ +----+-----+
-
-| | | | | |
-
-+-------+------------+-----+------+-----------+-------------+
-
-| canal gRPC :5001
-
-v
-
-+----------------+ +---------------+
-
-| Excepcionales | | Auditoría y |
-
-+----------------+ | Configuración |
-
-+---------------+
-
-|
-
-v
-
-+------------------+ +------------------+ +------------------+
-
-| SQL Server :1433 | | Kafka :9092 | | Redis :6379 |
-
-| 11 esquemas | | modo KRaft | | caché efímera |
-
-| 38 tablas | | 6 topics | +------------------+
-
-+------------------+ +------------------+
-
-**Figura 1**. Topología de despliegue de la plataforma
-
-## 3.3 Inventario de componentes y puertos
-
-**Tabla 8**. Inventario de componentes y puertos
-
-| Componente                    | Naturaleza      | Puerto             | Persistencia                           |
-| ----------------------------- | --------------- | ------------------ | -------------------------------------- |
-| Puerta de enlace (Kong OSS)   | Infraestructura | 8000 / 8443        | Configuración declarada versionada     |
-| Identificación y acceso (IAM) | Dominio         | 8080               | Esquema Iam                            |
-| Gestión de usuarios           | Dominio         | 8080               | Esquema UserManagement                 |
-| Gestión escolar               | Dominio         | 8080 / 5001 (gRPC) | Esquemas School y Geographic           |
-| Flota                         | Dominio         | 8080               | Esquema Fleet                          |
-| Rutas                         | Dominio         | 8080               | Esquema Route                          |
-| Notificaciones                | Dominio         | 8080               | Esquema Notification                   |
-| Usos excepcionales            | Dominio         | 8080               | Esquema Exceptional                    |
-| Auditoría                     | Dominio         | 8080               | Esquema Audit                          |
-| Configuración                 | Dominio         | 8080               | Esquema Settings                       |
-| SQL Server 2022               | Infraestructura | 1433               | Volumen persistente                    |
-| Apache Kafka 4.1.0 (KRaft)    | Infraestructura | 9092               | Volumen persistente                    |
-| Redis                         | Infraestructura | 6379               | Efímero, sin requisito de restauración |
-
-## 3.4 Políticas de configuración por entorno
-
-**Tabla 9**. Políticas de configuración por entorno
-
-| Parámetro            | Desarrollo               | Integración                        | Pruebas                        | Producción                        |
-| -------------------- | ------------------------ | ---------------------------------- | ------------------------------ | --------------------------------- |
-| Nivel de bitácora    | debug                    | info                               | info                           | warn                              |
-| Origen web permitido | <http://localhost:4200>  | https://&lt;integracion-domain&gt; | https://&lt;pruebas-domain&gt; | https://&lt;produccion-domain&gt; |
-| Fuente de secretos   | Archivo de entorno local | Almacén de secretos                | Almacén de secretos            | Almacén de secretos               |
-| Datos                | Sintéticos               | Sintéticos                         | Anonimizados                   | Reales                            |
-| Publicación          | Manual                   | Automática                         | Automática                     | Manual con doble aprobación       |
-
-La convención de nombres de variables es APP_\[SERVICIO\]\_\[VARIABLE\]; cada servicio conserva además sus claves de cadena de conexión y de dirección del broker.
-
-# 4 Procedimiento de implementación paso a paso
-
-## 4.1 Paso 1: infraestructura base
-
-### 4.1.1 Red de contenedores y secretos
-
-1. Se crea la red compartida que interconecta todos los conjuntos de servicios.
-2. Se prepara el archivo de entorno de cada conjunto a partir de su plantilla de ejemplo.
-3. Se sustituyen todos los marcadores angulares por valores del almacén de secretos del entorno.
-4. Se confirma que ningún archivo de entorno con valores reales quede incorporado a la línea base de código.
-
-docker network create &lt;nombre-de-la-red&gt;
-
-cp .env.example .env
-
-openssl rand -base64 32
-
-docker network ls
-
-Cierre: la red figura en el inventario y el archivo de entorno contiene únicamente valores admitidos por la política de secretos.
-
-### 4.1.2 Motor de base de datos
-
-1. Se levanta SQL Server 2022 con el puerto 1433 asignado solo a la red interna y con volumen persistente.
-2. Se espera a que la comprobación de salud integrada —SELECT 1 cada 5 segundos, hasta 20 reintentos y 20 segundos de espera inicial— reporte estado saludable.
-3. Se ejecuta el contenedor de inicialización, que crea la base school-guardian si no existe y termina con código 0.
-
-docker compose up -d
-
-docker compose ps
-
-docker inspect --format '{{json .State.Health.Status}}' &lt;nombre-del-contenedor-sql&gt;
-
-### 4.1.3 Broker de eventos
-
-Se levanta Apache Kafka 4.1.0 en modo KRaft, con un único nodo que cumple las funciones de bróker y de controlador y quórum de controladores sobre el puerto 9093. El contenedor de inicialización espera a que el bróker responda la enumeración de tópicos y crea los pendientes con una partición y factor de replicación 1.
-
-**Tabla 10**. Tópicos declarados en el broker de eventos
-
-| Tópico          | Particiones | Factor de replicación | Uso                                   |
-| --------------- | ----------- | --------------------- | ------------------------------------- |
-| student.created | 1           | 1                     | Alta de estudiante hacia identidad    |
-| driver.created  | 1           | 1                     | Alta de conductor hacia identidad     |
-| admin.created   | 1           | 1                     | Alta de administrador hacia identidad |
-| parent.created  | 1           | 1                     | Alta de acudiente hacia identidad     |
-| profile.created | 1           | 1                     | Perfil creado en identidad            |
-| student.scanned | 1           | 1                     | Escaneo QR y registro de bordada      |
-
-docker exec &lt;nombre-del-contenedor-kafka&gt; /opt/kafka/bin/kafka-topics.sh \\
-
-\--bootstrap-server kafka:9092 --list
-
-Cierre: los seis tópicos figuran en el listado y el contenedor de inicialización terminó con código 0.
-
-### 4.1.4 Almacén efímero
-
-Se levanta Redis en el puerto 6379 para caché de datos de referencia, control de tasa y lista negra de tokens. Por ser efímero no se define objetivo de recuperación: ante su pérdida la instancia se recrea y los clientes reconectan.
-
-### 4.1.5 Puerta de enlace
-
-Se levanta Kong con configuración declarada y sin base de datos propia, montando el manifiesto en modo solo lectura; se verifican los puertos de proxy (8000 y 8443) y los de administración (8001 y 8002), estos últimos restringidos a la red interna.
-
-curl -fsS <http://localhost:8000/health>
-
-Cierre: respuesta con estado ok y marca de tiempo. En este punto la puerta de enlace aún no enruta tráfico de negocio: las rutas se declaran en el paso 4.4.
-
-## 4.2 Paso 2: base de datos y migraciones
-
-### 4.2.1 Estructura de los cambios
-
-Cada esquema posee su propio árbol de cambios gestionado por Liquibase, con las etapas en este orden: creación del esquema, tipos personalizados, tablas, restricciones y claves foráneas entre esquemas, vistas, funciones, procedimientos, disparadores e índices; después carga de datos inicial, permisos del motor, bloques transaccionales y etiquetas de publicación; y, por último, un árbol reservado de instrucciones de reversión.
-
-El conjunto completo asciende a **11 esquemas**, **38 tablas** y **127 cambiosets**, cada uno de los cuales corresponde a un guion de definición de datos.
-
-### 4.2.2 Orden de aplicación
-
-El orden se deriva de las claves foráneas que cruzan esquemas; la orquestación encadena los contenedores de migración mediante dependencias de finalización exitosa:
-
-**Tabla 11**. Orden de aplicación de las migraciones
-
-| Orden | Esquema        | Cambiosets | Depende de                     |
-| ----- | -------------- | ---------- | ------------------------------ |
-| 1     | Geographic     | 3          | Inicialización del motor       |
-| 2     | Gps            | 6          | Inicialización del motor       |
-| 3     | Settings       | 3          | Inicialización del motor       |
-| 4     | School         | 12         | Geographic                     |
-| 5     | Iam            | 24         | School                         |
-| 6     | Fleet          | 12         | Gps, School, Iam               |
-| 7     | Route          | 25         | Geographic, School, Fleet, Iam |
-| 8     | UserManagement | 18         | Iam                            |
-| 9     | Notification   | 13         | Iam, Route                     |
-| 10    | Audit          | 4          | Iam                            |
-| 11    | Exceptional    | 7          | Iam, Fleet, Route              |
-
-Existen relaciones recíprocas entre los esquemas de identidad, escolar y gestión de usuarios. Cuando un cambioset exige un objeto aún inexistente, el motor lo reporta como no aplicado y lo deja pendiente; una segunda pasada sobre el mismo conjunto lo aplica una vez creados los esquemas implicados. Por eso el procedimiento contempla expresamente la reejecución antes de declarar la etapa terminada.
-
-### 4.2.3 Ejecución
-
-docker compose up -d sqlserver sqlserver-init
-
-docker compose up -d
-
-docker compose up -d
-
-docker compose ps --filter "status=exited"
-
-Cada migración se ejecuta con la ruta de búsqueda de los changelogs, el changelog maestro del esquema y la orden update. La ejecución es idempotente: solo se aplican los cambiosets pendientes.
-
-### 4.2.4 Verificación
-
-docker exec -it &lt;nombre-del-contenedor-sql&gt; /opt/mssql-tools18/bin/sqlcmd \\
-
-\-S localhost,1433 -U "&lt;SA_USER&gt;" -P "&lt;SA_PASSWORD&gt;" -C -d school-guardian \\
-
-\-Q "SELECT ID, AUTHOR, DATEEXECUTED FROM DATABASECHANGELOG ORDER BY DATEEXECUTED;"
-
-docker exec -it &lt;nombre-del-contenedor-sql&gt; /opt/mssql-tools18/bin/sqlcmd \\
-
-\-S localhost,1433 -U "&lt;SA_USER&gt;" -P "&lt;SA_PASSWORD&gt;" -C -d school-guardian \\
-
-\-Q "SELECT SCHEMA_NAME(SCHEMA_ID) AS esquema, COUNT(\*) AS tablas FROM sys.tables GROUP BY SCHEMA_NAME(SCHEMA_ID) ORDER BY 1;"
-
-docker exec -it &lt;nombre-del-contenedor-sql&gt; /opt/mssql-tools18/bin/sqlcmd \\
-
-\-S localhost,1433 -U "&lt;SA_USER&gt;" -P "&lt;SA_PASSWORD&gt;" -C -d school-guardian \\
-
-\-Q "SELECT OBJECT_NAME(parent_object_id) AS tabla, name AS clave FROM sys.foreign_keys ORDER BY 1;"
-
-La etapa es satisfactoria cuando no hay cambiosets pendientes, se contabilizan 11 esquemas y 38 tablas, no existe bloqueo de cambio activo y las claves foráneas entre esquemas están presentes.
-
-### 4.2.5 Reversión
-
-1. Se obtiene el SQL que se aplicaría sin ejecutarlo, para revisar el impacto.
-2. Se revierte el último cambio aplicado cuando su reversión está declarada en el árbol de reversión.
-3. Si no tiene reversión declarada, se aplica una corrección hacia adelante aprobada por el responsable de base de datos.
-4. Toda reversión se registra con motivo y responsable.
-
-docker run --rm liquibase/liquibase:4.29 \\
-
-\--searchPath=/workspace \\
-
-\--changeLogFile=&lt;changelog-maestro-del-esquema&gt; \\
-
-\--url="jdbc:sqlserver://&lt;host-sql&gt;:1433;databaseName=school-guardian;encrypt=false;trustServerCertificate=true" \\
-
-\--username="&lt;SA_USER&gt;" --password="&lt;SA_PASSWORD&gt;" \\
-
-update-sql
-
-La orden rollback-count 1 en lugar de update-sql revierte el último cambio. Antes de cualquier reversión en un entorno con datos se restaura un respaldo verificado; la reversión de esquema no sustituye a la recuperación de datos.
-
-## 4.3 Paso 3: servicios de dominio
-
-### 4.3.1 Orden de arranque
-
-Las dependencias síncronas se resuelven en el momento de la petición y no bloquean el arranque; el orden determinista lo fija la base de datos, ya disponible tras la etapa anterior. El orden recomendado garantiza que la identidad esté disponible antes que los servicios que validan personas y perfiles:
-
-**Tabla 12**. Orden de arranque de los servicios de dominio
-
-| Orden | Servicio                      | Esquema            | Entorno de ejecución  | Dependencia lógica principal         |
-| ----- | ----------------------------- | ------------------ | --------------------- | ------------------------------------ |
-| 1     | Identificación y acceso (IAM) | Iam                | Java 21 + Spring Boot | Emisión y verificación de tokens     |
-| 2     | Gestión de usuarios           | UserManagement     | .NET 10               | Validación de identidad contra IAM   |
-| 3     | Gestión escolar               | School, Geographic | .NET 10               | Personas y campus                    |
-| 4     | Configuración                 | Settings           | .NET 10               | Ninguna: parámetros globales         |
-| 5     | Flota                         | Fleet              | .NET 10               | Institución, dispositivos y perfiles |
-| 6     | Rutas                         | Route              | .NET 10               | Flota, institución y perfiles        |
-| 7     | Notificaciones                | Notification       | .NET 10               | Rutas, flota y perfiles              |
-| 8     | Usos excepcionales            | Exceptional        | .NET 10               | Rutas, flota e institución           |
-| 9     | Auditoría                     | Audit              | .NET 10               | Eventos de todos los dominios        |
-
-### 4.3.2 Construcción y puesta en marcha
-
-dotnet restore
-
-dotnet build
-
-dotnet test
-
-./mvnw clean package
-
+```powershell
+Set-Location C:\Users\Admin\Desktop\Proyecto\sg-ms-iam
 docker compose up -d --build
+```
 
-Cada conjunto publica en el puerto 8080 dentro de la red de contenedores, por lo que no se producen colisiones en el host. Los secretos y las direcciones de los demás servicios se inyectan por variables de entorno, nunca se fijan en el código.
+Repetir desde `sg-ms-user-management`, `sg-ms-school-management`, `sg-ms-fleet`, `sg-ms-route` y `sg-ms-notification`, siempre después de confirmar que SQL Server y sus migraciones están listos. Iniciar `sg-ms-forgot-information` después de IAM, ya que utiliza sus endpoints internos.
 
-### 4.3.3 Comprobación de salud y puertos
+```powershell
+Set-Location C:\Users\Admin\Desktop\Proyecto\sg-ms-forgot-information
+docker compose up -d --build
+```
 
-**Tabla 13**. Comprobaciones de salud de los servicios de dominio
+Kafka se inicia desde su propio repositorio si el flujo del componente requiere eventos:
 
-| Servicio                | Comprobación                                              | Criterio de aceptación             |
-| ----------------------- | --------------------------------------------------------- | ---------------------------------- |
-| Identificación y acceso | Punto de salud del marco Spring (/actuator/health)        | HTTP 200 y estado UP               |
-| Servicios .NET          | Punto de salud expuesto por el anfitrión web              | HTTP 200                           |
-| Todos                   | Consulta por nombre de servicio en la red de contenedores | Respuesta en menos de dos segundos |
-| Canal gRPC (5001)       | Establecimiento de canal desde el cliente                 | Canal disponible sin errores       |
-| Broker                  | Producción y consumo de un evento de prueba               | Evento entregado al consumidor     |
+```powershell
+Set-Location C:\Users\Admin\Desktop\Proyecto\kafka
+docker compose up -d
+```
 
-curl -fsS http://&lt;nombre-del-servicio&gt;:8080/health
+El gateway se inicia desde `sg-ms-api-gateway` después de que los upstreams necesarios tengan nombre DNS en la red:
 
-curl -fsS http://&lt;nombre-del-servicio-iam&gt;:8080/actuator/health
+```powershell
+Set-Location C:\Users\Admin\Desktop\Proyecto\sg-ms-api-gateway
+docker compose up -d
+```
 
-docker compose logs --tail=100 &lt;nombre-del-servicio&gt;
+Si un servicio no tiene `.env.example` o el Compose no incluye una publicación fija de puerto host, no inventar valores: consultar el README y el Compose de ese servicio. Varios Compose publican `8080` como puerto interno dinámico/no fijado al host; las APIs se consumen por Kong o por el DNS interno, no por un puerto aleatorio.
 
-Ante una respuesta inesperada se verifica, en este orden: estado del contenedor, registros del servicio, variables de entorno, disponibilidad de la base de datos y del broker. No se continúa hasta que los nueve servicios respondan.
+### Recuperación de contraseña
 
-## 4.4 Paso 4: puerta de enlace y ruteo
+IAM y recuperación deben apuntar a la misma base SQL de desarrollo. El valor local de `INTERNAL_API_KEY` debe ser idéntico en ambos servicios; IAM expone sus rutas `/api/profiles/**` solo como endpoints internos. Para probar envío de correo se necesita un servidor SMTP y una cuenta autorizada. El cambio de teléfono requiere Twilio Verify configurado. Sin esas dependencias, limitar la verificación a pruebas que no envíen mensajes ni modifiquen datos reales.
 
-### 4.4.1 Registro de servicios y rutas
+### Perfiles y observabilidad de inicio
 
-La configuración del borde es declarada y se versiona como código; toda modificación entra por una solicitud de cambio revisada. Cada servicio de dominio registra su destino en la red de contenedores, sus rutas bajo el prefijo versionado /api/v1, los métodos admitidos y sus políticas.
+Usar estos comandos sin mostrar variables de entorno:
 
-**Tabla 14**. Servicios declarados en la puerta de enlace y sus rutas
+```powershell
+docker compose ps
+docker logs --tail 100 ms-iam
+docker logs --tail 100 ms-user-management
+docker logs --tail 100 ms-school-management
+docker logs --tail 100 ms-fleet
+docker logs --tail 100 ms-route
+docker logs --tail 100 ms-notification
+docker logs --tail 100 ms-forgot-information
+docker logs --tail 100 kong
+```
 
-| Servicio declarado      | Destino                               | Rutas públicas         | Métodos                         |
-| ----------------------- | ------------------------------------- | ---------------------- | ------------------------------- |
-| Identificación y acceso | http://&lt;iam&gt;:8080               | /api/v1/auth           | GET, POST, PUT, DELETE, OPTIONS |
-| Gestión de usuarios     | http://&lt;user-management&gt;:8080   | Personas y familias    | GET, POST, PUT, DELETE, OPTIONS |
-| Gestión escolar         | http://&lt;school-management&gt;:8080 | Instituciones y sedes  | GET, POST, PUT, DELETE, OPTIONS |
-| Flota                   | http://&lt;fleet&gt;:8080             | Buses y asignaciones   | GET, POST, PUT, DELETE, OPTIONS |
-| Rutas                   | http://&lt;route&gt;:8080             | Rutas y paradas        | GET, POST, PUT, DELETE, OPTIONS |
-| Notificaciones          | http://&lt;notification&gt;:8080      | Alertas y bordadas     | GET, POST                       |
-| Usos excepcionales      | http://&lt;exceptional&gt;:8080       | Usos excepcionales     | GET, POST, PUT, DELETE, OPTIONS |
-| Auditoría               | http://&lt;audit&gt;:8080             | Auditoría y errores    | GET                             |
-| Configuración           | http://&lt;configuration&gt;:8080     | Parámetros y políticas | GET, PUT                        |
+Nombres concretos de contenedores pueden cambiar según la versión del Compose. Si `docker logs` indica que un contenedor no existe, confirmar el nombre con `docker ps -a`.
 
-Antes de publicar se comprueba que los prefijos declarados se ajusten al contrato versionado y que ningún servicio de dominio quede sin ruta publicada.
+## Instalación del frontend web
 
-### 4.4.2 Políticas transversales
+El frontend se encuentra en `GuardianEscolar/dvlp-front/dvlp-web`. Su `package.json` declara npm, Angular 21 y scripts `start`, `build` y `test`.
 
-**Tabla 15**. Políticas transversales del borde
-
-| Política           | Configuración                                                                                                                                                                                                  | Alcance                                       |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| CORS               | Origen web del entorno y orígenes de desarrollo autorizados; métodos GET, POST, PUT, DELETE, OPTIONS; encabezamientos Accept, Authorization, Content-Type; credenciales activas; anticipación de 3600 segundos | Todas las rutas                               |
-| Límite de tasa     | 300 peticiones por minuto, política local, clasificación por encabezamiento Authorization                                                                                                                      | Ruta de autenticación, extensible a las demás |
-| Autenticación      | Verificación de token JWT RS256 en el borde, con denegación por defecto                                                                                                                                        | Todos los recursos salvo login y refresco     |
-| Terminación de TLS | Certificado del entorno en el proxy 8443                                                                                                                                                                       | Tráfico público                               |
-| Registro           | Salida estándar con identificador de correlación                                                                                                                                                               | Todas las rutas                               |
-
-### 4.4.3 Verificación del ruteo
-
-curl -fsS <http://localhost:8000/health>
-
-curl -i -X GET <http://localhost:8000/api/v1/&lt;recurso-protegido>&gt;
-
-curl -i -X GET <http://localhost:8000/api/v1/&lt;recurso-protegido>&gt; \\
-
-\-H "Authorization: Bearer &lt;ACCESS_TOKEN&gt;"
-
-Cierre: el borde responde; el recurso protegido sin credenciales es denegado; con credenciales válidas responde el servicio de destino; y el origen de la aplicación web figura en la política CORS.
-
-## 4.5 Paso 5: aplicación web
-
-1. Se ejecuta la construcción de producción con el origen del entorno como valor de configuración.
-2. Se revisa el resultado: sin errores de compilación ni de análisis estático.
-3. Se publica el artefacto estático en el servicio de contenido del entorno, servido por HTTPS.
-4. Se registra el origen publicado en la política CORS del borde.
-5. Se invalida la caché de contenido estático de la versión anterior.
-
+```powershell
+Set-Location C:\Users\Admin\Desktop\Proyecto\GuardianEscolar\dvlp-front\dvlp-web
 npm ci
+npm start
+```
 
-npm run lint
+Configurar `API_URL` para la URL base del gateway y `API_FORGOT_INFORMATION_URL` para el servicio de recuperación si se expone directamente. Para compilar y ejecutar pruebas:
 
-npm run test
+```powershell
+npm run build
+npm test -- --watch=false
+```
 
-npm run build -- --configuration production
+El Compose de `GuardianEscolar` publica la web de desarrollo en el puerto 4200. El Dockerfile de producción compila la aplicación Angular estática y la sirve con Nginx; para una imagen coherente con un ambiente concreto, configurar la API antes de construirla y comprobar qué valores quedan incluidos en el bundle.
 
-Cierre: la aplicación carga desde el origen publicado, el navegador no reporta violaciones de CORS, el inicio de sesión muestra el formulario conforme a la política de longitud vigente y el menú lateral refleja el rol autenticado.
+## Instalación de la aplicación móvil
 
-## 4.6 Paso 6: aplicación móvil
+El proyecto móvil está en [GuardianEscolar/dvlp-front/dvlp-movil/guardian-escolar](./GuardianEscolar/dvlp-front/dvlp-movil/guardian-escolar).
 
-1. Se fija la versión del binario conforme al esquema de la sección 6.
-2. Se compila para las dos plataformas con la configuración del entorno de destino.
-3. Se registran las credenciales de notificaciones push y la dirección base del gateway.
-4. Se verifican los permisos de cámara (escaneo QR), notificaciones y ubicación.
-5. Se distribuye: paquete de distribución interna para pruebas y paquete de tienda para producción.
-6. Se instala en un terminal de prueba por rol y se ejecuta el recorrido mínimo.
-
+```powershell
+Set-Location C:\Users\Admin\Desktop\Proyecto\GuardianEscolar\dvlp-front\dvlp-movil\guardian-escolar
 npm ci
+npm start
+```
 
-npm run test
+Expo carga `EXPO_PUBLIC_*` al preparar el bundle; después de modificar las URLs se debe recargar la app. En desarrollo dentro de la misma Wi-Fi, establecer ambas URLs con el host/IP que el teléfono pueda alcanzar y comprobar que el firewall de Windows permite los puertos necesarios. No usar `localhost` en un dispositivo físico.
 
-npx eas build --platform android --profile production
+El proyecto ofrece scripts `start:lan`, `android`, `ios` y `web`. En Windows, iOS requiere herramientas de Apple no disponibles de forma nativa. El script [`sync-api-tunnels.mjs`](./GuardianEscolar/dvlp-front/dvlp-movil/guardian-escolar/scripts/sync-api-tunnels.mjs) puede sincronizar y probar URLs Cloudflare cuando el `.env` ya tiene URLs de túnel; los Quick Tunnels generan URLs temporales y no constituyen un endpoint estable.
 
-npx eas build --platform ios --profile production
+## Orden de inicio y puertos
 
-Cierre: el conductor inicia sesión, consulta la ruta del día, abre el escáner y registra un escaneo de prueba; el acudiente consulta el seguimiento y recibe una notificación; el token de notificaciones queda registrado en la plataforma.
+### Orden recomendado
 
-## 4.7 Paso 7: configuración inicial
+1. Docker Desktop y red `sg-services-network`.
+2. SQL Server y migraciones Liquibase.
+3. Kafka, cuando los servicios que se van a validar lo requieran.
+4. IAM y servicios backend requeridos por la prueba.
+5. Servicio de recuperación, después de IAM, si se probará ese flujo.
+6. Kong API Gateway.
+7. Frontend web, aplicación Expo y, por último, pruebas en dispositivo.
 
-### 4.7.1 Variables de entorno
+La disponibilidad del contenedor no garantiza la disponibilidad de sus dependencias; confirmar logs y endpoints antes de cada paso de integración.
 
-**Tabla 16**. Variables de entorno de la configuración inicial
+### Puertos conocidos
 
-| Variable                              | Descripción                             | Valor de ejemplo                                                                                                           |
-| ------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| MSSQL_DATABASE                        | Nombre de la base de datos              | school-guardian                                                                                                            |
-| MSSQL_USER / MSSQL_SA_PASSWORD        | Usuario y clave del motor               | &lt;SA_USER&gt; / &lt;SA_PASSWORD&gt;                                                                                      |
-| ConnectionStrings_\_DefaultConnection | Cadena de conexión de cada servicio     | Server=sqlserver;Database=school-guardian;User Id=&lt;SA_USER&gt;;Password=&lt;SA_PASSWORD&gt;;TrustServerCertificate=True |
-| Kafka_\_BootstrapServers              | Dirección del broker (.NET)             | kafka:9092                                                                                                                 |
-| KAFKA_BOOTSTRAP_SERVERS               | Dirección del broker (Java)             | &lt;nombre-del-broker&gt;:9092                                                                                             |
-| SCHOOL_GUARDIAN_DB_DIR                | Ubicación base de los changelogs        | valor por defecto                                                                                                          |
-| KONG_DECLARATIVE_CONFIG               | Manifiesto del borde                    | /opt/kong/kong.yml                                                                                                         |
-| Services_\_UserManagement_\_BaseUrl   | Dirección base del servicio de usuarios | http://&lt;user-management&gt;:8080                                                                                        |
-| Services_\_Route_\_BaseUrl            | Dirección base del servicio de rutas    | http://&lt;route&gt;:8080                                                                                                  |
-| CORS_ORIGIN                           | Origen web permitido                    | https://&lt;produccion-domain&gt;                                                                                          |
-| LOG_LEVEL / REDIS_URL                 | Bitácora y almacén efímero              | info / redis://&lt;redis&gt;:6379                                                                                          |
-| JWT_PRIVATE_KEY                       | Llave privada RS256, solo en IAM        | &lt;JWT_PRIVATE_KEY&gt;                                                                                                    |
-| PUSH_CREDENTIALS                      | Credenciales de notificaciones push     | &lt;PUSH_CREDENTIALS&gt;                                                                                                   |
-| DEMO_PASSWORD                         | Clave de los perfiles de demostración   | &lt;DEMO_PASSWORD&gt;                                                                                                      |
+| Puerto host | Componente | Uso/notas |
+|---|---|---|
+| 4200 | Frontend web de desarrollo | Publicado por Compose de `GuardianEscolar`. |
+| 8000 | Kong proxy HTTP | URL base del gateway en desarrollo. |
+| 8001, 8002 | API Admin/UI de Kong | Puertos de administración publicados por Compose; mantener solo en desarrollo y no exponer a redes no confiables. |
+| 8080 | APIs backend dentro de la red Docker | Varios Compose no fijan un puerto host para cada API. |
+| 8091 | Servicio de recuperación | Publicación `8091:8080` en su Compose. |
+| 9092 | Kafka | Publicado por el Compose del broker; su listener está configurado para la red Docker. |
+| 1433 | SQL Server | Publicado localmente para administración/pruebas; protegerlo con firewall y credenciales de desarrollo. |
+| 9081 | Metro/Expo según Compose | Puerto configurado en el Compose de desarrollo móvil; revisar modo de inicio utilizado. |
 
-### 4.7.2 Políticas de seguridad
+## Verificación de la implementación
 
-Las tablas de políticas se crean vacías durante la migración, de modo que su carga es obligatoria:
+### Comprobaciones de infraestructura
 
-**Tabla 17**. Parámetros de las políticas de seguridad
+```powershell
+docker network inspect sg-services-network
+docker ps -a
+Invoke-RestMethod http://localhost:8091/health
+```
 
-| Parámetro                      | Contenido                                           | Verificación                                           |
-| ------------------------------ | --------------------------------------------------- | ------------------------------------------------------ |
-| Longitud de la contraseña      | longitud mínima y máxima acordadas con el cliente   | Registro fuera de rango rechazado                      |
-| Mayúsculas, números y símbolos | Requisito activo o inactivo por regla               | Registro sin el requisito rechazado cuando está activo |
-| Expiración en días             | Vigencia declarada en la política de contraseñas    | Cambio obligatorio al vencer el plazo                  |
-| Ajustes de seguridad           | Pares parámetro–valor de sesión, intentos y bloqueo | Los valores se reflejan en la aplicación               |
-| Orígenes y límite de tasa      | Configuración declarada en el borde                 | Verificada en el paso 4.4                              |
+El endpoint `/health` está definido por el [servicio de recuperación](./sg-ms-forgot-information/README.md). Para otros servicios, consultar su README/OpenAPI y no suponer que todos exponen la misma ruta de salud.
 
-### 4.7.3 Catálogos y datos de referencia
+### Comprobación de API y aplicación
 
-La migración carga datos de demostración que deben revisarse antes de la operación real:
+1. Abrir la URL del frontend web y confirmar que se carga.
+2. Revisar que `API_URL` en web y `EXPO_PUBLIC_API_URL` en móvil señalen a Kong accesible desde el navegador o teléfono.
+3. Enviar una solicitud de inicio de sesión únicamente con una cuenta de prueba autorizada. El endpoint del IAM se configura bajo `/api/v1/auth`; no registrar contraseñas ni tokens.
+4. Validar comportamiento de permisos con cuentas de roles distintos y recursos de prueba. Verificar respuestas tanto desde la API como desde la interfaz.
+5. Probar CRUD solo sobre registros de desarrollo y comprobar su persistencia en el esquema correspondiente.
+6. Para recuperación, seguir las pruebas seguras de [TESTING.md](./sg-ms-forgot-information/TESTING.md); los pasos que cambian una contraseña real requieren autorización expresa.
+7. Para cada prueba anotar fecha, commit/tag, comandos, servicio, resultado y evidencia saneada.
 
-**Tabla 18**. Catálogos y datos de referencia cargados
+La presencia de una pantalla no sustituye una prueba de permisos de backend. La visualización GPS solo puede marcarse aprobada si existe proveedor o simulador autorizado, ingestión, persistencia/consulta y actualización visible comprobadas de extremo a extremo.
 
-| Catálogo                 | Contenido cargado                                        | Acción requerida                              |
-| ------------------------ | -------------------------------------------------------- | --------------------------------------------- |
-| Roles y permisos         | Los cinco roles del modelo y permisos por rol            | Depurar los roles adicionales de demostración |
-| Personas y perfiles      | Población de demostración por rol con hash de clave      | Restablecer las claves antes de la operación  |
-| Ciudades                 | Ciudades de referencia con país y estado                 | Confirmar o reemplazar por el catálogo real   |
-| Instituciones y sedes    | Instituciones, sedes y cursos de ejemplo                 | Reemplazar por la institución real            |
-| Flota y dispositivos     | Marcas, modelos, buses y dispositivos de geolocalización | Reemplazar por la flota real                  |
-| Rutas y paradas          | Rutas, paradas, programaciones y ejecuciones de ejemplo  | Reemplazar por las rutas reales               |
-| Tipos de alerta          | Veinte tipos de alerta con nivel de urgencia             | Ajustar la taxonomía si se solicita           |
-| Sesiones de demostración | Registros de sesión con dirección IP de ejemplo          | Eliminar en producción                        |
+## Solución de problemas frecuentes
 
-### 4.7.4 Usuarios semilla por rol
+| Síntoma | Diagnóstico inicial | Acción segura |
+|---|---|---|
+| El móvil dice que no tiene conexión | URL vacía/antigua, `localhost` en dispositivo físico, Quick Tunnel expirado o teléfono fuera de la LAN. | Corregir `EXPO_PUBLIC_API_URL`, probar conectividad a la IP/puerto del host y recargar Expo. Si usa túnel, actualizar la URL con el script de sincronización y verificar el gateway. |
+| Login HTTP 502 desde Kong | Kong funciona, pero un upstream no está disponible o no puede conectarse a SQL Server. | Comprobar estado/logs de IAM, SQL y migraciones; verificar que los contenedores compartan `sg-services-network` y que el nombre upstream/puerto coincida. |
+| API de recuperación no responde | SQL Server o IAM todavía no inició, `.env` requerido no está completo o hubo error al crear el esquema OTP. | Revisar `docker compose ps`, logs, cadena de conexión y endpoint `/health`; evitar publicar `.env`. |
+| IAM no inicia | Error de datasource, clave JWT ausente o migración Liquibase fallida. | Confirmar SQL saludable y variable de conexión. Consultar el changeset fallido. No borrar datos ni editar el historial de Liquibase sin un plan de recuperación. |
+| `FK_Profile_Person` duplicada en migración | Estado de base e historial de Liquibase no coinciden o un changeset se aplicó manualmente/parcialmente. | Detener reintentos destructivos; comparar el objeto SQL con `DATABASECHANGELOG` y aplicar una corrección versionada revisada por el responsable de datos. |
+| Un contenedor se apaga | El proceso principal terminó; Compose no necesariamente reinicia todos los servicios. | Inspeccionar el contenedor y sus logs, distinguir `OOMKilled`, fallo de configuración y dependencia no disponible; corregir causa antes de agregar una política de restart. |
+| Puerto ocupado | Otro proceso o contenedor usa el puerto host solicitado. | `docker ps` y `Get-NetTCPConnection -LocalPort <puerto>`; detener únicamente el proceso/servicio identificado o cambiar de forma coordinada la publicación y URL del cliente. |
+| Migraciones no comienzan | Red Docker externa inexistente, SQL aún no saludable o dependencia de un changeset previo fallida. | Inspeccionar la red, healthcheck y logs de Liquibase; ejecutar desde la carpeta correcta y respetar dependencias. |
+| No llegan correos o SMS | SMTP/Twilio no configurado, credenciales incorrectas, proveedor rechaza entrega o cuenta de prueba no habilitada. | Revisar configuración local y logs saneados; confirmar permisos/proveedor. No repetir envíos a usuarios sin autorización. |
 
-**Tabla 19**. Usuarios semilla por rol
+## Actualización, mantenimiento y cierre
 
-| Rol         | Estado tras la migración                                 | Acción de configuración inicial                                                                                                  |
-| ----------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| SUPER_ADMIN | El rol existe en el catálogo; no hay perfil asociado     | Crear el perfil administrador de plataforma con &lt;ADMIN_EMAIL&gt; y &lt;ADMIN_PASSWORD&gt; y verificar su permiso de auditoría |
-| ADMIN       | Perfiles de administrador escolar con persona asociada   | Verificar la sede asignada y restablecer la clave inicial                                                                        |
-| DRIVER      | Perfiles de demostración con licencia asociada           | Restablecer claves y confirmar la asignación conductor–bus                                                                       |
-| PARENT      | Perfiles de demostración con vínculo familiar            | Restablecer claves y verificar la relación acudiente–estudiante                                                                  |
-| STUDENT     | Perfiles de demostración con identificación QR vinculada | Verificar la vinculación con sede y ruta                                                                                         |
+### Actualizar
 
-curl -i -X POST <http://localhost:8000/api/v1/auth/login> \\
+1. Acordar rama y conjunto compatible de versiones.
+2. Respaldar SQL Server antes de cambios de esquema; documentar ubicación y verificación del respaldo sin incluir credenciales.
+3. Revisar y aplicar changelogs Liquibase aprobados.
+4. Construir y actualizar servicios afectados con `docker compose up -d --build` desde la carpeta del servicio.
+5. Revisar logs y smoke tests, y actualizar la documentación/matriz si la funcionalidad cambió.
 
-\-H "Content-Type: application/json" \\
+### Revisar registros
 
-\-d '{"email":"&lt;admin_inicial&gt;@ejemplo.com","password":"&lt;ADMIN_PASSWORD&gt;"}'
+Usar `docker logs --tail 100 <contenedor>` y filtrar cualquier dato personal antes de compartir. No adjuntar `.env`, tokens, OTP, contraseñas ni valores completos de conexión.
 
-Cierre: cada uno de los cinco roles inicia sesión, los permisos corresponden al rol y la clave inicial obliga a cambio en el primer acceso.
+### Detener el entorno
 
-### 4.7.5 Cierre de la configuración inicial
+Ejecutar `docker compose down` desde cada proyecto cuyo conjunto de contenedores se quiera detener. Para conservar SQL Server, usar Compose desde la carpeta correspondiente y no añadir `--volumes`. No usar `docker compose down -v` como acción rutinaria: eliminaría volúmenes persistentes.
 
-Se registra la configuración aplicada con fecha, responsable y entorno; se rotan las credenciales provisionales de desarrollo si el entorno es de pruebas o de producción; se confirma que ningún secreto quede presente en los artefactos publicados ni en los registros; y, por último, se ejecuta la verificación completa de la sección 5.
+### Recuperación
 
-# 5 Verificación posdespliegue
+Ante un fallo, conservar logs y estado de contenedores, validar healthchecks y dependencias, y restaurar desde un respaldo comprobado si se afectaron datos. No reconstruir o recrear una base de desarrollo compartida sin confirmar primero que no contenga datos que el equipo necesita.
 
-## 5.1 Criterio de veredicto
+## Anexos
 
-- **PASS**: la comprobación se ejecuta y cumple el criterio indicado.
-- **FAIL**: no se ejecuta, no cumple el criterio o su resultado no es reproducible.
-- La implantación solo se declara concluida con **PASS** en todos los puntos; un **FAIL** activa la sección 7 o la reapertura de la etapa correspondiente.
-- Cada punto registra evidencia: salida de comando, respuesta o referencia de registro.
+### Variables por componente
 
-## 5.2 Checklist de verificación
+La lista exacta de nombres y obligatoriedad es la de cada [plantilla de entorno](#archivos-env) y Compose. Las categorías principales son:
 
-**Infraestructura y datos**
-
-**Tabla 20**. Checklist de verificación de infraestructura y datos
-
-| #   | Comprobación           | Criterio                                            | Veredicto |
-| --- | ---------------------- | --------------------------------------------------- | --------- |
-| I-1 | Motor de datos         | Estado saludable y puerto 1433 solo en red interna  | PASS/FAIL |
-| I-2 | Inicialización         | Base school-guardian creada                         | PASS/FAIL |
-| I-3 | Broker                 | Seis tópicos listados e inicialización con código 0 | PASS/FAIL |
-| I-4 | Borde                  | Respuesta de salud en el puerto 8000                | PASS/FAIL |
-| I-5 | Puertos                | Ningún servicio de dominio expuesto al exterior     | PASS/FAIL |
-| B-1 | Esquemas y tablas      | 11 esquemas y 38 tablas presentes                   | PASS/FAIL |
-| B-2 | Migraciones            | Cero cambiosets pendientes y sin bloqueo activo     | PASS/FAIL |
-| B-3 | Integridad referencial | Claves foráneas entre esquemas creadas              | PASS/FAIL |
-| B-4 | Datos de referencia    | Catálogos cargados y revisados                      | PASS/FAIL |
-| B-5 | Respaldo inicial       | Respaldo completo y de registro verificado          | PASS/FAIL |
-
-**Servicios de dominio**
-
-**Tabla 21**. Checklist de verificación de servicios de dominio
-
-| #   | Comprobación   | Criterio                                                 | Veredicto |
-| --- | -------------- | -------------------------------------------------------- | --------- |
-| S-1 | Disponibilidad | Los nueve servicios responden su punto de salud          | PASS/FAIL |
-| S-2 | Puertos        | Cada servicio publica únicamente en 8080                 | PASS/FAIL |
-| S-3 | Canal gRPC     | Canal disponible en el puerto 5001                       | PASS/FAIL |
-| S-4 | Eventos        | Producción y consumo de un evento de prueba              | PASS/FAIL |
-| S-5 | Aislamiento    | Cada servicio opera sobre su propio esquema              | PASS/FAIL |
-| S-6 | Bitácoras      | Registros estructurados con identificador de correlación | PASS/FAIL |
-
-**Puerta de enlace y clientes**
-
-**Tabla 22**. Checklist de verificación de puerta de enlace y clientes
-
-| #   | Comprobación          | Criterio                                                        | Veredicto |
-| --- | --------------------- | --------------------------------------------------------------- | --------- |
-| G-1 | Rutas                 | Un servicio declarado por cada dominio bajo /api/v1             | PASS/FAIL |
-| G-2 | Autorización          | Recurso protegido denegado sin token válido                     | PASS/FAIL |
-| G-3 | CORS y límite de tasa | Origen publicado y límite demostrado con peticiones de prueba   | PASS/FAIL |
-| G-4 | Aplicación web        | Carga por HTTPS, sin violaciones de CORS y con menú por rol     | PASS/FAIL |
-| G-5 | Aplicación móvil      | Escaneo QR, seguimiento y notificación de prueba satisfactorios | PASS/FAIL |
-
-**Seguridad, configuración y operación**
-
-**Tabla 23**. Checklist de verificación de seguridad, configuración y operación
-
-| #   | Comprobación            | Criterio                                                          | Veredicto |
-| --- | ----------------------- | ----------------------------------------------------------------- | --------- |
-| C-1 | Secretos                | Ningún valor real en artefactos ni en registros                   | PASS/FAIL |
-| C-2 | Políticas de contraseña | Longitud, mayúsculas, números, símbolos y expiración operativos   | PASS/FAIL |
-| C-3 | Usuarios semilla        | Los cinco roles autentican con los permisos correctos             | PASS/FAIL |
-| C-4 | Auditoría               | Acción crítica registrada con quién, qué, cuándo, IP y aplicación | PASS/FAIL |
-| O-1 | Paneles                 | Disponibilidad, latencia P95, tasa de error, carga e instancias   | PASS/FAIL |
-| O-2 | Alertas                 | Reglas activas y notificación de prueba recibida                  | PASS/FAIL |
-| O-3 | Objetivos de servicio   | 99,9 % de disponibilidad y P95 menor a 300 ms instrumentados      | PASS/FAIL |
-| O-4 | Soporte                 | Procedimientos de atención y escalamiento definidos               | PASS/FAIL |
-
-## 5.3 Registro y anexo de evidencias
-
-El responsable de calidad completa una fila por punto con identificador, fecha, entorno, responsable, resultado de la comprobación, veredicto y referencia de evidencia. El registro se conserva con el acta de aceptación y alimenta la revisión de dirección.
-
-# 6 Versionado y publicación de versiones
-
-## 6.1 Esquema de versionado
-
-**Tabla 24**. Esquema de versionado de artefactos
-
-| Artefacto                        | Esquema                                | Regla                                                                                                                |
-| -------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Plataforma (versión de conjunto) | MAJOR.MINOR.PATCH                      | MAJOR ante cambios incompatibles de contrato o esquema; MINOR ante funcionalidad compatible; PATCH ante correcciones |
-| Imagen de contenedor             | Etiqueta inmutable ligada a la versión | Nunca se reutiliza una etiqueta publicada                                                                            |
-| Contrato de API                  | Prefijo /api/v1                        | Un cambio incompatible exige nueva versión de contrato                                                               |
-| Eventos del broker               | Versionado aditivo                     | Los consumidores toleran campos desconocidos                                                                         |
-| Migraciones                      | Cambiosets con identificador único     | Nunca se edita un cambioset ya aplicado                                                                              |
-| Aplicación móvil                 | Número de versión visible al usuario   | Se incrementa en cada distribución                                                                                   |
-
-## 6.2 Flujo de ramas y aprobaciones
-
-main ← producción; solo recibe integraciones de publicación; siempre estable
-
-└── dev ← integración continua; recibe las ramas de funcionalidad
-
-├── feature/\[descripcion\] ← una historia de usuario
-
-├── fix/\[descripcion\] ← una corrección
-
-├── chore/\[descripcion\] ← infraestructura, dependencias, documentación
-
-└── hotfix/\[descripcion\] ← corrección urgente directa a producción
-
-**Figura 2**. Flujo de ramas y aprobaciones
-
-Reglas: ninguna integración directa en las ramas protegidas; una tarea por rama; revisión con al menos una aprobación; tamaño máximo recomendado de 400 líneas de código excluyendo pruebas; mensajes de integración con formato convencional (feat, fix, docs, refactor, test, chore, perf).
-
-## 6.3 Contenido de una publicación
-
-1. Versión asignada y etiqueta de imagen correspondiente.
-2. Relación de historias de usuario y correcciones incluidas.
-3. Cambios de esquema aplicados y su estado de reversión.
-4. Cambios de configuración del borde.
-5. Resultado de la verificación posdespliegue.
-6. Instrucciones de reversión vigentes para esa versión.
-7. Registro en el historial de despliegues: fecha, servicio, versión, entorno, responsable e incidencias.
-
-## 6.4 Ventanas de publicación
-
-**Tabla 25**. Ventanas de publicación por entorno
-
-| Entorno     | Ventana                                                                                    | Aprobación                                                  |
-| ----------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| Integración | Continua tras cada integración aprobada                                                    | Automática si todas las puertas pasan                       |
-| Pruebas     | Continua tras integrar en la rama principal                                                | Automática, con aviso al responsable de producto            |
-| Producción  | Ventana acordada con la institución, evitando el horario de servicio de transporte escolar | Responsable técnico y, en cambios mayores, doble aprobación |
-
-# 7 Procedimiento de reversión (rollback)
-
-## 7.1 Disparadores
-
-**Tabla 26**. Disparadores de reversión y decisión asociada
-
-| Disparador                         | Condición de activación                                       | Decisión                                         |
-| ---------------------------------- | ------------------------------------------------------------- | ------------------------------------------------ |
-| Verificación posdespliegue fallida | Al menos un punto en FAIL tras dos intentos de corrección     | Reversión total a la versión anterior            |
-| Despliegue canáreo degradado       | Métricas fuera de umbral durante la observación de 15 minutos | Reversión automática                             |
-| Tasa de error elevada              | Superior al 5 % durante 5 minutos                             | Reversión inmediata                              |
-| Latencia degradada                 | P95 superior a 500 ms durante 5 minutos                       | Reversión o mitigación según alcance             |
-| Servicio caído                     | Comprobación de salud fallida durante más de 1 minuto         | Reinicio y, si persiste, reversión               |
-| Migración incompatible             | Error de esquema que impide el funcionamiento                 | Detención y reversión de datos previa aprobación |
-| Incidente P0 o P1                  | Clasificación de severidad crítica                            | Decisión del comandante de incidente             |
-
-## 7.2 Pasos de reversión
-
-1. Se declara el incidente y se clasifica su severidad.
-2. Se comunica la reversión en curso a las partes interesadas.
-3. Se detiene la publicación y se congelan los cambios relacionados.
-4. Se restaura la versión anterior de las imágenes de los servicios afectados.
-5. Si cambió la configuración del borde, se restaura el manifiesto declarado anterior.
-6. Si se publicó la aplicación web, se restaura el artefacto anterior y se limpia la caché.
-7. Si se distribuyó la aplicación móvil, se retira el canal y se comunica la versión a usar.
-8. Se ejecuta la verificación de la sección 5 sobre los puntos afectados.
-9. Se cierra el incidente con causa raíz y acciones de mejora.
-
-kubectl rollout undo deployment/&lt;servicio&gt; -n &lt;espacio-de-nombres&gt;
-
-kubectl rollout status deployment/&lt;servicio&gt; -n &lt;espacio-de-nombres&gt;
-
-En despliegues basados en contenedores sin orquestador, la reversión consiste en volver a involucrar la etiqueta anterior de la imagen y reiniciar el conjunto de servicios.
-
-## 7.3 Reversión de la base de datos
-
-1. Se suspenden las escrituras de los servicios afectados.
-2. Se confirma que el cambio dispone de reversión declarada.
-3. Se ejecuta la reversión de un cambio conforme a la sección 4.2.5.
-4. Si no existe reversión declarada, se restaura el respaldo previo más reciente en una instancia de espera, se apunta la configuración de conexión en una ventana controlada y se verifica esquema por esquema: inicio de sesión de identidad, lectura escolar, últimas posiciones de geolocalización y anexo de auditoría.
-5. Se documenta la decisión sobre la ventana de eventos del broker: reproducir desde el punto de control o aceptar la brecha.
-6. Se registra la operación en el informe de incidente.
-
-**Tabla 27**. Métodos de respaldo y puntos de recuperación
-
-| Activo                              | Método de respaldo                           | Punto de recuperación | Tiempo de recuperación | Responsable                       |
-| ----------------------------------- | -------------------------------------------- | --------------------- | ---------------------- | --------------------------------- |
-| SQL Server: completos y de registro | Respaldo nativo o gestionado                 | ≤ 15 min              | ≤ 2 h                  | Plataforma y responsable de datos |
-| Changelogs de migración             | Historial de versiones del código            | 0                     | Minutos                | Todos los servicios               |
-| Retención del broker                | Retención por tópico y espejo si se requiere | Por tópico            | Por tópico             | Plataforma                        |
-| Configuración del borde             | Exportación declarada versionada             | 0                     | Minutos                | Borde                             |
-| Almacén efímero                     | Sin requisito de restauración                | —                     | Recreación             | Borde                             |
-
-## 7.4 Verificación posterior a la reversión
-
-**Tabla 28**. Verificación posterior a la reversión
-
-| #   | Comprobación  | Criterio                                                   | Veredicto |
-| --- | ------------- | ---------------------------------------------------------- | --------- |
-| R-1 | Servicios     | Los servicios afectados responden su punto de salud        | PASS/FAIL |
-| R-2 | Base de datos | Migraciones consistentes y sin cambiosets pendientes       | PASS/FAIL |
-| R-3 | Borde         | Rutas y políticas de la versión anterior activas           | PASS/FAIL |
-| R-4 | Clientes      | Aplicación web y móvil operan contra la versión restaurada | PASS/FAIL |
-| R-5 | Métricas      | Tasa de error y latencia dentro de umbral                  | PASS/FAIL |
-| R-6 | Registro      | Incidente documentado con causa raíz y acciones            | PASS/FAIL |
-
-# 8 Canal de integración y publicación continua
-
-## 8.1 Etapas del canal
-
-**Tabla 29**. Etapas del canal de integración y publicación continua
-
-| Orden | Etapa                          | Disparador                                     | Duración objetivo | Contenido                                                                                                                                                      |
-| ----- | ------------------------------ | ---------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | Solicitud de cambio            | Cualquier actualización de rama                | < 2 min           | Análisis de estilo, validación de contratos y detección de cambios incompatibles; si falla, se bloquea la fusión                                               |
-| 2     | Calidad de código              | Cambios en el código de un servicio            | < 5 min           | Pruebas unitarias, compilación y análisis estático de seguridad                                                                                                |
-| 3     | Validación de cambios de datos | Cambios en changelogs                          | < 3 min           | Validación de changelogs y vista previa del SQL; si falla, se bloquea la fusión                                                                                |
-| 4     | Despliegue a integración       | Fusión aprobada en la rama de desarrollo       | < 15 min          | Pruebas de integración, construcción de imágenes, despliegue y comprobación de humo en el puerto 8000                                                          |
-| 5     | Despliegue a pruebas           | Fusión en la rama principal                    | < 45 min          | Batería completa, contratos, etiquetado de imagen, despliegue, comprobación de humo, rendimiento y notificación al responsable de producto                     |
-| 6     | Producción                     | Aprobación manual tras pasar todas las puertas | Variable          | Migración previa al código, despliegue canáreo al 10 % y observación de 15 minutos: satisfactorio → 100 % del tráfico; no satisfactorio → reversión automática |
-
-## 8.2 Puertas de calidad
-
-**Tabla 30**. Puertas de calidad y efecto de su fallo
-
-| Puerta                     | Condición de paso                                                               | Efecto si falla            |
-| -------------------------- | ------------------------------------------------------------------------------- | -------------------------- |
-| Estilo y formato           | Sin hallazgos                                                                   | Bloqueo de la fusión       |
-| Contratos                  | Validación satisfactoria y sin cambios incompatibles no declarados              | Bloqueo de la fusión       |
-| Pruebas unitarias          | 100 % satisfactorias; cobertura de líneas ≥ 80 % y ≥ 90 % en la capa de dominio | Bloqueo de la fusión       |
-| Pruebas de integración     | Todas satisfactorias                                                            | Detención del despliegue   |
-| Cambios de datos           | Validación de changelogs satisfactoria                                          | Bloqueo de la fusión       |
-| Humo                       | Respuesta de salud del borde y recorrido mínimo                                 | Detención del despliegue   |
-| Rendimiento                | P95 menor a 300 ms y tasa de error inferior al 1 %                              | Bloqueo de la publicación  |
-| Verificación posdespliegue | Todos los puntos en PASS                                                        | Activación de la reversión |
-
-Los umbrales de cobertura y rendimiento proceden de la estrategia de calidad del proyecto; cuando un umbral no esté formalizado se propone como criterio de aceptación y requiere aprobación antes de usarse como puerta.
-
-## 8.3 Publicación canárea en producción
-
-**Tabla 31**. Pasos de la publicación canárea en producción
-
-| Paso | Acción                                                          | Criterio de continuación                 |
-| ---- | --------------------------------------------------------------- | ---------------------------------------- |
-| 1    | Aprobación formal del responsable técnico                       | Publicación aprobada                     |
-| 2    | Verificación de pruebas de la versión, incluido rendimiento     | Todas las puertas en PASS                |
-| 3    | Aprobación del alcance funcional por el responsable de producto | Historias incluidas aceptadas            |
-| 4    | Migración de base de datos antes del código                     | Verificación de migración satisfactoria  |
-| 5    | Despliegue al 10 % del tráfico                                  | Métricas en umbral durante 15 minutos    |
-| 6    | Ampliación al 100 % del tráfico                                 | Sin alertas activas de severidad P0 o P1 |
-| 7    | Observación intensiva los primeros 30 minutos                   | Responsable de guardia disponible        |
-| 8    | Registro de la publicación                                      | Historial de despliegues actualizado     |
-
-# 9 Monitoreo y soporte post-implementación
-
-## 9.1 Objetivos de nivel de servicio
-
-**Tabla 32**. Objetivos de nivel de servicio
-
-| Indicador                 | Objetivo                          | Medición                             | Presupuesto de error                          |
-| ------------------------- | --------------------------------- | ------------------------------------ | --------------------------------------------- |
-| Disponibilidad            | 99,9 %                            | Peticiones exitosas en 30 días       | 43,8 minutos de indisponibilidad al mes       |
-| Latencia de API           | P95 menor a 300 ms                | Histograma de duración de peticiones | Alerta por encima de 500 ms durante 5 minutos |
-| Tasa de error             | Inferior al 1 % en carga          | Fallidas sobre total                 | Alerta por encima del 5 % durante 5 minutos   |
-| Entrega de notificaciones | Tasa de notificaciones entregadas | Entregadas sobre emitidas            | Definido con la institución                   |
-| Registro de bordadas      | Registro sin incidencias          | Bordadas registradas sin error       | Definido con la institución                   |
-
-## 9.2 Métricas, bitácoras y trazas
-
-**Tabla 33**. Pilares de observabilidad y herramienta asociada
-
-| Pilar     | Contenido                                                                                                              | Herramienta                                      |
-| --------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Bitácoras | JSON estructurado con timestamp, level, service, version, environment, correlationId, userId, message y contexto       | Recolección centralizada con consulta por índice |
-| Métricas  | http_requests_total, http_request_duration_seconds, http_requests_in_flight, métricas de negocio y de conexión a datos | Prometheus y paneles de Grafana                  |
-| Trazas    | Propagación del identificador de trazado entre borde y servicios, con instrumentación automática del acceso a datos    | OpenTelemetry con consola de trazas              |
-
-El punto de exposición de métricas (GET /metrics) se mantiene solo en la red interna y no se publica en el borde. No se registran claves, tokens completos ni datos personales sin enmascarar. Los paneles requeridos son: ejecutivo (tasa de error, latencia P95 por servicio, carga, disponibilidad frente al objetivo e instancias) y por servicio (métricas de tasa, error y duración, entorno de ejecución, conexión a datos y métricas del broker).
-
-## 9.3 Reglas de alerta
-
-**Tabla 34**. Reglas de alerta y severidad asociada
-
-| Alerta                | Condición                                     | Severidad | Destino                       |
-| --------------------- | --------------------------------------------- | --------- | ----------------------------- |
-| Tasa de error alta    | Superior al 5 % durante 5 minutos             | P1        | Guardia y canal de incidentes |
-| Latencia alta         | P95 superior a 500 ms durante 5 minutos       | P2        | Canal de alertas              |
-| Servicio caído        | Comprobación de salud fallida más de 1 minuto | P1        | Guardia                       |
-| Mensajes sin consumir | Antigüedad fuera de umbral                    | P2        | Canal de alertas              |
-| Espacio en disco bajo | Uso superior al 80 %                          | P2        | Canal de alertas              |
-| Reinicios frecuentes  | Más de tres reinicios en 10 minutos           | P1        | Guardia                       |
-
-## 9.4 Gestión de incidentes
-
-**Tabla 35**. Niveles de gestión de incidentes
-
-| Nivel | Definición                                                    | Respuesta           | Resolución |
-| ----- | ------------------------------------------------------------- | ------------------- | ---------- |
-| P0    | Sistema totalmente caído con impacto total                    | Inmediato (< 5 min) | 1 hora     |
-| P1    | Funcionalidad crítica degradada con impacto mayoritario       | 15 minutos          | 4 horas    |
-| P2    | Funcionalidad secundaria degradada con alternativa disponible | 1 hora              | 24 horas   |
-| P3    | Inconveniente menor sin impacto operativo                     | 4 horas             | 1 semana   |
-
-Secuencia de atención: detección y acuse de la alerta → clasificación de severidad → comunicación inicial con servicio afectado, impacto y próxima actualización → diagnóstico con paneles, bitácoras, trazas, estado de contenedores y comprobación manual de salud → mitigación empezando por la opción más segura (reversión, desactivación de la funcionalidad, escalamiento, aumento de tiempos de espera) → resolución cuando las métricas recuperan sus niveles, las comprobaciones de salud responden y el responsable de producto confirma la operación → retrospectiva dentro de los dos días hábiles siguientes, con causa raíz y acciones.
-
-## 9.5 Respaldos y recuperación
-
-**Tabla 36**. Frecuencia de verificación de respaldos y restauraciones
-
-| Verificación                                        | Frecuencia         |
-| --------------------------------------------------- | ------------------ |
-| Éxito del trabajo de respaldo                       | Diaria, con alerta |
-| Ejercicio de restauración a un punto en el tiempo   | Trimestral         |
-| Integridad de los changelogs en la copia restaurada | Cada ejercicio     |
-
-Principios: se respalda la instancia completa y se documentan los responsables de recuperación por esquema; la configuración y los secretos del borde forman parte del conjunto de respaldo; un respaldo que nunca se ha restaurado no es un respaldo. La restauración contempla declarar la severidad, identificar el respaldo completo más reciente y los registros posteriores, restaurar en una instancia de espera, cambiar la configuración de conexión en ventana controlada, verificar por esquema, decidir la ventana de reproducción de eventos y cerrar con retrospectiva.
-
-## 9.6 Mantenimiento y escalamiento
-
-- **Ventanas de mantenimiento**: programadas con la institución fuera del horario de servicio de transporte; se comunican con anticipación y se limitan a cambios aprobados.
-- **Actualizaciones**: se sigue el orden de la sección 6.3 —migración, servicios, configuración del borde, humo— con verificación al cierre de cada etapa.
-- **Escalamiento horizontal**: los servicios son sin estado y se escalan detrás del borde; rutas y notificaciones escalan por volumen de eventos, y los de lectura por número de peticiones.
-- **Presupuesto de error**: agotado el objetivo de disponibilidad, se priorizan correcciones por encima de nueva funcionalidad.
-- **Soporte post-implementación**: periodo de acompañamiento con guardia definida, revisión semanal de alertas y reporte de estado al cierre de cada semana.
-
-# 10 Matriz RACI y cronograma de implantación
-
-## 10.1 Roles del equipo de implantación
-
-**Tabla 37**. Roles del equipo de implantación
-
-| Rol                          | Responsabilidad principal                                 |
-| ---------------------------- | --------------------------------------------------------- |
-| Líder técnico                | Dirección técnica, aprobaciones y decisiones de reversión |
-| Ingeniero de plataforma      | Infraestructura, servicios, borde y clientes              |
-| Responsable de base de datos | Migraciones, verificación, respaldos y recuperación       |
-| Responsable de calidad       | Verificación posdespliegue y emisión de veredictos        |
-| Responsable de operaciones   | Monitoreo, alertas, incidentes y mantenimiento            |
-| Cliente (institución)        | Definición de datos, observaciones y aceptación           |
-| Asesor académico             | Acompañamiento y revisión del procedimiento               |
-
-## 10.2 Matriz RACI
-
-R: responsable de ejecución · A: responsable último · C: consultado · I: informado
-
-**Tabla 38**. Matriz RACI de las actividades de implantación
-
-| Actividad                                 | Líder | Plataforma | Datos | Calidad | Operaciones | Cliente | Asesor |
-| ----------------------------------------- | ----- | ---------- | ----- | ------- | ----------- | ------- | ------ |
-| Validación de prerrequisitos              | A     | R          | C     | C       | I           | I       | I      |
-| Infraestructura base                      | A     | R          | C     | I       | I           | I       | I      |
-| Migraciones y verificación de esquemas    | A     | C          | R     | C       | I           | I       | I      |
-| Despliegue de servicios de dominio        | A     | R          | C     | I       | I           | I       | I      |
-| Puerta de enlace y ruteo                  | A     | R          | I     | C       | C           | I       | I      |
-| Publicación de la aplicación web          | A     | R          | I     | C       | I           | I       | I      |
-| Generación y distribución de la app móvil | A     | R          | I     | C       | I           | C       | I      |
-| Configuración inicial y usuarios semilla  | A     | C          | C     | I       | R           | C       | I      |
-| Verificación posdespliegue                | A     | C          | C     | R       | C           | I       | I      |
-| Reversión ante incidencias                | A     | R          | R     | C       | C           | I       | I      |
-| Monitoreo y atención de incidentes        | A     | C          | I     | I       | R           | I       | I      |
-| Aceptación y cierre                       | A     | C          | I     | C       | C           | R       | C      |
-
-## 10.3 Cronograma
-
-Duraciones estimadas de planificación; los compromisos contractuales se fijan con el cliente.
-
-**Tabla 39**. Cronograma estimado de implantación
-
-| Fase                      | Actividad central                                     | Duración estimada | Dependencia         | Resultado                 |
-| ------------------------- | ----------------------------------------------------- | ----------------- | ------------------- | ------------------------- |
-| 1 Preparación           | Prerrequisitos, secretos y accesos                    | 2 jornadas        | Línea base aprobada | Entorno habilitado        |
-| 2 Infraestructura base  | Motor, broker, almacén efímero y borde                | 1 jornada         | Fase 1              | Infraestructura saludable |
-| 3 Base de datos         | Migraciones de los 11 esquemas y verificación         | 2 jornadas        | Fase 2              | 38 tablas disponibles     |
-| 4 Servicios de dominio  | Construcción, arranque y salud de los nueve servicios | 2 jornadas        | Fase 3              | Servicios operativos      |
-| 5 Puerta de enlace      | Rutas, políticas y verificación de ruteo              | 1 jornada         | Fase 4              | Tráfico enrutado          |
-| 6 Clientes              | Publicación web y generación y distribución móvil     | 2 jornadas        | Fase 5              | Aplicaciones disponibles  |
-| 7 Configuración inicial | Variables, políticas, catálogos y usuarios semilla    | 1 jornada         | Fase 6              | Sistema parametrizado     |
-| 8 Verificación          | Checklist completo con veredicto                      | 2 jornadas        | Fase 7              | Veredicto PASS            |
-| 9 Aceptación            | Demostración, observaciones y firma                   | 1 jornada         | Fase 8              | Acta firmada              |
-| 10 Soporte              | Acompañamiento post-implementación                    | 30 días           | Fase 9              | Cierre del soporte        |
-
-Total estimado: 14 jornadas de implantación más 30 días de soporte posterior.
-
-## 10.4 Hitos y puertas de aceptación
-
-**Tabla 40**. Hitos y puertas de aceptación
-
-| Hito                       | Puerta de paso                                     | Evidencia                        |
-| -------------------------- | -------------------------------------------------- | -------------------------------- |
-| M1 — Infraestructura lista | Salud de motor, broker y borde                     | Salidas de comprobación          |
-| M2 — Datos disponibles     | Sin cambiosets pendientes; 11 esquemas y 38 tablas | Consulta de historial de cambios |
-| M3 — Servicios operativos  | Salud de los nueve servicios y canal gRPC          | Salidas de comprobación          |
-| M4 — Tráfico enrutado      | Denegación sin token y enrutamiento con token      | Salidas de comprobación          |
-| M5 — Clientes publicados   | Recorrido web y móvil satisfactorios               | Registro de recorrido            |
-| M6 — Sistema parametrizado | Políticas y usuarios semilla operativos            | Registro de configuración        |
-| M7 — Aceptación            | Verificación en PASS y firma del acta              | Acta de aceptación               |
-
-# 11 Gestión de cambios y aceptación
-
-## 11.1 Clasificación de los cambios
-
-**Tabla 41**. Clasificación de los cambios
-
-| Tipo       | Alcance                                            | Ejemplo                                          | Aprobación                                          |
-| ---------- | -------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------- |
-| Estándar   | Preaprobado y reversible                           | Ajuste de nivel de bitácora, rotación de secreto | Responsable de plataforma                           |
-| Mayor      | Afecta esquema, contrato o configuración del borde | Nueva columna, nueva ruta pública                | Responsable técnico y responsable de base de datos  |
-| Emergencia | Corrige una incidencia en curso                    | Reversión de versión defectuosa                  | Comandante de incidente, con ratificación posterior |
-
-## 11.2 Flujo de aprobación
-
-1. **Solicitud**: identificación del cambio, solicitante, motivo, entorno afectado y urgencia.
-2. **Evaluación de impacto**: componentes implicados, riesgo, necesidad de migración y plan de reversión.
-3. **Aprobación**: según la clasificación de la sección 11.1.
-4. **Preparación**: ejecución previa en el entorno de pruebas con su verificación.
-5. **Ejecución**: en la ventana autorizada, siguiendo la sección 4 y el orden migración → servicios → configuración del borde → humo.
-6. **Verificación**: checklist de la sección 5 acotado a lo modificado.
-7. **Cierre**: registro actualizado, comunicación a las partes y, si aplica, actualización de la instrucción de reversión.
-
-## 11.3 Registro de cambios
-
-**Tabla 42**. Campos del registro de cambios
-
-| Campo                     | Contenido                                            |
-| ------------------------- | ---------------------------------------------------- |
-| Identificador y fecha     | Consecutivo único y fecha de solicitud               |
-| Descripción y solicitante | Qué cambia, por qué y quién lo solicita              |
-| Clasificación             | Estándar, mayor o emergencia                         |
-| Componentes afectados     | Servicio, esquema, borde o cliente                   |
-| Migración asociada        | Sí/no y su estado de reversión                       |
-| Aprobador y ventana       | Responsable que autoriza y fecha autorizada          |
-| Verificación              | Resultado del checklist aplicable                    |
-| Reversión disponible      | Sí/no y su procedimiento                             |
-| Estado                    | Solicitado, aprobado, ejecutado, verificado, cerrado |
-
-## 11.4 Criterios de aceptación
-
-**Tabla 43**. Criterios de aceptación y su verificación
-
-| #    | Criterio                                                                    | Verificación                                      |
-| ---- | --------------------------------------------------------------------------- | ------------------------------------------------- |
-| A-1  | Todos los puntos del checklist en estado PASS                               | Registro de verificación firmado                  |
-| A-2  | 11 esquemas y 38 tablas sin cambiosets pendientes                           | Consulta de historial de cambios                  |
-| A-3  | Los nueve servicios operan y responden su salud                             | Salidas de comprobación                           |
-| A-4  | Único punto de entrada público: puerta de enlace en el puerto 8000          | Inventario de puertos                             |
-| A-5  | Aplicación web publicada por HTTPS con menú por rol                         | Recorrido de aceptación                           |
-| A-6  | Aplicaciones móviles instaladas con escaneo QR y notificaciones funcionales | Recorrido por rol                                 |
-| A-7  | Los cinco roles autentican con los permisos correspondientes                | Registro de sesión por rol                        |
-| A-8  | Políticas de contraseña y ajustes de seguridad operativos                   | Pruebas de registro y expiración                  |
-| A-9  | 99,9 % de disponibilidad y P95 menor a 300 ms instrumentados                | Paneles y reglas de alerta                        |
-| A-10 | Respaldos con recuperación ≤ 15 min y ≤ 2 h                                 | Registro de respaldos y ejercicio de restauración |
-| A-11 | Instrucciones de reversión disponibles y probadas                           | Registro de la prueba de reversión                |
-| A-12 | Personal de operaciones capacitado en atención de incidentes                | Registro de capacitación                          |
-
-## 11.5 Acta de aceptación y cierre
-
-El acta contiene: identificación de la plataforma y de la versión implantada, entorno, fecha, alcance verificado, resultado del checklist con su veredicto global, observaciones con su plan de atención, responsables de la implantación y de la operación, y el compromiso de soporte posterior.
-
-**Tabla 44**. Campos del acta de aceptación
-
-| Campo                     | Contenido                                         |
-| ------------------------- | ------------------------------------------------- |
-| Versión implantada        | Versión de conjunto e imágenes correspondientes   |
-| Fecha de implantación     | Fecha de cierre de la verificación                |
-| Veredicto global          | PASS / FAIL                                       |
-| Observaciones del cliente | Lista con responsable y fecha compromiso          |
-| Firmas                    | Responsable técnico y cliente                     |
-| Soporte comprometido      | Periodo, canal de atención y tiempos de respuesta |
-
-Si el veredicto global es FAIL, la implantación no se cierra: se activa la sección 7 o se reabre la etapa correspondiente, y la aceptación se agenda de nuevo cuando todos los puntos estén en PASS. Una vez firmada, el sistema pasa a operación conforme a la sección 9, y los cambios posteriores se gestionan conforme a la sección 11.
+- SQL Server/Liquibase: usuario, base, contraseña local y ruta de changelogs.
+- IAM y microservicios: conexión SQL, secreto de autenticación y parámetros de Kafka/gRPC según servicio.
+- Recuperación: connection string, clave interna compartida, OTP pepper, SMTP y credenciales Twilio opcionales.
+- Web: URL del gateway y URL de recuperación.
+- Móvil: URL del gateway y URL de recuperación, sin secretos.
+
+### Repositorios y documentación técnica
+
+Los servicios están separados en `sg-ms-*`, la base en `database`, el gateway en `sg-ms-api-gateway`, el broker en `kafka` y los clientes en `GuardianEscolar/dvlp-front`. Para el catálogo de capacidades, roles, arquitectura y datos, consultar [Diseño de software de Guardian Escolar](./01-diseno-software-guardian-escolar.md); para antecedentes y referencias de formato APA, consultar [Artículo colaborativo](./02-articulo-colaborativo-guardian-escolar.md).
