@@ -2,7 +2,7 @@
 
 > Documento operativo de despliegue de la plataforma **School Guardian** sobre AWS.
 > Sigue exactamente la plantilla de **Plan de Despliegue / Runbook** solicitada.
-> Las evidencias visuales pendientes están marcadas con `[CAPTURA: …]`.
+> Las evidencias visuales del despliegue están incorporadas en la sección §5.4.
 
 ---
 
@@ -48,7 +48,7 @@
      - 5.4.1 [Captura del panel de Portainer con contenedores Running](#541-captura-del-panel-de-portainer-con-contenedores-en-estado-running)
      - 5.4.2 [Captura de visor de logs de los servicios Backend](#542-captura-de-visor-de-logs-de-los-servicios-backend)
      - 5.4.3 [Captura de respuesta HTTP 200 de los Health Checks](#543-captura-de-respuesta-http-200-de-los-health-checks)
-     - 5.4.4 [Captura de interfaz web con consola DevTools limpia](#544-captura-de-interfaz-web-reactangular-con-consola-devtools-limpia)
+     - 5.4.4 [Captura de interfaz web React/Angular con consola DevTools limpia](#544-captura-de-interfaz-web-reactangular-con-consola-devtools-limpia)
      - 5.4.5 [Captura de registro de migración exitosa en base de datos](#545-captura-de-registro-de-migración-exitosa-en-base-de-datos)
 6. [Anexos](#6-anexos)
 
@@ -106,6 +106,7 @@
 |---|---|---|---|
 | 1.0 | 2026-10-15 | Juan Chala | Versión inicial del manual de despliegue |
 | 1.1 | 2026-10-16 | Juan Chala | Reestructuración al formato de Plan de Despliegue; migración a Elastic IP `52.15.190.40`; integración de Portainer CE |
+| 1.2 | 2026-10-18 | Juan Chala | Flujo de Portainer corregido: setup token generado por Portainer (sin credenciales ni token hardcodeados); evidencias visuales §5.4 |
 
 ## 1.3 Resumen de Cambios (Release Notes)
 
@@ -159,7 +160,8 @@
 - **Publicación:** **ningún puerto al host**. Caddy hace `reverse_proxy` hacia `portainer:9000`.
 - **Acceso:** `https://portainer.52-15-190-40.sslip.io`.
 - **Gestión:** monta `/var/run/docker.sock` para administrar los contenedores del host.
-- **Flags requeridos:** `--trusted-origins https://portainer.52-15-190-40.sslip.io` (evita el error *Origin invalid* detrás de proxy), `--no-setup-token` (sin token de configuración) y `--admin-password` (crea el admin `admin` al arrancar).
+- **Flag requerido:** `--trusted-origins https://portainer.52-15-190-40.sslip.io` (evita el error *Origin invalid* detrás de proxy).
+- **Setup token (primer acceso):** **no se fija en el compose** (nada hardcodeado). Portainer **genera el token solo** al arrancar y lo imprime en los logs; el procedimiento para obtenerlo está en §4.1.
 
 ### 2.1.2 Capa Frontend Web (Angular SPA / Servidor Web)
 
@@ -384,16 +386,17 @@ docker compose -f docker-compose.portainer.yml up -d
 https://portainer.52-15-190-40.sslip.io
 ```
 
-4. Iniciar sesión con la cuenta administrador **pre-creada** por el compose:
+4. En el **primer acceso**, Portainer pide un **setup token**. Obtenerlo leyendo los logs del contenedor (Portainer **lo genera solo**; no está en ningún archivo ni en el compose):
 
-   | Campo | Valor |
-   |---|---|
-   | Usuario | `admin` |
-   | Contraseña | `PortainerSG2026!` |
+```bash
+ssh -i ~/Descargas/sg-ssh.pem admin@52.15.190.40 \
+  'docker logs portainer 2>&1 | grep setup_token | tail -1'
+# setup_token=<hexadecimal>
+```
 
-   (La contraseña se puede cambiar después en *My account → Change password*.)
+5. Pegar el token en la pantalla y **crear el usuario administrador propio** (usuario y contraseña de **mínimo 12 caracteres** cada uno) → *Create user* → **Local** → **Connect**.
 
-> El compose `docker-compose.portainer.yml` define tres flags: `--trusted-origins https://portainer.52-15-190-40.sslip.io` (obligatorio detrás del proxy Caddy, evita *Origin invalid*), `--admin-password` (crea el usuario admin al arrancar) y `--no-setup-token` (desactiva el token de configuración y el bloqueo por tiempo).
+> **Flujo del setup token.** Es un mecanismo de seguridad de Portainer para impedir que cualquiera cree el primer administrador. Solo existe **mientras no haya ningún admin creado**; una vez creado, la pantalla pasa a ser un login normal y el token desaparece. Se imprime en `docker logs portainer` en **cada arranque**, por lo que **cambia al reiniciar** el contenedor y hay una ventana de ~5 minutos para usarlo (si expira o se reinicia, basta con volver a leerlo de los logs). **No se hardcodea** en el compose: este solo define `--trusted-origins`.
 
 ## 4.2 Despliegue y Migración de Base de Datos
 
@@ -614,7 +617,7 @@ free -h
 
 ## 5.4 Registro de Evidencias Visuales (Screenshots)
 
-> Insertar una captura en cada punto. Los marcadores indican qué debe mostrar la imagen.
+> Capturas de evidencia tomadas del entorno desplegado.
 
 ### 5.4.1 Captura del panel de Portainer con contenedores en estado Running
 
@@ -626,15 +629,15 @@ free -h
 
 ### 5.4.3 Captura de respuesta HTTP 200 de los Health Checks
 
-![Https EC2](./img/http-request.png.png)
+![Https EC2](./img/http-request.png)
 
 ### 5.4.4 Captura de interfaz web React/Angular con consola DevTools limpia
 
-![Aplicativo web](./img/portainer-web.png.png)
+![Aplicativo web](./img/portainer-web.png)
 
 ### 5.4.5 Captura de registro de migración exitosa en base de datos
 
-![Database Changelog](./img/database-changelog.png.png)
+![Database Changelog](./img/database-changelog.png)
 
 ---
 
