@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guardian Escolar - Verificar código</title>
+<!-- Tailwind CSS v3 CDN with forms plugin -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Custom font configuration & fine-tuning -->
+<style data-purpose="typography">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+  </style>
+<style data-purpose="custom-inputs">
+    /* Remove number input spinners */
+    input[type='number']::-webkit-outer-spin-button,
+    input[type='number']::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type='number'] {
+      -moz-appearance: textfield;
+    }
+  </style>
+</head>
+<body class="bg-[#EEF3F8] min-h-screen flex flex-col antialiased text-slate-800">
+<!-- BEGIN: MainHeader -->
+<header class="w-full bg-transparent px-6 py-4 flex items-center relative" data-purpose="site-header">
+<!-- Top Left Brand Badge -->
+<div class="flex items-center" data-purpose="brand-icon-wrapper">
+<div class="w-10 h-10 rounded-xl bg-[#1E52B7] flex items-center justify-center text-white shadow-sm">
+<!-- Shield Icon SVG -->
+<svg class="w-5 h-5 fill-white stroke-none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"></path>
+</svg>
+</div>
+</div>
+<!-- Centered Brand Title -->
+<div class="absolute inset-x-0 text-center pointer-events-none">
+<h1 class="text-xl sm:text-2xl font-bold tracking-tight text-[#0F172A]">Guardian Escolar</h1>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: VerificationModalSection -->
+<main class="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8" data-purpose="modal-container">
+<div class="w-full max-w-[840px] bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-slate-100 min-h-[520px]">
+<!-- BEGIN: LeftInfoPanel -->
+<section class="bg-[#1E52B7] md:w-[320px] p-8 flex flex-col justify-between text-white shrink-0" data-purpose="sidebar-instructions">
+<!-- Top Info: Icon and Title -->
+<div>
+<!-- Padlock Icon Badge -->
+<div class="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center mb-6 backdrop-blur-xs">
+<svg class="w-6 h-6 text-white fill-none stroke-current stroke-2" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<rect height="11" rx="2" ry="2" width="18" x="3" y="11"></rect>
+<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+</svg>
+</div>
+<!-- Title & Subtitle -->
+<h2 class="text-2xl font-bold text-white tracking-tight mb-2">Verificar código</h2>
+<p class="text-white/90 text-sm leading-relaxed font-normal">
+            Ingresa el código enviado a tu correo.
+          </p>
+</div>
+<!-- Bottom Requirements Box -->
+<div class="mt-10 bg-[#163E8D]/85 rounded-xl p-5 text-white/95 text-xs leading-relaxed">
+<p class="font-normal mb-2 text-white">La contraseña debe contener:</p>
+<ul class="space-y-1.5 pl-1 text-[11px] text-white/90 font-normal">
+<li class="flex items-start">
+<span class="mr-1.5 leading-none select-none">•</span>
+<span>Mínimo 8 dígitos</span>
+</li>
+<li class="flex items-start">
+<span class="mr-1.5 leading-none select-none">•</span>
+<span>Números y letras</span>
+</li>
+<li class="flex items-start">
+<span class="mr-1.5 leading-none select-none">•</span>
+<span>Combinación de minúsculas y mayúsculas</span>
+</li>
+<li class="flex items-start">
+<span class="mr-1.5 leading-none select-none">•</span>
+<span>Caracteres especiales (. _ @ *)</span>
+</li>
+</ul>
+</div>
+</section>
+<!-- END: LeftInfoPanel -->
+<!-- BEGIN: RightFormPanel -->
+<section class="flex-1 bg-white p-6 sm:p-10 md:p-12 flex flex-col justify-between" data-purpose="otp-verification-form">
+<div>
+<!-- Step Progress Indicator -->
+<div class="flex items-center gap-2 mb-6" data-purpose="stepper">
+<div class="h-1 w-7 rounded-full bg-[#1E52B7]"></div>
+<div class="h-1 w-7 rounded-full bg-[#1E52B7]"></div>
+<div class="h-1 w-7 rounded-full bg-slate-200"></div>
+<span class="text-xs text-slate-500 font-medium ml-2">2 de 3</span>
+</div>
+<!-- Step Title -->
+<h3 class="text-2xl font-bold text-slate-900 tracking-tight mb-5">Paso 2</h3>
+<!-- Instructions Alert Banner -->
+<div class="bg-[#F0F6FF] rounded-lg px-4 py-3.5 mb-8 text-[#1E40AF] text-xs font-normal leading-relaxed border border-blue-100/50">
+            Revisa tu bandeja de entrada y escribe el código de 6 dígitos.
+          </div>
+<!-- OTP Input Form Fields -->
+<form class="space-y-8" id="otp-form" onsubmit="event.preventDefault();">
+<div class="flex items-center justify-center gap-2 sm:gap-3.5 my-8" data-purpose="otp-digit-group">
+<input aria-label="Dígito 1" class="otp-box w-10 h-14 sm:w-12 sm:h-14 text-center text-xl font-bold rounded-lg border border-blue-600 focus:border-blue-600 focus:ring-2 focus:ring-blue-500 text-slate-800 outline-none transition-all" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="text"/>
+<input aria-label="Dígito 2" class="otp-box w-10 h-14 sm:w-12 sm:h-14 text-center text-xl font-bold rounded-lg border border-blue-600 focus:border-blue-600 focus:ring-2 focus:ring-blue-500 text-slate-800 outline-none transition-all" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="text"/>
+<input aria-label="Dígito 3" class="otp-box w-10 h-14 sm:w-12 sm:h-14 text-center text-xl font-bold rounded-lg border border-blue-600 focus:border-blue-600 focus:ring-2 focus:ring-blue-500 text-slate-800 outline-none transition-all" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="text"/>
+<input aria-label="Dígito 4" class="otp-box w-10 h-14 sm:w-12 sm:h-14 text-center text-xl font-bold rounded-lg border border-blue-600 focus:border-blue-600 focus:ring-2 focus:ring-blue-500 text-slate-800 outline-none transition-all" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="text"/>
+<input aria-label="Dígito 5" class="otp-box w-10 h-14 sm:w-12 sm:h-14 text-center text-xl font-bold rounded-lg border border-blue-600 focus:border-blue-600 focus:ring-2 focus:ring-blue-500 text-slate-800 outline-none transition-all" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="text"/>
+<input aria-label="Dígito 6" class="otp-box w-10 h-14 sm:w-12 sm:h-14 text-center text-xl font-bold rounded-lg border border-blue-600 focus:border-blue-600 focus:ring-2 focus:ring-blue-500 text-slate-800 outline-none transition-all" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="text"/>
+</div>
+<!-- Submit Action Button -->
+<div class="flex justify-center">
+<button class="bg-[#1E52B7] hover:bg-[#18449c] active:scale-[0.99] text-white font-medium text-sm py-2.5 px-12 rounded-full shadow-xs transition-all cursor-pointer" type="submit">
+                Verificar
+              </button>
+</div>
+</form>
+</div>
+<!-- Back Link Navigation -->
+<div class="mt-8 text-center" data-purpose="back-navigation">
+<a class="text-xs font-medium text-[#1E52B7] hover:text-[#18449c] transition-colors inline-flex items-center gap-1" href="#">
+<span>←</span> Volver
+          </a>
+</div>
+</section>
+<!-- END: RightFormPanel -->
+</div>
+</main>
+<!-- END: VerificationModalSection -->
+<!-- JavaScript for auto-advance OTP behavior -->
+<script data-purpose="otp-input-handling">
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = document.querySelectorAll('.otp-box');
+
+      inputs.forEach((input, index) => {
+        // Automatically focus the next input on entering a character
+        input.addEventListener('input', (e) => {
+          if (e.target.value.length === 1 && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+          }
+        });
+
+        // Handle backspace navigation to previous input
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !e.target.value && index > 0) {
+            inputs[index - 1].focus();
+          }
+        });
+
+        // Handle pasting multi-digit OTP code
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pastedData = (e.clipboardData || window.clipboardData).getData('text').trim();
+          if (/^\d+$/.test(pastedData)) {
+            const digits = pastedData.split('').slice(0, inputs.length);
+            digits.forEach((digit, i) => {
+              inputs[i].value = digit;
+            });
+            const nextFocusIndex = Math.min(digits.length, inputs.length - 1);
+            inputs[nextFocusIndex].focus();
+          }
+        });
+      });
+    });
+  </script>
+</body></html>

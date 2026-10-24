@@ -1,0 +1,158 @@
+<!doctype html>
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Información de la Ruta</title>
+    <!-- Tailwind CSS CDN with forms and container plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style data-purpose="typography">
+      body {
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[#f0f4f9] min-h-screen flex items-center justify-center p-4 antialiased text-[#1e293b]"
+  >
+    <!-- BEGIN: RouteInformationModal -->
+    <main
+      class="w-full max-w-[540px] bg-white rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.06)] border border-slate-100/80 px-8 sm:px-12 pt-10 pb-9 transition-all"
+      data-purpose="route-modal-card"
+    >
+      <!-- BEGIN: ModalHeader -->
+      <header class="flex flex-col items-center text-center">
+        <!-- Main Modal Heading -->
+        <h1
+          class="text-[23px] sm:text-[25px] font-bold text-[#1e293b] tracking-tight mb-7"
+        >
+          Información de la Ruta
+        </h1>
+        <!-- Route Decorative Icon Badge -->
+        <div
+          class="w-[84px] h-[84px] rounded-full bg-[#e8f1fd] flex items-center justify-center mb-5 shadow-inner"
+          data-purpose="route-icon-badge"
+        >
+          <svg
+            class="w-10 h-10 text-[#2563eb]"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            viewbox="0 0 24 24"
+          >
+            <!-- Starting node dot -->
+            <circle cx="6" cy="18" fill="currentColor" r="2"></circle>
+            <!-- S-curved path route line -->
+            <path d="M6 16V9a4 4 0 0 1 8 0v6a4 4 0 0 0 8 0V8"></path>
+            <!-- Destination node dot -->
+            <circle cx="18" cy="6" fill="currentColor" r="2"></circle>
+          </svg>
+        </div>
+        <!-- Route Name Heading -->
+        <h2 class="text-lg font-bold text-[#1e293b] mb-1 tracking-tight">
+          Ruta Centro - Sur
+        </h2>
+        <!-- Sub-label description -->
+        <p class="text-[13.5px] font-normal text-[#64748b]">
+          Información de la Ruta
+        </p>
+      </header>
+      <!-- END: ModalHeader -->
+      <!-- Top Dividing Line -->
+      <hr class="border-t border-[#edf2f7] mt-7 mb-7 w-full" />
+      <!-- BEGIN: RouteDetailsList -->
+      <section class="space-y-6" data-purpose="route-details">
+        <!-- Detail Item: Nombre -->
+        <div class="flex flex-col text-left">
+          <span class="text-[15px] font-bold text-[#1e293b] leading-snug">
+            Nombre
+          </span>
+          <span class="text-[14.5px] font-normal text-[#64748b] mt-0.5">
+            Ruta Centro - Sur
+          </span>
+        </div>
+        <!-- Detail Item: Sector o Barrio -->
+        <div class="flex flex-col text-left">
+          <span class="text-[15px] font-bold text-[#1e293b] leading-snug">
+            Sector o Barrio
+          </span>
+          <span class="text-[14.5px] font-normal text-[#64748b] mt-0.5">
+            Centro
+          </span>
+        </div>
+        <!-- Detail Item: Hora Inicio -->
+        <div class="flex flex-col text-left">
+          <span class="text-[15px] font-bold text-[#1e293b] leading-snug">
+            Hora Inicio
+          </span>
+          <span class="text-[14.5px] font-normal text-[#64748b] mt-0.5">
+            06:30
+          </span>
+        </div>
+        <!-- Detail Item: Hora Finalización -->
+        <div class="flex flex-col text-left">
+          <span class="text-[15px] font-bold text-[#1e293b] leading-snug">
+            Hora Finalización
+          </span>
+          <span class="text-[14.5px] font-normal text-[#64748b] mt-0.5">
+            08:00
+          </span>
+        </div>
+        <!-- Detail Item: Lugar Destino -->
+        <div class="flex flex-col text-left">
+          <span class="text-[15px] font-bold text-[#1e293b] leading-snug">
+            Lugar Destino
+          </span>
+          <span class="text-[14.5px] font-normal text-[#64748b] mt-0.5">
+            Colegio Principal
+          </span>
+        </div>
+        <!-- Detail Item: Sector -->
+        <div class="flex flex-col text-left">
+          <span class="text-[15px] font-bold text-[#1e293b] leading-snug">
+            Sector
+          </span>
+          <span class="text-[14.5px] font-normal text-[#64748b] mt-0.5">
+            Centro - Barrio Sur
+          </span>
+        </div>
+      </section>
+      <!-- END: RouteDetailsList -->
+      <!-- Bottom Dividing Line -->
+      <hr class="border-t border-[#edf2f7] mt-7 mb-8 w-full" />
+      <!-- BEGIN: ModalActions -->
+      <footer class="flex justify-center items-center">
+        <button
+          class="w-40 sm:w-44 py-2.5 bg-[#2563eb] hover:bg-[#1d4ed8] active:bg-[#1e40af] text-white font-medium text-[15px] rounded-xl shadow-sm hover:shadow transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2563eb]"
+          data-purpose="close-dialog-button"
+          onclick="
+            window.history.length & gt;
+            1 ? window.history.back() : null;
+          "
+          type="button"
+        >
+          Cerrar
+        </button>
+      </footer>
+      <!-- END: ModalActions -->
+    </main>
+    <!-- END: RouteInformationModal -->
+  </body>
+</html>

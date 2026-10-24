@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Actualizar ruta - Guardian Escolar</title>
+    <!-- Tailwind CSS v3 with forms and container-queries -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style data-purpose="custom-inputs">
+      /* Subtle custom styles for precise match with UI screenshot */
+      .form-input-field {
+        border-color: #e2e8f0;
+        background-color: #ffffff;
+        color: #334155;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      .form-input-field:focus {
+        border-color: #94a3b8;
+        box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15);
+        outline: none;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-100 min-h-screen flex items-center justify-center p-4 sm:p-6 font-sans antialiased text-slate-800"
+  >
+    <!-- BEGIN: ModalContainer -->
+    <main
+      class="w-full max-w-[500px] bg-white rounded-2xl shadow-xl p-8 transition-all"
+      data-purpose="modal-card"
+    >
+      <!-- BEGIN: ModalHeader -->
+      <header class="text-center">
+        <!-- Title -->
+        <h1 class="text-[22px] font-bold text-slate-900 tracking-tight">
+          Actualizar ruta
+        </h1>
+        <!-- Top divider matching inputs width -->
+        <div
+          class="w-full border-b border-slate-200 mt-5 mb-6"
+          data-purpose="header-divider"
+        ></div>
+        <!-- Route Avatar Icon -->
+        <div class="flex justify-center" data-purpose="route-badge">
+          <div
+            class="w-20 h-20 rounded-full bg-[#f0f7ff] flex items-center justify-center"
+          >
+            <!-- Route pathway icon with two terminal endpoints matching reference -->
+            <svg
+              class="w-10 h-10 text-[#243c5a]"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="3.5"
+              viewBox="0 0 48 48"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M16 13V29C16 32.3137 18.6863 35 22 35C25.3137 35 28 32.3137 28 29V19C28 15.6863 30.6863 13 34 13C37.3137 13 40 15.6863 40 19V32"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3.5"
+              ></path>
+              <circle cx="16" cy="13" fill="currentColor" r="3"></circle>
+              <circle cx="40" cy="32" fill="currentColor" r="3"></circle>
+            </svg>
+          </div>
+        </div>
+        <!-- Route Subtitle -->
+        <h2 class="mt-3 text-[17px] font-bold text-slate-900 tracking-tight">
+          Ruta Centro - Sur
+        </h2>
+        <!-- Mid divider matching inputs width -->
+        <div
+          class="w-full border-b border-slate-200 mt-6 mb-6"
+          data-purpose="mid-divider"
+        ></div>
+      </header>
+      <!-- END: ModalHeader -->
+      <!-- BEGIN: RouteForm -->
+      <form
+        action="#"
+        class="space-y-4"
+        data-purpose="update-route-form"
+        method="POST"
+        onsubmit="event.preventDefault()"
+      >
+        <!-- Input: Nombre -->
+        <div>
+          <label
+            class="block text-[13px] font-medium text-slate-700 mb-1.5"
+            for="nombre-ruta"
+          >
+            Nombre
+          </label>
+          <input
+            class="form-input-field block w-full rounded-lg px-3.5 py-2.5 text-sm border border-slate-200 text-slate-800 focus:ring-0"
+            id="nombre-ruta"
+            name="nombre"
+            type="text"
+            value="Ruta Centro - Sur"
+          />
+        </div>
+        <!-- Input: Sector o barrio -->
+        <div>
+          <label
+            class="block text-[13px] font-medium text-slate-700 mb-1.5"
+            for="sector-barrio"
+          >
+            Sector o barrio
+          </label>
+          <input
+            class="form-input-field block w-full rounded-lg px-3.5 py-2.5 text-sm border border-slate-200 text-slate-800 focus:ring-0"
+            id="sector-barrio"
+            name="sector_barrio"
+            type="text"
+            value="Centro"
+          />
+        </div>
+        <!-- Input: Hora de inicio de la ruta -->
+        <div>
+          <label
+            class="block text-[13px] font-medium text-slate-700 mb-1.5"
+            for="hora-inicio"
+          >
+            Hora de inicio de la ruta
+          </label>
+          <input
+            class="form-input-field block w-full rounded-lg px-3.5 py-2.5 text-sm border border-slate-200 text-slate-800 focus:ring-0"
+            id="hora-inicio"
+            name="hora_inicio"
+            type="text"
+            value="06:30"
+          />
+        </div>
+        <!-- Input: Hora finalización de ruta -->
+        <div>
+          <label
+            class="block text-[13px] font-medium text-slate-700 mb-1.5"
+            for="hora-fin"
+          >
+            Hora finalización de ruta
+          </label>
+          <input
+            class="form-input-field block w-full rounded-lg px-3.5 py-2.5 text-sm border border-slate-200 text-slate-800 focus:ring-0"
+            id="hora-fin"
+            name="hora_fin"
+            type="text"
+            value="08:00"
+          />
+        </div>
+        <!-- Input: Lugar destino -->
+        <div>
+          <label
+            class="block text-[13px] font-medium text-slate-700 mb-1.5"
+            for="lugar-destino"
+          >
+            Lugar destino
+          </label>
+          <input
+            class="form-input-field block w-full rounded-lg px-3.5 py-2.5 text-sm border border-slate-200 text-slate-800 focus:ring-0"
+            id="lugar-destino"
+            name="lugar_destino"
+            type="text"
+            value="Colegio Principal"
+          />
+        </div>
+        <!-- Select: Sector -->
+        <div>
+          <label
+            class="block text-[13px] font-medium text-slate-700 mb-1.5"
+            for="sector-select"
+          >
+            Sector
+          </label>
+          <div class="relative">
+            <select
+              class="form-input-field appearance-none block w-full rounded-lg px-3.5 py-2.5 text-sm border border-slate-200 focus:ring-0 pr-10 text-transparent select-none cursor-pointer"
+              id="sector-select"
+              name="sector"
+            >
+              <option disabled="" selected="" value=""></option>
+              <option class="text-slate-800" value="centro">Centro</option>
+              <option class="text-slate-800" value="norte">Norte</option>
+              <option class="text-slate-800" value="sur">Sur</option>
+            </select>
+            <!-- Custom subtle dropdown chevron -->
+            <div
+              class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400"
+            >
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 9l-7 7-7-7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                ></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <!-- Bottom divider before buttons -->
+        <div class="pt-1.5 pb-1">
+          <div
+            class="w-full border-b border-slate-200"
+            data-purpose="bottom-divider"
+          ></div>
+        </div>
+        <!-- BEGIN: ActionButtons -->
+        <div
+          class="pt-1 flex items-center gap-3.5"
+          data-purpose="action-buttons-group"
+        >
+          <!-- Cancel button -->
+          <button
+            class="w-1/2 py-2.5 px-4 rounded-lg bg-[#eeeeee] hover:bg-slate-200 text-slate-800 font-medium text-[15px] text-center transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300"
+            type="button"
+          >
+            Cancelar
+          </button>
+          <!-- Save changes button -->
+          <button
+            class="w-1/2 py-2.5 px-4 rounded-lg bg-[#21334b] hover:bg-[#19273a] text-white font-medium text-[15px] text-center shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500"
+            type="submit"
+          >
+            Guardar cambios
+          </button>
+        </div>
+        <!-- END: ActionButtons -->
+      </form>
+      <!-- END: RouteForm -->
+    </main>
+    <!-- END: ModalContainer -->
+  </body>
+</html>

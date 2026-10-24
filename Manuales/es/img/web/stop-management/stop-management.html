@@ -1,0 +1,635 @@
+<!doctype html>
+<html class="h-full" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Guardian Escolar - Paradas</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS CDN with forms and container queries plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: "#eff6ff",
+                100: "#dbeafe",
+                400: "#60a5fa",
+                500: "#3b82f6",
+                600: "#1d5bd8", // Azul institucional dominante
+                700: "#1e40af",
+                active: "#2563eb",
+              },
+              canvas: "#e9eef6", // Fondo gris-azulado suave de la zona principal
+            },
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <!-- Custom Styles for map simulation and clean scrollbars -->
+    <style data-purpose="custom-map-simulation">
+      .map-pattern {
+        background-color: #f1ede6;
+        background-image:
+          radial-gradient(#d5e8ce 35%, transparent 36%),
+          radial-gradient(#e0eedb 40%, transparent 41%),
+          linear-gradient(
+            45deg,
+            rgba(246, 214, 160, 0.45) 4px,
+            transparent 4px
+          ),
+          linear-gradient(
+            -35deg,
+            rgba(254, 255, 255, 0.95) 8px,
+            transparent 8px
+          ),
+          linear-gradient(85deg, rgba(230, 235, 240, 0.9) 6px, transparent 6px);
+        background-size:
+          180px 180px,
+          220px 220px,
+          70px 70px,
+          90px 90px,
+          60px 60px;
+        position: relative;
+      }
+    </style>
+  </head>
+  <body
+    class="h-full bg-brand-600 font-sans antialiased text-gray-800 flex flex-col m-0 p-0 overflow-hidden"
+  >
+    <!-- BEGIN: TopBar -->
+    <header
+      class="w-full h-14 bg-brand-600 px-6 flex items-center justify-between text-white shrink-0 z-20"
+    >
+      <!-- Logout / Return Icon Button -->
+      <div class="flex items-center">
+        <button
+          aria-label="Volver"
+          class="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-white/90 hover:text-white"
+          type="button"
+        >
+          <svg
+            class="w-6 h-6 text-white"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            ></path>
+          </svg>
+        </button>
+      </div>
+      <!-- Center System Title -->
+      <div class="text-xl font-bold tracking-wide select-none">
+        Guardian Escolar
+      </div>
+      <!-- Right balance spacer -->
+      <div class="w-6"></div>
+    </header>
+    <!-- END: TopBar -->
+    <!-- BEGIN: MainApplicationShell -->
+    <div class="flex-1 flex overflow-hidden">
+      <!-- BEGIN: LeftSidebar -->
+      <aside
+        class="w-64 bg-brand-600 flex flex-col justify-between select-none shrink-0 px-4 pb-5 pt-2"
+      >
+        <!-- Top Navigation Links -->
+        <nav aria-label="Menú principal" class="space-y-6">
+          <!-- Grupo ADMINISTRAR -->
+          <div>
+            <h2
+              class="text-xs font-bold text-white/70 uppercase tracking-widest px-3 mb-2"
+            >
+              ADMINISTRAR
+            </h2>
+            <ul class="space-y-1">
+              <li class="">
+                <a
+                  class="flex items-center gap-3 px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 transition text-sm font-medium"
+                  href="#"
+                >
+                  <!-- Estudiante Icon -->
+                  <svg
+                    class="w-5 h-5 fill-current opacity-85"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                    ></path>
+                  </svg>
+                  <span class="">Estudiante</span>
+                </a>
+              </li>
+              <li class="">
+                <a
+                  class="flex items-center gap-3 px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 transition text-sm font-medium"
+                  href="#"
+                >
+                  <!-- Acudiente Icon -->
+                  <svg
+                    class="w-5 h-5 fill-current opacity-85"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 3s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                    ></path>
+                  </svg>
+                  <span class="">Acudiente</span>
+                </a>
+              </li>
+              <li class="">
+                <a
+                  class="flex items-center gap-3 px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 transition text-sm font-medium"
+                  href="#"
+                >
+                  <!-- Conductor Icon -->
+                  <svg
+                    class="w-5 h-5 fill-current opacity-85"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="7" r="3"></circle>
+                    <path
+                      d="M12 11c-2.5 0-5 1.3-5 3.5V18h10v-3.5c0-2.2-2.5-3.5-5-3.5z"
+                    ></path>
+                    <circle cx="5" cy="11" r="1.5"></circle>
+                    <circle cx="19" cy="11" r="1.5"></circle>
+                  </svg>
+                  <span class="">Conductor</span>
+                </a>
+              </li>
+              <li class="">
+                <a
+                  class="flex items-center gap-3 px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 transition text-sm font-medium"
+                  href="#"
+                >
+                  <!-- Familia Icon -->
+                  <svg
+                    class="w-5 h-5 fill-current opacity-85"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 5.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-8 5c-1.8 0-4 .9-4 2.5V15h8v-2c0-1.6-2.2-2.5-4-2.5zm6 1c-.3 0-.6.04-.9.12.6.5 1 1.2 1 2.08v1.3h5v-1.5c0-1.3-2.1-2-5.1-2z"
+                    ></path>
+                  </svg>
+                  <span class="">Familia</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <!-- Grupo TRANSPORTE -->
+          <div>
+            <h2
+              class="text-xs font-bold text-white/70 uppercase tracking-widest px-3 mb-2"
+            >
+              TRANSPORTE
+            </h2>
+            <ul class="space-y-1.5">
+              <li class="">
+                <a
+                  class="flex items-center gap-3 px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 transition text-sm font-medium"
+                  href="#"
+                >
+                  <!-- Bus Icon -->
+                  <svg
+                    class="w-5 h-5 fill-current opacity-85"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"
+                    ></path>
+                  </svg>
+                  <span class="">Buses</span>
+                </a>
+              </li>
+              <li class="">
+                <a
+                  class="flex items-center gap-3 px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 transition text-sm font-medium"
+                  href="#"
+                >
+                  <!-- Rutas Icon -->
+                  <svg
+                    class="w-5 h-5 fill-current opacity-85"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M21.71 11.29l-9-9a.996.996 0 0 0-1.41 0l-9 9a.996.996 0 0 0 0 1.41l9 9c.39.39 1.02.39 1.41 0l9-9a.996.996 0 0 0 0-1.41zM14 14.5V12h-4v3H8v-4c0-.55.45-1 1-1h5V7.5l3.5 3.5-3.5 3.5z"
+                    ></path>
+                  </svg>
+                  <span class="">Rutas</span>
+                </a>
+              </li>
+              <li class="">
+                <!-- Pestaña Activa: Paradas con recuadro azul brillante destacado -->
+                <a
+                  class="flex items-center gap-3 px-3 py-2.5 bg-white/20 text-white font-medium shadow-sm text-sm transition rounded-xl"
+                  href="#"
+                  ><svg class="w-5 h-5 fill-white shrink-0" viewBox="0 0 24 24">
+                    <path
+                      d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"
+                    ></path></svg
+                  ><span class="">Paradas</span></a
+                >
+              </li>
+            </ul>
+          </div>
+        </nav>
+        <!-- Bottom Profile Area with Divider -->
+        <div class="pt-4 border-t border-blue-400/40">
+          <a
+            class="w-full flex items-center gap-3 px-3.5 py-3 bg-blue-400/25 hover:bg-blue-400/35 border text-white font-medium text-sm transition shadow-inner border-blue-400/40 rounded-xl"
+            href="#"
+          >
+            <!-- Icono de usuario relleno con blanco sólido -->
+            <svg class="w-7 h-7 shrink-0" fill="white" viewBox="0 0 24 24">
+              <path
+                clip-rule="evenodd"
+                d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12-1.584c.005-.11.02-.224.043-.342a6.75 6.75 0 0110.544 0c.023.118.038.232.043.342a8.232 8.232 0 01-10.63 0zM12 7.5a3 3 0 100 6 3 3 0 000-6z"
+                fill-rule="evenodd"
+              ></path>
+            </svg>
+            <span class="text-base font-semibold">Perfil</span>
+          </a>
+        </div>
+      </aside>
+      <!-- END: LeftSidebar -->
+      <!-- BEGIN: MainContentZone -->
+      <main class="flex-1 bg-canvas p-5 overflow-hidden flex flex-col">
+        <!-- Dual Column Container that reaches the bottom of the screen -->
+        <div
+          class="w-full h-full flex flex-col lg:flex-row gap-5 items-stretch overflow-hidden"
+        >
+          <!-- BEGIN: LeftCard - Registrar Parada -->
+          <section
+            class="flex-1 bg-white shadow-sm border border-gray-100 flex flex-col p-6 overflow-y-auto"
+          >
+            <!-- Card Title & Separator -->
+            <div class="text-center pb-3 border-b border-gray-200">
+              <h1 class="text-lg font-bold text-gray-900 tracking-tight">
+                Registrar parada
+              </h1>
+            </div>
+            <!-- Form Fields Container -->
+            <form
+              class="mt-4 flex-1 flex flex-col justify-between space-y-3.5"
+              onsubmit="event.preventDefault()"
+            >
+              <div class="space-y-3">
+                <!-- Input: Nombre de la parada -->
+                <div>
+                  <label
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                    for="stop-name"
+                    >Nombre de la parada</label
+                  >
+                  <input
+                    class="w-full rounded-lg border border-gray-200 bg-slate-50/80 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-gray-800 py-2 px-3.5 transition-colors shadow-sm"
+                    id="stop-name"
+                    name="stop-name"
+                    type="text"
+                  />
+                </div>
+                <!-- Select: Estudiante -->
+                <div>
+                  <label
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                    for="student-select"
+                    >Estudiante</label
+                  >
+                  <div class="relative">
+                    <select
+                      class="w-full rounded-lg border border-gray-200 bg-slate-50/80 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-gray-800 py-2 px-3.5 appearance-none transition-colors shadow-sm pr-8 cursor-pointer"
+                      id="student-select"
+                      name="student"
+                    >
+                      <option disabled="" selected="" value=""></option>
+                      <option value="1">Mateo Gómez</option>
+                      <option value="2">Sofía Castro</option>
+                      <option value="3">Lucas Ramírez</option>
+                    </select>
+                    <div
+                      class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-gray-500"
+                    >
+                      <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                        <path
+                          clip-rule="evenodd"
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          fill-rule="evenodd"
+                        ></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <!-- Input: Ciudad -->
+                <div>
+                  <label
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                    for="city-input"
+                    >Ciudad</label
+                  >
+                  <input
+                    class="w-full rounded-lg border border-gray-200 bg-slate-50/80 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-gray-800 py-2 px-3.5 transition-colors shadow-sm"
+                    id="city-input"
+                    name="city"
+                    type="text"
+                  />
+                </div>
+                <!-- Input: Dirección -->
+                <div>
+                  <label
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                    for="address-input"
+                    >Dirección</label
+                  >
+                  <input
+                    class="w-full rounded-lg border border-gray-200 bg-slate-50/80 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-gray-800 py-2 px-3.5 transition-colors shadow-sm"
+                    id="address-input"
+                    name="address"
+                    type="text"
+                  />
+                </div>
+                <!-- Select: Ruta -->
+                <div>
+                  <label
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                    for="route-select"
+                    >Ruta</label
+                  >
+                  <div class="relative">
+                    <select
+                      class="w-full rounded-lg border border-gray-200 bg-slate-50/80 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-gray-800 py-2 px-3.5 appearance-none transition-colors shadow-sm pr-8 cursor-pointer"
+                      id="route-select"
+                      name="route"
+                    >
+                      <option disabled="" selected="" value=""></option>
+                      <option value="1">Ruta 1 - Poblado</option>
+                      <option value="2">Ruta 2 - Laureles</option>
+                      <option value="3">Ruta 3 - Centro</option>
+                    </select>
+                    <div
+                      class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-gray-500"
+                    >
+                      <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                        <path
+                          clip-rule="evenodd"
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          fill-rule="evenodd"
+                        ></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <!-- Visual Map Box Simulation with Street and Marker Details -->
+                <div
+                  class="w-full h-44 rounded-2xl map-pattern border border-gray-200 overflow-hidden relative shadow-inner mt-2 flex items-center justify-center"
+                >
+                  <!-- SVG map lines simulation -->
+                  <svg
+                    class="absolute inset-0 w-full h-full opacity-60 pointer-events-none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <!-- Green park zone -->
+                    <path
+                      d="M0,130 Q70,110 130,140 T220,160 L220,200 L0,200 Z"
+                      fill="#bce2bf"
+                      opacity="0.6"
+                    ></path>
+                    <path
+                      d="M280,110 Q320,140 380,130 L450,160 L450,200 L260,200 Z"
+                      fill="#bce2bf"
+                      opacity="0.6"
+                    ></path>
+                    <!-- Road lines -->
+                    <line
+                      stroke="#fcd34d"
+                      stroke-linecap="round"
+                      stroke-width="4"
+                      x1="20"
+                      x2="190"
+                      y1="0"
+                      y2="180"
+                    ></line>
+                    <line
+                      stroke="#fcd34d"
+                      stroke-linecap="round"
+                      stroke-width="5"
+                      x1="160"
+                      x2="250"
+                      y1="0"
+                      y2="180"
+                    ></line>
+                    <line
+                      stroke="#ffffff"
+                      stroke-width="6"
+                      x1="0"
+                      x2="380"
+                      y1="70"
+                      y2="140"
+                    ></line>
+                    <line
+                      stroke="#ffffff"
+                      stroke-width="5"
+                      x1="80"
+                      x2="320"
+                      y1="20"
+                      y2="170"
+                    ></line>
+                    <line
+                      stroke="#ffffff"
+                      stroke-width="4"
+                      x1="240"
+                      x2="420"
+                      y1="10"
+                      y2="150"
+                    ></line>
+                  </svg>
+                  <!-- Map Street Labels -->
+                  <span
+                    class="absolute top-2 left-16 text-[9px] font-semibold text-gray-500 tracking-wider rotate-[-5deg]"
+                    >LAURELES</span
+                  >
+                  <span
+                    class="absolute bottom-6 left-28 text-[9px] font-medium text-gray-500 rotate-[24deg]"
+                    >Calle 10</span
+                  >
+                  <span
+                    class="absolute top-10 right-28 text-[9px] font-medium text-gray-500 rotate-[70deg]"
+                    >Avenida El Poblado</span
+                  >
+                  <span
+                    class="absolute top-12 right-12 text-[9px] font-medium text-gray-400 rotate-[75deg]"
+                    >Avenida Las Palmas</span
+                  >
+                  <!-- Central Map Marker and label -->
+                  <div
+                    class="relative flex flex-col items-center z-10 -translate-y-1"
+                  >
+                    <!-- Red Pin with SVG shadow -->
+                    <div class="relative">
+                      <svg
+                        class="w-8 h-8 filter drop-shadow-md"
+                        fill="#ef4444"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M12 0C7.58 0 4 3.58 4 8c0 5.25 8 16 8 16s8-10.75 8-16c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"
+                        ></path>
+                        <circle cx="12" cy="8" fill="#7f1d1d" r="2.2"></circle>
+                      </svg>
+                    </div>
+                    <span
+                      class="bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded text-[10px] font-bold text-gray-800 shadow-sm mt-0.5 border border-gray-100"
+                    >
+                      El Poblado
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <!-- Submit Button (Full Width Vibrant Blue) -->
+              <div class="pt-2">
+                <button
+                  class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition duration-150 ease-in-out text-sm tracking-wide"
+                  type="submit"
+                >
+                  Registrar
+                </button>
+              </div>
+            </form>
+          </section>
+          <!-- END: LeftCard - Registrar Parada -->
+          <!-- BEGIN: RightCard - Estudiantes Registrados -->
+          <section
+            class="flex-1 bg-white shadow-sm border border-gray-100 flex flex-col p-6 overflow-hidden"
+          >
+            <!-- Header and Count Section -->
+            <div class="text-center">
+              <h2 class="text-lg font-bold text-gray-900">
+                Estudiantes registrados
+              </h2>
+              <div class="text-3xl font-extrabold text-blue-600 mt-1 mb-3">
+                4
+              </div>
+              <hr class="border-gray-200 w-full mb-4" />
+            </div>
+            <!-- Search Input with Search Icon -->
+            <div class="relative mb-4">
+              <input
+                class="w-full pl-4 pr-9 py-1.5 rounded-lg border-0 bg-slate-100/70 focus:bg-white focus:ring-2 focus:ring-blue-600 text-xs text-gray-700 placeholder-gray-400 transition-colors shadow-inner"
+                placeholder="Buscar..."
+                type="text"
+              />
+              <div
+                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+            <!-- Registered Stop Card Component -->
+            <div
+              class="w-full bg-slate-50/80 hover:bg-slate-100/80 transition-colors border border-gray-100 rounded-xl p-4 shadow-sm"
+            >
+              <div class="flex items-start justify-between">
+                <!-- Left side: Blue Map Pin + Details -->
+                <div class="flex items-start gap-3.5">
+                  <!-- Parada Centro Blue Pin Icon -->
+                  <div class="text-blue-600 mt-0.5 shrink-0">
+                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                      <path
+                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <!-- Stop Data -->
+                  <div class="space-y-1">
+                    <h3 class="text-xs font-bold text-gray-900 tracking-tight">
+                      Parada Centro
+                    </h3>
+                    <p class="text-[11px] text-gray-600 font-medium">
+                      Carrera 7 #5-40
+                    </p>
+                    <!-- Geographic coordinates -->
+                    <div
+                      class="flex items-center gap-16 pt-1 text-[11px] text-gray-500 font-mono"
+                    >
+                      <span class="">2.9277</span>
+                      <span class="">-54.9845</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Right side: Action Buttons (Delete, View, Edit) -->
+                <div class="flex items-center gap-2.5 text-gray-700 shrink-0">
+                  <!-- Delete (Trash) Button -->
+                  <button
+                    aria-label="Eliminar parada"
+                    class="hover:text-red-600 transition-colors p-0.5"
+                    type="button"
+                  >
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                      <path
+                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                      ></path>
+                    </svg>
+                  </button>
+                  <!-- View Detail (Eye) Button -->
+                  <button
+                    aria-label="Ver detalles"
+                    class="hover:text-blue-600 transition-colors p-0.5"
+                    type="button"
+                  >
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                      <path
+                        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                      ></path>
+                    </svg>
+                  </button>
+                  <!-- Edit (Pencil) Button -->
+                  <button
+                    aria-label="Editar parada"
+                    class="hover:text-amber-600 transition-colors p-0.5"
+                    type="button"
+                  >
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                      <path
+                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Empty expanded space filling card to the bottom edge -->
+            <div class="flex-1"></div>
+          </section>
+          <!-- END: RightCard - Estudiantes Registrados -->
+        </div>
+      </main>
+      <!-- END: MainContentZone -->
+    </div>
+    <!-- END: MainApplicationShell -->
+  </body>
+</html>

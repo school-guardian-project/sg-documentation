@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Actualizar Administrador</title>
+    <!-- Tailwind CSS v3 with forms plugin -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style data-purpose="custom-typography">
+      body {
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-100 flex items-center justify-center min-h-screen p-4 sm:p-6 text-slate-800 antialiased"
+  >
+    <!-- BEGIN: UpdateAdminModal -->
+    <main
+      class="w-full max-w-[540px] bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"
+      data-purpose="admin-modal-card"
+    >
+      <!-- BEGIN: HeaderSection -->
+      <header class="pt-7 pb-4 px-6 text-center">
+        <h1 class="text-xl font-bold tracking-tight text-slate-900">
+          Actualizar administrador
+        </h1>
+      </header>
+      <!-- END: HeaderSection -->
+      <div class="border-b border-slate-100 mx-6"></div>
+      <!-- BEGIN: ProfileAvatarSection -->
+      <section
+        class="flex flex-col items-center justify-center pt-6 pb-5 px-6"
+        data-purpose="user-identity"
+      >
+        <!-- Outer circular container with soft tone -->
+        <div
+          class="w-20 h-20 rounded-full bg-[#f0f4f9] flex items-center justify-center mb-3"
+        >
+          <svg
+            class="w-10 h-10"
+            viewBox="0 0 40 40"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M20 3.5L8 8.5V17.8C8 25.8 13.1 33.2 20 35.4C21.7 34.9 23.3 34 24.7 32.8C23.6 31 23 28.9 23 26.6C23 21 27.2 16.3 32.7 15.6C32.8 15.1 32.9 14.6 32.9 14.1L32 8.5L20 3.5Z"
+              fill="#203148"
+            ></path>
+            <circle cx="29" cy="26.5" r="8" fill="#f0f4f9"></circle>
+            <circle cx="29" cy="26.5" r="6" fill="#203148"></circle>
+            <circle cx="29" cy="24.5" r="2" fill="white"></circle>
+            <path
+              d="M25.2 29.8C26 28.4 27.4 27.6 29 27.6C30.6 27.6 32 28.4 32.8 29.8C31.8 31 30.4 31.8 29 31.8C27.6 31.8 26.2 31 25.2 29.8Z"
+              fill="white"
+            ></path>
+          </svg>
+        </div>
+        <!-- User full name -->
+        <h2 class="text-lg font-bold text-slate-900">Carlos Andrés</h2>
+      </section>
+      <!-- END: ProfileAvatarSection -->
+      <div class="border-b border-slate-100 mx-6"></div>
+      <!-- BEGIN: FormContentSection -->
+      <form
+        class="px-6 py-5 space-y-4"
+        data-purpose="update-admin-form"
+        onsubmit="event.preventDefault()"
+      >
+        <!-- Field: Nombre -->
+        <div class="space-y-1.5">
+          <label class="block text-sm font-medium text-slate-700" for="nombre">
+            Nombre
+          </label>
+          <input
+            class="w-full h-11 px-3.5 bg-[#fbfcfe] border border-slate-200 rounded-lg text-slate-800 text-[15px] focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400 transition-colors"
+            id="nombre"
+            name="nombre"
+            type="text"
+            value="Carlos Andrés"
+          />
+        </div>
+        <!-- Field: Apellidos -->
+        <div class="space-y-1.5">
+          <label
+            class="block text-sm font-medium text-slate-700"
+            for="apellidos"
+          >
+            Apellidos
+          </label>
+          <input
+            class="w-full h-11 px-3.5 bg-[#fbfcfe] border border-slate-200 rounded-lg text-slate-800 text-[15px] focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400 transition-colors"
+            id="apellidos"
+            name="apellidos"
+            type="text"
+            value="Pérez Gómez"
+          />
+        </div>
+        <!-- Field: Correo electrónico -->
+        <div class="space-y-1.5">
+          <label class="block text-sm font-medium text-slate-700" for="email">
+            Correo electrónico
+          </label>
+          <input
+            class="w-full h-11 px-3.5 bg-[#fbfcfe] border border-slate-200 rounded-lg text-slate-800 text-[15px] focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400 transition-colors"
+            id="email"
+            name="email"
+            type="email"
+            value="carlos.perez@admin.com"
+          />
+        </div>
+        <!-- Field: Identificación -->
+        <div class="space-y-1.5">
+          <label
+            class="block text-sm font-medium text-slate-700"
+            for="identificacion"
+          >
+            Identificación
+          </label>
+          <input
+            class="w-full h-11 px-3.5 bg-[#fbfcfe] border border-slate-200 rounded-lg text-slate-800 text-[15px] focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400 transition-colors"
+            id="identificacion"
+            name="identificacion"
+            type="text"
+            value="11111111"
+          />
+        </div>
+        <!-- Field: Fecha de nacimiento -->
+        <div class="space-y-1.5">
+          <label
+            class="block text-sm font-medium text-slate-700"
+            for="fecha-nacimiento"
+          >
+            Fecha de nacimiento
+          </label>
+          <div class="relative">
+            <input
+              class="w-full h-11 pl-3.5 pr-10 bg-[#fbfcfe] border border-slate-200 rounded-lg text-slate-800 text-[15px] focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400 transition-colors"
+              id="fecha-nacimiento"
+              name="fecha_nacimiento"
+              type="text"
+              value="12 / 09 / 1988"
+            />
+            <div
+              class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-700"
+            >
+              <!-- Calendar Icon -->
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <rect height="18" rx="2" ry="2" width="18" x="3" y="4"></rect>
+                <line x1="16" x2="16" y1="2" y2="6"></line>
+                <line x1="8" x2="8" y1="2" y2="6"></line>
+                <line x1="3" x2="21" y1="10" y2="10"></line>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <!-- Field: Teléfono -->
+        <div class="space-y-1.5">
+          <label
+            class="block text-sm font-medium text-slate-700"
+            for="telefono"
+          >
+            Teléfono
+          </label>
+          <input
+            class="w-full h-11 px-3.5 bg-[#fbfcfe] border border-slate-200 rounded-lg text-slate-800 text-[15px] focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400 transition-colors"
+            id="telefono"
+            name="telefono"
+            type="tel"
+            value="+57 315 777 8888"
+          />
+        </div>
+        <!-- Field: Dirección de residencia -->
+        <div class="space-y-1.5">
+          <label
+            class="block text-sm font-medium text-slate-700"
+            for="direccion"
+          >
+            Dirección de residencia
+          </label>
+          <input
+            class="w-full h-11 px-3.5 bg-[#fbfcfe] border border-slate-200 rounded-lg text-slate-800 text-[15px] focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400 transition-colors"
+            id="direccion"
+            name="direccion"
+            type="text"
+            value="Calle 20 #10-50"
+          />
+        </div>
+        <!-- Separator before buttons -->
+        <div class="pt-2">
+          <div class="border-b border-slate-100 -mx-6 mb-5"></div>
+        </div>
+        <!-- BEGIN: ActionButtons -->
+        <footer class="flex items-center pt-1 pb-2 gap-6">
+          <!-- Cancel button -->
+          <button
+            class="w-1/2 h-12 flex items-center justify-center text-sm font-medium text-slate-800 bg-[#ebecee] hover:bg-[#e2e3e6] active:bg-[#d8d9dc] rounded-lg transition-colors focus:outline-none"
+            type="button"
+          >
+            Cancelar
+          </button>
+          <!-- Save changes button -->
+          <button
+            class="w-1/2 h-12 flex items-center justify-center text-sm font-medium text-white bg-[#223348] hover:bg-[#1a2737] active:bg-[#131d2a] rounded-lg transition-colors focus:outline-none shadow-sm"
+            type="submit"
+          >
+            Guardar cambios
+          </button>
+        </footer>
+        <!-- END: ActionButtons -->
+      </form>
+      <!-- END: FormContentSection -->
+    </main>
+    <!-- END: UpdateAdminModal -->
+  </body>
+</html>

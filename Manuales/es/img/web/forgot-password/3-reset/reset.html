@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#f0f4f8]" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guardian Escolar - Nueva Contraseña</title>
+<!-- Tailwind CSS v3 with Forms Plugin -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#1d4ed8',
+              600: '#1a56db',
+              700: '#1e40af',
+              800: '#1e3a8a',
+              900: '#172554',
+              darkcard: '#163f91',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Typography & Specific Adjustments -->
+<style data-purpose="typography">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+<style data-purpose="layout-tweaks">
+    /* Subtle custom shadow matching the reference card */
+    .card-shadow {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+    }
+  </style>
+</head>
+<body class="min-h-full flex flex-col bg-[#edf2f7] text-slate-800 antialiased selection:bg-blue-500 selection:text-white">
+<!-- BEGIN: TopNavigation -->
+<header class="w-full pt-4 px-6 md:px-10 flex items-center relative" data-purpose="top-navigation">
+<!-- Brand Logo Mark (Left) -->
+<div class="flex-shrink-0 z-10" data-purpose="brand-logo">
+<a aria-label="Guardian Escolar Inicio" class="inline-block transition-transform hover:scale-105" href="#">
+<svg class="w-10 h-10 drop-shadow-sm text-blue-600 fill-current" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<!-- Outer shield shape -->
+<rect fill="#1d4ed8" height="48" rx="14" width="48"></rect>
+<!-- Inner shield contour -->
+<path d="M24 10C17.5 10 15 13.5 15 13.5V25C15 32.5 24 38 24 38C24 38 33 32.5 33 25V13.5C33 13.5 30.5 10 24 10Z" fill="white" fill-opacity="0.2"></path>
+<path d="M24 13C18.6 13 16.5 16 16.5 16V24.5C16.5 30.5 24 35 24 35C24 35 31.5 30.5 31.5 24.5V16C31.5 16 29.4 13 24 13Z" fill="white"></path>
+</svg>
+</a>
+</div>
+<!-- Centered Header Title -->
+<div class="absolute inset-x-0 flex justify-center pointer-events-none">
+<h1 class="text-2xl md:text-[26px] font-bold tracking-tight text-slate-900 pointer-events-auto">
+        Guardian Escolar
+      </h1>
+</div>
+</header>
+<!-- END: TopNavigation -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 flex items-center justify-center p-4 md:p-8" data-purpose="password-reset-container">
+<!-- Central Auth Card Container -->
+<div class="w-full max-w-[940px] bg-white rounded-2xl md:rounded-[22px] overflow-hidden card-shadow flex flex-col md:flex-row min-h-[570px] border border-slate-100">
+<!-- BEGIN: LeftInfoPanel -->
+<aside class="w-full md:w-[41%] bg-[#1d4ed8] p-8 md:p-10 flex flex-col justify-between text-white relative" data-purpose="guidelines-sidebar">
+<!-- Top Info: Icon, Title, and Description -->
+<div>
+<!-- Padlock Icon Box -->
+<div class="w-13 h-13 w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-6 shadow-inner" data-purpose="security-icon">
+<svg aria-hidden="true" class="w-6 h-6 text-white" fill="currentColor" viewbox="0 0 24 24">
+<path clip-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<!-- Main Sidebar Heading -->
+<h2 class="text-2xl md:text-[26px] font-bold leading-tight mb-3 tracking-tight">
+            Crea una<br/>contraseña segura
+          </h2>
+<!-- Descriptive Subtitle -->
+<p class="text-blue-100 text-sm md:text-[15px] leading-relaxed font-normal">
+            Ten en cuenta las recomendaciones de seguridad.
+          </p>
+</div>
+<!-- Bottom Guidelines Callout Card -->
+<div class="mt-8 bg-[#163f91] rounded-xl p-5 md:p-6 text-blue-50 border border-blue-400/20 shadow-sm" data-purpose="requirements-box">
+<p class="text-xs md:text-sm font-semibold mb-3 tracking-wide text-white">
+            La contraseña debe contener:
+          </p>
+<ul class="text-xs md:text-[13px] space-y-2 text-blue-100/90 list-disc list-inside leading-snug">
+<li class="flex items-start">
+<span class="mr-2 text-blue-300 font-bold">•</span>
+<span>Mínimo 8 dígitos</span>
+</li>
+<li class="flex items-start">
+<span class="mr-2 text-blue-300 font-bold">•</span>
+<span>Números y letras</span>
+</li>
+<li class="flex items-start">
+<span class="mr-2 text-blue-300 font-bold">•</span>
+<span>Combinación de minúsculas y mayúsculas</span>
+</li>
+<li class="flex items-start">
+<span class="mr-2 text-blue-300 font-bold">•</span>
+<span>Caracteres especiales (. _ @ *)</span>
+</li>
+</ul>
+</div>
+</aside>
+<!-- END: LeftInfoPanel -->
+<!-- BEGIN: RightFormPanel -->
+<section class="w-full md:w-[59%] bg-white p-8 md:p-12 flex flex-col justify-between" data-purpose="password-reset-form-wrapper">
+<div>
+<!-- Step Progress Indicator -->
+<div class="flex items-center space-x-2.5 mb-7" data-purpose="step-indicator">
+<div class="h-1 w-7 rounded-full bg-blue-600"></div>
+<div class="h-1 w-7 rounded-full bg-blue-600"></div>
+<div class="h-1 w-7 rounded-full bg-blue-600"></div>
+<span class="text-xs text-slate-500 font-medium pl-1">3 de 3</span>
+</div>
+<!-- Section Headings -->
+<header class="mb-7">
+<h3 class="text-xl md:text-[22px] font-bold text-slate-900 tracking-tight mb-1.5">
+              Nueva Contraseña
+            </h3>
+<p class="text-sm text-slate-500">
+              Elige una contraseña que no hayas usado antes
+            </p>
+</header>
+<!-- Password Reset Form -->
+<form class="space-y-6" data-purpose="password-form" id="password-form" onsubmit="return false;">
+<!-- Field 1: New Password -->
+<div class="space-y-1.5">
+<label class="block text-xs md:text-[13px] font-medium text-slate-700" for="new-password">
+                Nueva contraseña
+              </label>
+<div class="relative">
+<input class="w-full rounded-md border border-slate-400/80 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600" id="new-password" name="new-password" required="" type="password"/>
+</div>
+</div>
+<!-- Field 2: Confirm Password -->
+<div class="space-y-1.5">
+<label class="block text-xs md:text-[13px] font-medium text-slate-700" for="confirm-password">
+                Confirmar contraseña
+              </label>
+<div class="relative">
+<input class="w-full rounded-md border border-slate-400/80 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600" id="confirm-password" name="confirm-password" required="" type="password"/>
+</div>
+</div>
+<!-- Submit Button (Centered Pill) -->
+<div class="pt-4 flex justify-center">
+<button class="w-auto min-w-[210px] bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium py-2.5 px-6 rounded-full transition duration-150 ease-in-out shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600" data-purpose="submit-password-btn" type="submit">
+                Guardar nueva contraseña
+              </button>
+</div>
+</form>
+</div>
+<!-- Footer Back Link -->
+<div class="pt-8 pb-1 text-center" data-purpose="back-navigation">
+<a class="inline-flex items-center text-xs md:text-sm font-normal text-blue-600 hover:text-blue-800 hover:underline transition-colors" href="#">
+            ← Volver
+          </a>
+</div>
+</section>
+<!-- END: RightFormPanel -->
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: FormInteractivityScript -->
+<script data-purpose="form-validation-feedback">
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('password-form');
+      const newPass = document.getElementById('new-password');
+      const confirmPass = document.getElementById('confirm-password');
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (newPass.value !== confirmPass.value) {
+          alert('Las contraseñas no coinciden. Por favor, revísalas.');
+          return;
+        }
+        if (newPass.value.length < 8) {
+          alert('La contraseña debe contener al menos 8 dígitos.');
+          return;
+        }
+        alert('¡Contraseña actualizada correctamente!');
+      });
+    });
+  </script>
+<!-- END: FormInteractivityScript -->
+</body></html>

@@ -1,0 +1,142 @@
+<!doctype html>
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Eliminar Administrador - Guardian Escolar</title>
+    <!-- Tailwind CSS v3 with plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script data-purpose="tailwind-config">
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: [
+                "Inter",
+                "system-ui",
+                "-apple-system",
+                "BlinkMacSystemFont",
+                "Segoe UI",
+                "Roboto",
+                "sans-serif",
+              ],
+            },
+          },
+        },
+      };
+    </script>
+    <style data-purpose="layout-styles">
+      body {
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen w-full flex items-center justify-center bg-slate-100/90 p-4 antialiased selection:bg-blue-100 selection:text-blue-900"
+  >
+    <!-- BEGIN: DeleteAdminConfirmationModal -->
+    <main
+      class="w-full max-w-[370px] bg-white rounded-[24px] border border-slate-200/70 shadow-xl p-7 flex flex-col items-center text-center"
+      data-purpose="confirmation-card"
+    >
+      <!-- BEGIN: HeaderSection -->
+      <section
+        class="flex flex-col items-center mb-5"
+        data-purpose="modal-header"
+      >
+        <h1 class="text-[21px] font-bold text-[#141e30] tracking-tight mb-2">
+          Eliminar Administrador
+        </h1>
+        <p class="text-[14px] leading-relaxed text-[#2c394b] max-w-[280px]">
+          ¿Deseas eliminar este administrador? Esta acción no se puede deshacer.
+        </p>
+      </section>
+      <!-- END: HeaderSection -->
+      <!-- BEGIN: UserIdentitySection -->
+      <section
+        class="flex flex-col items-center mb-7"
+        data-purpose="user-identity"
+      >
+        <!-- Outer Soft Blue Avatar Circle -->
+        <div
+          class="w-[88px] h-[88px] rounded-full bg-[#ebf3fe] flex items-center justify-center mb-3.5 shadow-inner"
+        >
+          <!-- Shield + User Badge Icon matching reference -->
+          <div class="relative flex items-center justify-center">
+            <svg
+              class="w-8 h-8 text-[#172033]"
+              fill="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path
+                d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"
+              ></path>
+            </svg>
+            <!-- Inset User Profile Badge in bottom right of shield -->
+            <div
+              class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#ebf3fe] flex items-center justify-center p-[1.5px]"
+            >
+              <div
+                class="w-full h-full rounded-full bg-[#172033] flex items-center justify-center"
+              >
+                <svg
+                  class="w-2.5 h-2.5 text-[#ebf3fe]"
+                  fill="currentColor"
+                  viewbox="0 0 20 20"
+                >
+                  <path
+                    clip-rule="evenodd"
+                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                    fill-rule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Administrator Name -->
+        <h2 class="text-[19px] font-bold text-[#141e30] tracking-tight">
+          Carlos Andrés
+        </h2>
+      </section>
+      <!-- END: UserIdentitySection -->
+      <!-- BEGIN: ActionButtonsGroup -->
+      <nav
+        aria-label="Acciones de confirmación"
+        class="flex flex-row items-center gap-3.5 w-full max-w-[300px]"
+        data-purpose="modal-actions"
+      >
+        <!-- Cancel Button -->
+        <button
+          class="flex-1 h-[46px] inline-flex items-center justify-center rounded-2xl bg-white border border-slate-300 text-slate-600 font-normal text-[15px] hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300 active:scale-[0.98]"
+          data-purpose="cancel-action"
+          type="button"
+        >
+          Cancelar
+        </button>
+        <!-- Delete Confirmation Button -->
+        <button
+          class="flex-1 h-[46px] inline-flex items-center justify-center rounded-2xl bg-[#2262ea] hover:bg-[#1a53ca] text-white font-medium text-[15px] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2262ea] active:scale-[0.98]"
+          data-purpose="confirm-delete-action"
+          type="button"
+        >
+          Eliminar
+        </button>
+      </nav>
+      <!-- END: ActionButtonsGroup -->
+    </main>
+    <!-- END: DeleteAdminConfirmationModal -->
+  </body>
+</html>

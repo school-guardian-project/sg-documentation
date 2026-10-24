@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guardian Escolar - Actualizar Teléfono</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Custom configuration for accurate brand colors -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#2054c8',
+              darkBlue: '#153ca3',
+              action: '#1b5bd6',
+              bgLight: '#edf2f7'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom styles for layout and fine-tuned UI polish -->
+<style data-purpose="custom-styling">
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .input-shadow {
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    }
+  </style>
+</head>
+<body class="bg-[#edf2f7] min-h-screen flex flex-col text-slate-800 antialiased selection:bg-blue-200">
+<!-- BEGIN: MainHeader -->
+<header class="w-full bg-white border-b border-slate-200/80 px-6 py-4 shadow-sm" data-purpose="page-header">
+<div class="max-w-7xl mx-auto flex items-center justify-between relative">
+<!-- Brand Logo Shield -->
+<div class="flex items-center" data-purpose="brand-logo">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-b from-[#1e58d8] to-[#1241aa] flex items-center justify-center shadow-sm">
+<!-- Shield Icon -->
+<svg aria-hidden="true" class="w-6 h-6 text-white" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2L4 5.5v6.2c0 5.4 3.4 10.3 8 11.8 4.6-1.5 8-6.4 8-11.8V5.5L12 2zm0 2.2l6 2.6v5c0 4.3-2.6 8.3-6 9.7-3.4-1.4-6-5.4-6-9.7V6.8l6-2.6z"></path>
+</svg>
+</div>
+</div>
+<!-- Centered Header Title -->
+<div class="absolute inset-x-0 mx-auto text-center pointer-events-none">
+<h1 class="text-xl md:text-2xl font-bold tracking-tight text-[#0f274a]">
+          Guardian Escolar
+        </h1>
+</div>
+<!-- Right Spacer to balance flex layout -->
+<div class="w-10"></div>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8" data-purpose="main-wrapper">
+<!-- Two-column Card Container -->
+<div class="w-full max-w-[850px] bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-slate-100 min-h-[500px]" data-purpose="multi-step-modal">
+<!-- BEGIN: LeftInfoColumn -->
+<section class="w-full md:w-[42%] bg-gradient-to-b from-[#2156cc] to-[#1d4bb8] p-8 md:p-10 text-white flex flex-col justify-between" data-purpose="info-panel">
+<!-- Top Section of Left Column -->
+<div class="space-y-6">
+<!-- Phone Icon Container -->
+<div class="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-sm" data-purpose="icon-badge">
+<!-- Phone Receiver Icon -->
+<svg aria-hidden="true" class="w-6 h-6 text-white" fill="currentColor" viewbox="0 0 24 24">
+<path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"></path>
+</svg>
+</div>
+<!-- Titles and Description -->
+<div class="space-y-3">
+<h2 class="text-2xl md:text-3xl font-bold tracking-tight text-white leading-tight">
+              Actualizar teléfono
+            </h2>
+<p class="text-blue-100/90 text-sm md:text-base leading-relaxed">
+              Introduce tu nuevo número para reemplazar el anterior.
+            </p>
+</div>
+</div>
+<!-- Bottom Support Card -->
+<aside class="mt-8 md:mt-12 bg-[#173e9e]/75 border border-white/10 rounded-xl p-4 text-xs md:text-sm text-blue-50 leading-relaxed tracking-normal" data-purpose="support-card">
+<p>
+            ¿Necesitas ayuda? Escríbenos a<br/>
+<a class="font-medium text-white underline underline-offset-2 decoration-blue-300 hover:text-blue-100 transition-colors" href="mailto:guardianescolar0@gmail.com">
+              guardianescolar0@gmail.com
+            </a><br/>
+            o llama al <span class="font-medium text-white">+57 314 4308274</span>
+</p>
+</aside>
+</section>
+<!-- END: LeftInfoColumn -->
+<!-- BEGIN: RightFormColumn -->
+<section class="w-full md:w-[58%] p-8 md:p-12 flex flex-col justify-between bg-white" data-purpose="form-panel">
+<div>
+<!-- Step Progress Indicator -->
+<div class="flex items-center justify-between gap-4 mb-8" data-purpose="step-indicator">
+<div class="flex items-center space-x-2 flex-1 max-w-[190px]">
+<!-- Step 1 (Active) -->
+<div class="h-1 flex-1 bg-blue-600 rounded-full"></div>
+<!-- Step 2 (Active) -->
+<div class="h-1 flex-1 bg-blue-600 rounded-full"></div>
+<!-- Step 3 (Active) -->
+<div class="h-1 flex-1 bg-blue-600 rounded-full"></div>
+<!-- Step 4 (Inactive) -->
+<div class="h-1 flex-1 bg-slate-200 rounded-full"></div>
+</div>
+<!-- Progress Counter Text -->
+<span class="text-xs md:text-sm font-medium text-slate-500 whitespace-nowrap">
+              3 de 4
+            </span>
+</div>
+<!-- Step Title -->
+<h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-8" data-purpose="step-title">
+            Paso 3
+          </h2>
+<!-- Update Phone Form -->
+<form class="space-y-2" data-purpose="phone-update-form" id="update-phone-form" onsubmit="event.preventDefault();">
+<label class="block text-sm font-medium text-slate-700" for="nuevo-telefono">
+              Nuevo teléfono
+            </label>
+<div class="relative">
+<input autocomplete="tel" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-slate-900 placeholder-slate-400 text-base input-shadow transition duration-150" id="nuevo-telefono" name="nuevo-telefono" placeholder="" required="" type="tel"/>
+</div>
+<p class="text-xs text-slate-500 pt-1">
+              Escribe el nuevo número de contacto.
+            </p>
+</form>
+</div>
+<!-- Form Actions (Submit button and return link) -->
+<div class="mt-12 md:mt-16 flex flex-col items-center justify-center space-y-8" data-purpose="form-actions">
+<!-- Primary Continue Button -->
+<button class="min-w-[180px] bg-[#1a58d6] hover:bg-[#1546ac] active:bg-[#113a8f] text-white font-medium text-base py-3 px-8 rounded-full shadow-md hover:shadow-lg transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" form="update-phone-form" type="submit">
+            Continuar
+          </button>
+<!-- Back Navigation Link -->
+<a class="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-150 flex items-center justify-center group" href="#volver">
+<span class="group-hover:-translate-x-0.5 transition-transform duration-150 mr-1">←</span> Volver
+          </a>
+</div>
+</section>
+<!-- END: RightFormColumn -->
+</div>
+</main>
+<!-- END: MainContent -->
+</body></html>

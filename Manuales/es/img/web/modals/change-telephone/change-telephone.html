@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Teléfono actualizado</title>
+<!-- Tailwind CSS CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#1961e6',
+              hover: '#1353c8',
+              navy: '#14213d',
+              gray: '#607289'
+            }
+          },
+          fontFamily: {
+            sans: [
+              '-apple-system',
+              'BlinkMacSystemFont',
+              '"Segoe UI"',
+              'Roboto',
+              'Helvetica',
+              'Arial',
+              'sans-serif'
+            ]
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styles for Precise Shadow and Backdrop -->
+<style data-purpose="modal-styling">
+    .modal-shadow {
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 20px 40px -15px rgba(0, 0, 0, 0.07);
+    }
+  </style>
+</head>
+<body class="bg-[#f0f4f9] min-h-screen flex items-center justify-center p-4 antialiased selection:bg-blue-100">
+<!-- BEGIN: ModalContainer -->
+<main aria-describedby="modal-description" aria-labelledby="modal-title" aria-modal="true" class="bg-white w-full max-w-[540px] rounded-[32px] px-8 py-16 sm:py-20 sm:px-12 flex flex-col items-center text-center modal-shadow border border-slate-100/80 transition-all" data-purpose="status-modal" role="dialog">
+<!-- BEGIN: StatusIcon -->
+<!-- Circular check badge container -->
+<div class="w-[84px] h-[84px] rounded-full bg-brand-blue flex items-center justify-center mb-8 sm:mb-9 shadow-sm" data-purpose="success-icon">
+<svg aria-hidden="true" class="w-10 h-10 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" viewbox="0 0 24 24">
+<polyline points="20 6 9 17 4 12"></polyline>
+</svg>
+</div>
+<!-- END: StatusIcon -->
+<!-- BEGIN: ModalContent -->
+<!-- Primary Heading -->
+<h1 class="text-[32px] sm:text-[35px] font-bold text-brand-navy tracking-tight leading-tight mb-7 sm:mb-8" id="modal-title">
+      Teléfono actualizado
+    </h1>
+<!-- Subtitle / Body Description -->
+<p class="text-brand-gray text-xl sm:text-[22px] leading-relaxed max-w-[360px] mx-auto mb-10 sm:mb-11 font-normal" id="modal-description">
+      Su teléfono ha sido actualizado correctamente.
+    </p>
+<!-- END: ModalContent -->
+<!-- BEGIN: ModalActions -->
+<!-- Confirmation Action Button -->
+<button class="w-[200px] py-4 bg-brand-blue hover:bg-brand-hover active:scale-[0.98] text-white text-[21px] font-medium rounded-full shadow-sm hover:shadow transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-blue-300" data-purpose="confirm-button" type="button">
+      Aceptar
+    </button>
+<!-- END: ModalActions -->
+</main>
+<!-- END: ModalContainer -->
+</body></html>
