@@ -4,8 +4,8 @@
 **Group code (ficha):** 3145556
 **Training center:** Sede La Industria, La Empresa y Los Servicios — SENA (Neiva, Huila, Colombia)
 **Authors:** Johan Smith Santamaria Fernández; Sharik Dayanna Rojas Ibarra; Juan Pablo Chala Ramírez
-**Document version:** 1.0
-**Date:** October 10, 2026
+**Document version:** 1.1
+**Review date:** October 27, 2026 (initial version: October 10)
 **Documented software status:** in development (architecture implemented; functionality partial)
 
 > **Methodological note.** This manual was produced from a direct reading of the real code and artifacts of the project repositories (`backend/`, `database/` and `scholl-guardian-project/`). This manual documents **what the code actually does** and explicitly records the consistency findings detected. Where a datum could not be verified in the repository, it is stated as **not verifiable** rather than assumed. Cited file paths act as evidence.
@@ -17,6 +17,9 @@
 | Version | Date | Change description | Author(s) |
 |---|---|---|---|
 | 1.0 | Oct 10, 2026 | Initial version of the technical manual (Part A). Produced from direct analysis of the project's source code. | Project team |
+| 1.1 | Oct 27, 2026 | Bounded correction of inventory, JWT/authorization, Kong, Kafka and gRPC against local repositories; not a deployment certification or complete audit. | Technical review |
+
+> **Evidence cutoff (Oct 27, 2026).** This review checked the primary `sg-ms-*` and `kafka` repositories under `Proyecto`, not the divergent copies in `schoo-guardian/backend`. Older `backend/ms-*` paths remain historical references; for this review they map to `sg-ms-*`, and `gps-backend` maps to `sg-ms-gps`. The count is **eight backends (six .NET and two Java) plus Kong**; Kafka and SQL Server are not business services. `ms-configuration` and `ms-exceptional` remain historical context, not verified current components. Manifest versions and code/configuration do not prove active images, installed tables or message delivery. No secrets were read and production was not queried.
 
 ---
 
@@ -46,7 +49,7 @@ The manual describes **how the system is built and how it is operated**: its arc
 **Scope included:**
 
 - Software architecture and the rationale for its architectural style.
-- Microservices backend (10 services + API Gateway + messaging broker).
+- Microservices backend (8 services + API Gateway; messaging broker counted separately).
 - Database model (engine, schemas, tables, relationships and data dictionary).
 - Web frontend (Angular), mobile app (React Native/Expo) and GPS ingestion service.
 - API contracts, per-environment configuration and security controls.
@@ -83,7 +86,7 @@ The manual describes **how the system is built and how it is operated**: its arc
 | **EF Core** | *Entity Framework Core*; the .NET ORM. |
 | **gRPC** | Remote procedure call framework over HTTP/2 with *Protocol Buffers*. |
 | **Hexagonal (Ports & Adapters)** | Architectural style that isolates the domain from the outside via ports and adapters. |
-| **HS256** | HMAC-SHA-256 signing algorithm for JWT. |
+| **RS256 / JWKS** | RSA-SHA-256 signing and public-key publication for JWT validation. |
 | **JWT** | *JSON Web Token*; signed credential with *claims*. |
 | **Kafka** | Distributed event-oriented messaging platform. |
 | **KRaft** | Kafka mode without ZooKeeper (integrated controller). |
@@ -128,7 +131,7 @@ Main features (grouped by SRS functional requirement, with implementation status
 | **RF-03** | Routes, fleet and assignments: ordered routes and stops, buses, driver→bus, students→route | ms-route, ms-fleet, ms-user-management | Implemented |
 | **RF-04** | QR boarding/alighting scan | ms-notification (scan register) | Partial (scan register implemented; QR generation/reading on clients) |
 | **RF-05** | Guardian boarding notifications (Expo push) | ms-notification | Implemented (`student.scanned` consumer + push) |
-| **RF-06** | Real-time tracking and interactive map | gps-backend (TCP ingestion), ms-route (gRPC), web/mobile (Leaflet/Map) | Partial (GPS ingestion and in-memory storage implemented; GPS backend service not exposed via Kong) |
+| **RF-06** | Real-time tracking and interactive map | sg-ms-gps (TCP ingestion), ms-route (gRPC), web/mobile (Leaflet/Map) | Partial (ingestion and memory implemented; Kong `/api/gps` route declared, deployment and full flow not verified) |
 | **RF-07** | Trip lifecycle (start/end) | ms-route | Implemented (`api/trips/start`, `api/trips/end`, `api/trips/current`) |
 | **RF-08** | Incidents and alerts | ms-notification | Partial (`Alert`, `AlertType`, `AlertRecipient` model; alert endpoints not exposed) |
 | **RF-09** | Route lookup by guardian and by driver | ms-route | Implemented (`api/routes/student/{id}`, `api/routes/current`) |
@@ -164,9 +167,7 @@ flowchart LR
         RT[ms-route]
         NT[ms-notification]
         FI[ms-forgot-information]
-        CFG[ms-configuration]
-        EX[ms-exceptional]
-        GPS[gps-backend]
+        GPS[sg-ms-gps]
     end
     KFK[(Kafka)]
     DB[(SQL Server: school-guardian)]
@@ -177,9 +178,9 @@ flowchart LR
 
     W --> CF --> K
     M --> CF
-    K --> IAM & UM & SM & FL & RT & NT & FI
+    K --> IAM & UM & SM & FL & RT & NT & FI & GPS
     UM --> SM
-    FL --> UM
+    FL --> IAM
     RT --> FL
     NT --> UM & RT & EXPO
     FI --> IAM & TW & SMTP
@@ -187,7 +188,7 @@ flowchart LR
     UM <--> KFK
     NT <--> KFK
     GPSDEV -->|TCP| GPS
-    IAM & UM & SM & FL & RT & NT & CFG & EX --> DB
+    IAM & UM & SM & FL & RT & NT & FI --> DB
 ```
 
 ### 2.3 Technologies, languages, frameworks and versions
@@ -196,9 +197,9 @@ flowchart LR
 
 | Component | Language / Runtime | Key frameworks and versions | Evidence |
 |---|---|---|---|
-| ms-configuration, ms-exceptional, ms-fleet, ms-notification, ms-route, ms-school-management, ms-user-management, sg-ms-forgot-information | C# / .NET `net10.0` | ASP.NET Core; EF Core 10.0.12; AutoMapper 16.2.0; Confluent.Kafka 2.15.1; Grpc.AspNetCore 2.84.0; JwtBearer 10.0.12; Scalar.AspNetCore 2.17.10 | `backend/*/src/*/*.Api.csproj` |
+| ms-fleet, ms-notification, ms-route, ms-school-management, ms-user-management, sg-ms-forgot-information | C# / .NET `net10.0` | ASP.NET Core; EF Core; Kafka/gRPC/JwtBearer as declared per project (not every package in every service) | `sg-ms-*/src/*/*.csproj` |
 | ms-iam | Java 21 | Spring Boot 4.1.1; Spring Data JPA; Spring Security; Spring Kafka; jjwt 0.12.5; springdoc-openapi 3.0.0; scalar-webmvc 0.6.63 | `backend/ms-iam/pom.xml` |
-| gps-backend | Java 21 | Spring Boot 4.1.1; Spring Web MVC; Spring Data JPA; mssql-jdbc; Lombok | `scholl-guardian-project/gps-backend/gps-backend/pom.xml` |
+| sg-ms-gps | Java 21 | Spring Boot 4.1.1; Spring Web MVC; JPA/JDBC dependencies do not prove persistence | `sg-ms-gps/pom.xml:8–23` |
 | API Gateway | — | Kong 3.9 (DB-less, declarative config) | `backend/ms-api-gateway/docker-compose.yml` |
 | Messaging | — | Apache Kafka 4.1.0 in KRaft mode | `backend/kafka/docker-compose.yml` |
 | Database | — | Microsoft SQL Server 2022 | `database/docker-compose.yaml` |
@@ -243,23 +244,21 @@ flowchart TB
         ROU[ms-route :8080 + gRPC]
         NOT[ms-notification :8080]
         FOR[ms-forgot-information :8080]
-        CON[ms-configuration :8080]
-        EXC[ms-exceptional :8080]
-        GPSB[gps-backend :8080 / TCP :8842]
+        GPSB[sg-ms-gps :8080 / TCP :8842]
     end
     subgraph P4[Infrastructure plane]
         KAF[Kafka :9092]
         SQL[(SQL Server 2022 :1433)]
     end
     WEB & MOV --> KONG
-    KONG --> IAM & UMU & SCH & FLT & ROU & NOT & FOR
+    KONG --> IAM & UMU & SCH & FLT & ROU & NOT & FOR & GPSB
     UMU --> SCH
-    FLT --> UMU
+    FLT --> IAM
     ROU --> FLT
     NOT --> UMU & ROU
     FOR --> IAM
     IAM & UMU & NOT <--> KAF
-    IAM & UMU & SCH & FLT & ROU & NOT & CON & EXC --> SQL
+    IAM & UMU & SCH & FLT & ROU & NOT & FOR --> SQL
 ```
 
 **Figure 2.1 — General architecture diagram.** Figure numbering follows the APA standard; each figure is cited in the text.
@@ -283,7 +282,7 @@ The system combines three structural decisions:
 
 3. **Single API Gateway (Kong).** Centralizes routing, CORS and rate control, and hides the internal service topology from clients.
 
-Consistency findings (see sections 3.5 and 9): the actual ms-iam JWT issuer uses symmetric **HS256** (not RS256/JWKS), the token *deny-list* is **in memory** (there is no Redis in the repository), and ms-notification is implemented in **.NET**. This manual documents the reality of the code.
+The ms-iam issuer signs **RS256** and publishes JWKS; five .NET business backends validate the token and require authorization for their controllers. Recovery is a local OTP-based exception (section 7.3). IAM's deny-list remains in memory and notifications is .NET. These are code observations, not operational guarantees.
 
 ### 3.2 Component and deployment diagram
 
@@ -295,7 +294,7 @@ flowchart LR
         KONG[Kong 3.9\n:8000]
     end
     subgraph Identity
-        IAM["ms-iam (Java/Spring)\nREST /api/v1/auth, /api/profiles\nJWT HS256 issuer"]
+        IAM["ms-iam (Java/Spring)\nREST /api/v1/auth + JWKS\ngRPC Profile/InternalProfile · RS256"]
     end
     subgraph People
         UMU["ms-user-management (.NET)\nREST /api/{students,drivers,parents,admins,families}\ngRPC client"]
@@ -315,19 +314,16 @@ flowchart LR
     subgraph Recovery
         FOR["ms-forgot-information (.NET)\nREST /api/v1/{password,email,phone}"]
     end
-    subgraph Configuration
-        CON["ms-configuration (.NET)"]
-        EXC["ms-exceptional (.NET)"]
-    end
     subgraph Tracking
         GPS["gps-backend (Java)\nTCP :8842 + REST /api/gps"]
     end
-    KONG --> IAM & UMU & SCH & FLT & ROU & NOT & FOR
+    KONG --> IAM & UMU & SCH & FLT & ROU & NOT & FOR & GPS
     UMU -->|gRPC| SCH
-    FLT -->|HTTP| UMU
-    ROU -->|HTTP| FLT
-    NOT -->|HTTP| UMU & ROU
-    FOR -->|HTTP X-Internal-Api-Key| IAM
+    FLT -->|gRPC + internal key| IAM
+    ROU -->|gRPC + internal key| FLT
+    ROU -->|gRPC| UMU
+    NOT -->|gRPC| UMU & ROU
+    FOR -->|gRPC + internal key| IAM
 ```
 
 **Figure 3.1 — Component diagram.**
@@ -346,8 +342,7 @@ flowchart TB
             KR[ms-route:8080]
             KN[ms-notification:8080]
             KX[ms-forgot-information:8080]
-            KCO[ms-configuration:8080]
-            KEX[ms-exceptional:8080]
+            KG[ms-gps:8080 / TCP 8842]
             KK[kafka:4.1.0\n9092]
             DB[(sqlserver:2022\n1433)]
             LB[liquibase container\nmigrations]
@@ -360,10 +355,10 @@ flowchart TB
     LB --> DB
     DB --> V1
     KK --> V2
-    KC --> KI & KU & KS & KF & KR & KN & KX
+    KC --> KI & KU & KS & KF & KR & KN & KX & KG
 ```
 
-**Figure 3.2 — Deployment diagram.** Each service runs in its own container on the shared network; Kong resolves services by container DNS name, not by host ports.
+**Figure 3.2 — Declared topology, not verified deployment.** Kong references DNS names and internal ports, not published host ports.
 
 ### 3.3 Modules, layers and services
 
@@ -375,13 +370,11 @@ flowchart TB
 | **ms-fleet** | Fleet | `Fleet` | 8080 | Buses, brands/models, driver assignment |
 | **ms-route** | Routes and trips | `Route` | 8080 (+gRPC) | Routes, stops, assignments, executions and trips |
 | **ms-notification** | Notifications | `Notification` | 8080 | Boarding alerts, recipients, push tokens |
-| **ms-forgot-information** | Recovery | `Settings`(*) | 8080 | Email/SMS OTP and email/phone changes |
-| **ms-configuration** | Configuration | `Settings` | 8080 | Platform settings and password policy |
-| **ms-exceptional** | Exceptional usages | `Settings`(†) | 8080 | Driver/route incidents (driver-usages, route-usages) |
-| **gps-backend** | Tracking | `Gps` | 8080 / TCP 8842 | GPS frame ingestion and position queries |
+| **sg-ms-forgot-information** | Recovery | `ForgotInformation` | 8080 | Email/SMS OTP and email/phone changes |
+| **sg-ms-gps** | Tracking | `Gps` (model; service in memory) | 8080 / TCP 8842 | GPS frame ingestion and position queries |
 | **ms-api-gateway** | Edge | — | 8000 | Kong gateway |
 
-(*) `sg-ms-forgot-information` uses its own connection; its associated schema is not explicitly isolated in the data documentation. (†) ms-exceptional persists on its own connection; its schema does not appear as an independent group in the DBML (see section 4.3).
+`ForgotInformationContext` explicitly configures the `ForgotInformation` schema and `VerificationRequest` table; this does not prove installation. `ms-configuration` and `ms-exceptional` are excluded from the current inventory (historical sections 6.8–6.9).
 
 **Internal layers per .NET service.** The standard layout is:
 
@@ -420,7 +413,7 @@ sequenceDiagram
     participant SV as Domain service
     U->>K: POST /api/v1/auth/login (credentials)
     K->>IAM: POST /api/v1/auth/login
-    IAM-->>U: access (15 min) + refresh cookie (30 days)
+    IAM-->>U: RS256 access + refresh cookie (configurable validity)
     U->>K: GET /fleet/api/buses (Authorization: Bearer)
     K->>SV: forwards with the token
     SV-->>U: 200 + data (filtered by tenant/school)
@@ -450,12 +443,13 @@ sequenceDiagram
     participant KFK as Kafka
     participant UMU as ms-user-management
     participant EXPO as Expo Push
-    Cli->>NOT: POST /api/v1/notifications/scan
+    Cli->>NOT: POST /api/notifications/scan (via Kong /notification)
+    NOT->>NOT: persist Boarding + Alert
     NOT->>KFK: publish student.scanned
     KFK->>NOT: consume student.scanned (ms-notification-consumer)
-    NOT->>UMU: GET /api/families/student/{id}/members
+    NOT->>UMU: gRPC GetFamilyMembersByStudent
     UMU-->>NOT: student's guardians
-    NOT->>EXPO: POST /--/api/v2/push/send
+    NOT->>EXPO: attempt POST /--/api/v2/push/send (no delivery receipt)
 ```
 
 **Flow D — Real-time GPS tracking.**
@@ -464,11 +458,13 @@ sequenceDiagram
 sequenceDiagram
     participant Dev as GPS tracker
     participant GPS as gps-backend (TCP :8842)
+    participant K as Kong (declared route)
     participant Cli as Web/Mobile
     Dev->>GPS: binary frame (login 0x01 / heartbeat 0x13 / location 0x31)
     GPS->>GPS: decodes and stores in memory (ConcurrentHashMap)
     GPS-->>Dev: ACK with CRC-16
-    Cli->>GPS: GET /api/gps/devices/{imei}/location
+    Cli->>K: GET /api/gps/devices/{imei}/location + Bearer
+    K->>GPS: validate access token and forward without stripping prefix
     GPS-->>Cli: last known position
 ```
 
@@ -489,7 +485,7 @@ sequenceDiagram
 | **Problem Details (RFC 7807)** | Uniform API and client errors | Exception middleware; `core/http/problem-detail.ts` |
 | **Rate Limiting** | Endpoint protection | ASP.NET Core middleware (`writes`, `registration`, `otp-public`) and Kong plugin |
 
-> **Consistency findings** (recorded): (1) the ms-iam JWT issuer signs with symmetric **HS256** (not RS256/JWKS); (2) the token *deny-list* is **in memory** (`InMemoryTokenDenyList`), with no Redis; (3) the notification service is implemented in **.NET**; (4) ms-iam's gRPC configuration is **declared but not implemented** (`application.properties` references `grpc.school-management.*` with no gRPC dependency or client in `pom.xml`).
+> **Correction of earlier findings:** RS256/JWKS and IAM gRPC servers are implemented (`JwtTokenProvider`, `JwksController`, `GrpcServerLifecycle`). The deny-list remains in memory. An implemented gRPC server does not prove a client or deployment; see sections 7.3–7.5.
 
 ---
 
@@ -1031,10 +1027,10 @@ This section describes each service: its responsibility, main use cases and clas
 ### 6.1 ms-iam (identity and access)
 
 - **Responsibility:** authentication, JWT issuance and validation, profiles/roles, sessions, terms and acceptances; exposes internal profile-management endpoints.
-- **Key use cases and classes:** `SignInService`/`AuthController` (login), `RefreshTokenService`, `LogoutService` (`TokenDenyList` → `InMemoryTokenDenyList`), `CreateProfileService` (publishes `profile.created`), `PersonCreatedConsumer` (consumes `*.created` and `admin.school.updated`), `JwtTokenProvider`, `InternalApiKeyFilter`, `SecurityConfig`.
-- **Inputs/outputs:** REST input (`/api/v1/auth/*`, `/api/profiles/*`) and inbound/outbound Kafka events; output to the `Iam` database.
+- **Key use cases and classes:** `AuthController`, `LoginService`, `RefreshTokenService`, `LogoutService`, `InMemoryTokenDenyList`, `CreateProfileService`, `PersonCreatedConsumer`, `PersonStatusChangedConsumer`, `JwtTokenProvider`, `JwksController`, `GrpcServerLifecycle`.
+- **Inputs/outputs:** REST `/api/v1/auth/*` and JWKS; gRPC `ProfileService` and `InternalProfileService` servers; Kafka events; persistence in the `Iam` schema. Former internal REST `/api/profiles/**` endpoints do not describe the current integration.
 - **Dependencies:** Spring Data JPA (SQL Server), Spring Security, Spring Kafka, jjwt.
-- **Business rules:** password encrypted with BCrypt and validated against a pattern (8–72 characters, at least one uppercase, lowercase, digit and symbol); access token 15 min and refresh 30 days; current terms version `2026.08`; `/api/profiles/**` endpoints require the internal role (`ROLE_INTERNAL_SERVICE`) via the `X-Internal-Api-Key` header.
+- **Business rules:** BCrypt; default access/refresh validity 60 minutes/7 days; gRPC protected by `x-internal-api-key` metadata (section 7.3).
 
 ### 6.2 ms-user-management (people and families)
 
@@ -1056,16 +1052,16 @@ This section describes each service: its responsibility, main use cases and clas
 
 - **Responsibility:** vehicle fleet: buses, brands/models and driver-to-bus assignment.
 - **Use cases/controllers:** `BusController` (`/api/buses`), `VehicleTypesController`/`VehicleTypeController` (`/api/vehicle-types`).
-- **Inputs/outputs:** REST; HTTP output to ms-user-management (`IamService`, to validate profile/name) and to a GPS service (`GpsDeviceService`).
+- **Inputs/outputs:** REST; `IamGrpcClient` to IAM for profile/name and `route.v1.RouteService` server for routes.
 - **Dependencies:** EF Core, AutoMapper, typed HTTP client.
 - **Business rules:** unique plate; a bus has a unique GPS and a capacity; driver assignment has validity (`AssignedFrom`/`AssignedTo`).
-- **Findings:** duplicated controllers (`VehicleTypeController` and `VehicleTypesController`); `GpsDeviceService` without a configured `BaseAddress`; unused `Grpc.AspNetCore` dependency and `Protos/profile.proto`.
+- **Earlier diagnosis corrected:** `Grpc.AspNetCore` and `Protos/profile.proto` are used in the current integration; the unused-gRPC finding no longer holds.
 
 ### 6.5 ms-route (routes and trips)
 
 - **Responsibility:** routes, stops, assignments (bus, students), scheduling, executions and trips.
-- **Use cases/controllers:** `RouteController`, `RouteDetailController`, `RouteAssignmentController`, `StopController`, `TripController`, `CityController`; **gRPC server** `RouteService` (12 RPCs).
-- **Inputs/outputs:** REST (`/api/{routes,stops,trips,cities}`) and gRPC; HTTP output to ms-fleet (`/api/buses/assigned/{profileId}`).
+- **Use cases/controllers:** `RouteController`, `RouteDetailController`, `RouteAssignmentController`, `StopController`, `TripController`, `CityController`; **gRPC server** `route.RouteService` (16 RPCs).
+- **Inputs/outputs:** REST and gRPC; `FleetGrpcClient` and `FamilyGrpcClient` clients (section 7.4).
 - **Dependencies:** EF Core, AutoMapper, Grpc.AspNetCore, typed HTTP client.
 - **Business rules:** route stops have an order (`OrderSequence`); a trip (`RouteExecution`) associates a bus and a driver; `GET /api/routes/current` returns the user's current route based on the token.
 - **Finding:** `Confluent.Kafka` referenced but **not used** in code.
@@ -1073,21 +1069,23 @@ This section describes each service: its responsibility, main use cases and clas
 ### 6.6 ms-notification (notifications)
 
 - **Responsibility:** registering boarding scans and notifying guardians (Expo push); storage of device tokens.
-- **Use cases/controllers:** `NotificationController` (`/api/v1/notifications`, `/scan`, `/guardian/{profileId}`, `/devices`); `ProcessScanService` (publishes `student.scanned`); `StudentScannedConsumer` (consumes `student.scanned` and pushes).
-- **Inputs/outputs:** REST; Kafka consume/produce; HTTP to ms-user-management (`/api/families/student/{id}/members`) and to Expo.
+- **Use cases/controllers:** `ScanController`, `GuardianNotificationController`, `DeviceController`, `IncidentReportController`; `ProcessScanService`, `ReportIncidentService`; `StudentScannedConsumer` and `IncidentReportedConsumer`.
+- **Inputs/outputs:** REST under `/api/notifications`; Kafka; gRPC Family/Route clients and Boarding server; HTTPS to Expo.
 - **Dependencies:** EF Core, Confluent.Kafka, HttpClient.
-- **Business rules:** on receiving a scan, the set of recipients (the student's family) is determined and `AlertRecipient` rows are created; then the push notification is sent.
+- **Business rules:** alert persisted before publication; consumer resolves recipients and attempts push. Neither persistence nor processing guarantees delivery (section 7.5).
 - **Finding:** `MapOpenApi()`/`MapScalarApiReference()` are registered twice (duplication).
 
 ### 6.7 sg-ms-forgot-information (recovery and data change)
 
 - **Responsibility:** anonymous password recovery and email/phone change flows via OTP.
 - **Use cases/controllers:** `PasswordController` (`/api/v1/password/{forgot,forgot/verify,reset}`), `EmailChangeController` (`/api/v1/email/change/*`), `PhoneChangeController` (`/api/v1/phone/change/*`), service `VerificationCodeService`.
-- **Inputs/outputs:** REST (anonymous); HTTP output to ms-iam with the `X-Internal-Api-Key` header; SMTP and Twilio integration.
+- **Inputs/outputs:** REST with OTP and no local JWT (email/phone protected by Kong); `IdentityDirectoryGrpcClient` to IAM with `x-internal-api-key` metadata; SMTP and Twilio.
 - **Dependencies:** EF Core, HttpClient, Twilio, SMTP.
 - **Business rules:** OTP codes are validated with a *pepper* (`OTP_HASH_PEPPER`); limit of 10 req/min per IP plus an internal per-profile limiter; phone flows return `503` if Twilio is not configured; *fail-fast* validation of SMTP/internal key outside `Development`.
 
 ### 6.8 ms-configuration (configuration)
+
+> **Historical context, not verified as a current service.** The previous description is preserved; excluded from the current count and diagrams.
 
 - **Responsibility:** platform settings and password policies.
 - **Use cases/controllers:** `SettingController` (`/api/settings`), `PasswordPolicyController` (`/api/password-policies`).
@@ -1096,6 +1094,8 @@ This section describes each service: its responsibility, main use cases and clas
 - **Business rules:** write operations are limited to 30 req/min (`writes`).
 
 ### 6.9 ms-exceptional (exceptional usages)
+
+> **Historical context, not verified as a current service.** The previous description is preserved; excluded from the current count and diagrams.
 
 - **Responsibility:** register driver and route incidents (exceptional events).
 - **Use cases/controllers:** `DriverUsageController` (`/api/driver-usages`), `RouteUsageController` (`/api/route-usages`).
@@ -1107,14 +1107,14 @@ This section describes each service: its responsibility, main use cases and clas
 
 - **Responsibility:** receive binary frames from GPS trackers over **TCP** and expose the last position over REST.
 - **Key components:** `GpsTcpServer` (TCP port **8842**), `GpsFrameDecoder`, `GpsPacketRouter`, per-protocol handlers (`0x01` login, `0x13` heartbeat, `0x31` location, `0x32` alarm, `0x50` LBS, `0x80` command, `79 79` legacy), in-memory `GpsLocationService`/`GpsDeviceService`, `GpsAckService` (ACK with CRC-16).
-- **Inputs/outputs:** TCP input from devices and REST `GET /api/gps/devices/{imei}/{connected|location|history}`.
+- **Inputs/outputs:** TCP and REST `GET /api/gps/devices/{imei}`, `/{imei}/connected`, `/{imei}/location`; no `history` in the inspected controllers.
 - **Dependencies:** Spring Web MVC (the DataSource/JPA are **disabled** in `application.properties`).
-- **Limitation:** persistence is **in memory** (concurrent maps), not SQL Server; the REST port is 8080 and TCP is 8842; it has no Dockerfile of its own.
+- **Limitation:** persistence is **in memory** (concurrent maps), not SQL Server; REST 8080 and TCP 8842; `sg-ms-gps/Dockerfile` does exist (Java 21). This does not establish a deployed image.
 
 ### 6.11 API Gateway (Kong) and Kafka
 
-- **Kong:** exposes 7 services (ms-iam, ms-user-management, ms-fleet, ms-school-management, ms-notification, ms-route, ms-forgot-information) with `cors` and `rate-limiting` plugins.
-- **Kafka:** broker `apache/kafka:4.1.0` (KRaft, single node), topics declared in `kafka/init/topics.conf`: `student.created`, `driver.created`, `admin.created`, `parent.created`, `profile.created`, `student.scanned`. In addition, `admin.school.updated` is produced/consumed **without being declared** in `topics.conf`.
+- **Kong:** declares routes to all eight backends including GPS; global `sg-jwt`, shared per-service CORS and IAM/login-specific limits (not a common limit on every service).
+- **Kafka:** nine declared topics, including `admin.school.updated`, `user.status.changed` and `incident.reported` (section 7.5); live broker not checked.
 
 ### 6.12 Web and mobile frontend
 
@@ -1136,9 +1136,12 @@ The public entry point is **Kong** at `http://<host>:8000`. Kong routes by prefi
 | ms-user-management | `/user` | `http://ms-user-management:8080` |
 | ms-fleet | `/fleet` | `http://ms-fleet:8080` |
 | ms-school-management | `/school-management` | `http://ms-school-management:8080` |
-| ms-notification | `/notification` (GET/POST only) | `http://ms-notification:8080` |
-| ms-route | `/route` | `http://ms-route:8080` |
-| ms-forgot-information | `/api/v1/password` (strip_path = false) | `http://ms-forgot-information:8080` |
+| ms-notification | `/notification` (GET/POST/PUT/PATCH/DELETE/OPTIONS) | `http://ms-notification:8080` |
+| ms-route | `/route`, `/trip` | `http://ms-route:8080` |
+| ms-forgot-information | `/api/v1/password`, `/api/v1/email/change`, `/api/v1/phone/change` (strip_path = false) | `http://ms-forgot-information:8080` |
+| ms-gps | `/api/gps` (strip_path = false) | `http://ms-gps:8080` |
+
+**Edge verified in configuration, not production.** `sg-ms-api-gateway/kong/kong.yml:13–24` lists `/api/v1/auth/login`, `/refresh`, `/logout`, `/health` (each under `/api/v1/auth`), `/api/v1/password` and `/.well-known/jwks.json` as public. These are specific entries, **not** all of `/api/v1/auth`; `handler.lua:79–85` matches by **prefix**, not strict equality. `/profile`, `/terms/*`, email/phone and GPS require an access token at the edge. CORS reuses the explicit origins, credentials and methods/headers in `kong.yml:66–103`; it is not authorization. The JWT plugin has no explicit OPTIONS exception: validate preflight and plugin ordering in an authorized environment before claiming browser compatibility. The JWKS GET route uses `strip_path=false`.
 
 **ms-iam.**
 
@@ -1151,11 +1154,6 @@ The public entry point is **Kong** at `http://<host>:8000`. Kong routes by prefi
 | GET | `/api/v1/auth/terms/status` | Terms acceptance status. |
 | GET | `/api/v1/auth/terms/acceptances` | Acceptance history. |
 | POST | `/api/v1/auth/terms/accept` | Accepts current terms. |
-| GET | `/api/profiles/by-email` | (Internal) Look up profile by email. |
-| PUT | `/api/profiles/{id}/password` | (Internal) Change password. |
-| PUT | `/api/profiles/{id}/email` | (Internal) Change email. |
-| POST | `/api/profiles/{id}/phone/matches` | (Internal) Verify phone match. |
-| PUT | `/api/profiles/{id}/phone` | (Internal) Change phone. |
 
 **ms-user-management** (prefix `/user`).
 
@@ -1228,7 +1226,7 @@ The public entry point is **Kong** at `http://<host>:8000`. Kong routes by prefi
 | POST | `/api/v1/phone/change/request` · `/verify` · `/verification/request` · `/verification/resend` · `/verification/check` | Phone change flow. |
 | GET | `/health` | Service health. |
 
-**ms-configuration** (not exposed by Kong).
+**ms-configuration** (historical reference; current service not verified).
 
 | Method | Route | Description |
 |---|---|---|
@@ -1236,7 +1234,7 @@ The public entry point is **Kong** at `http://<host>:8000`. Kong routes by prefi
 | PUT | `/api/settings/{name}` | Update setting. |
 | GET/PUT | `/api/password-policies` · `/api/password-policies/{id}` | Password policies. |
 
-**ms-exceptional** (not exposed by Kong).
+**ms-exceptional** (historical reference; current service not verified).
 
 | Method | Route | Description |
 |---|---|---|
@@ -1250,7 +1248,6 @@ The public entry point is **Kong** at `http://<host>:8000`. Kong routes by prefi
 | GET | `/api/gps/devices/{imei}` | Device status. |
 | GET | `/api/gps/devices/{imei}/connected` | Is it connected? |
 | GET | `/api/gps/devices/{imei}/location` | Last location. |
-| GET | `/api/gps/devices/{imei}/history` | History. |
 | POST | `/api/gps/test/{imei}` | Test injection. |
 
 **Example request and response — sign-in.**
@@ -1272,7 +1269,7 @@ Content-Type: application/json
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3YzE...",
-  "expiresIn": 900,
+  "expiresIn": 3600,
   "roleId": 1,
   "personId": "3f2b8c10-...",
   "email": "admin@school.edu.co",
@@ -1280,7 +1277,7 @@ Content-Type: application/json
 }
 ```
 
-The response also sets the `refresh_token` cookie (`HttpOnly`, `Secure`, `SameSite=Strict`, path `/api/v1/auth/refresh`, 30 days).
+The response sets `refresh_token` (`HttpOnly`, `Secure`, `SameSite=None`, path `/api/v1/auth/refresh`, Max-Age derived from expiration; `RefreshCookieSupport.java:40–45`). This example is not a production capture.
 
 **Example request and response — create a bus (through Kong).**
 
@@ -1345,13 +1342,14 @@ The backend follows a conventional REST scheme; application errors are exposed a
 
 ### 7.3 Authentication and authorization
 
-- **Issuer:** ms-iam only; signs with **HS256** using a configurable symmetric key.
-- **Access token claims:** `sub` (ProfileId), `personId`, `roleId`, `type=access`, `jti`, and where applicable `email`, `campusId`, `schoolId`.
-- **Refresh token:** `sub`, `type=refresh`, no `jti`; travels in an `HttpOnly`/`Secure`/`SameSite=Strict` cookie.
-- **Validity:** access **15 minutes**, refresh **30 days**.
+- **Issuer:** **ms-iam**, **RS256** signing, `kid` header, public keys at `GET /.well-known/jwks.json`. `RsaKeyProvider` loads the configured pair or generates an ephemeral pair if absent; restarts and replicas require stable key management.
+- **Claims:** `iss`, `aud`, `sub` (ProfileId), `personId`, `roleId`, `role`, `type=access`, `jti`, `permissions` and, where applicable, `email`, `documentNumber`, `campusId`, `schoolId`. Refresh includes `type=refresh` and `jti`; it cannot be used as an access token.
+- **Validity:** constructor and `application.properties:55–56`: access **60 minutes**, refresh **7 days**; not checked at runtime. Cookie `HttpOnly`, `Secure`, `SameSite=None` (`RefreshCookieSupport.java:40–45`); do not attribute `Strict` CSRF mitigation to it.
 - **Revocation:** **in-memory** token deny-list (`InMemoryTokenDenyList`); not shared across replicas (scaling limitation).
-- **Consumption in .NET services:** all services validate the JWT with `JwtBearer` for **tenant filtering** (the token's school/campus), but **do not** declare `[Authorize]` policies or `UseAuthorization`. That is, authentication is used for data isolation, not to block the endpoint at the service level.
-- **Internal authorization between services:** the `X-Internal-Api-Key` header protects ms-iam's `/api/profiles/**` (header validated in constant time with `MessageDigest.isEqual`), granting `ROLE_INTERNAL_SERVICE`. Used by `sg-ms-forgot-information`.
+- **Five .NET business services:** fleet, route, school, users and notifications register `JwtBearer`, `UseAuthentication`, `UseAuthorization` and `MapControllers().RequireAuthorization()`. Each `JwtAuthenticationExtensions` requires RS256/JWKS signature, issuer, audience, expiration and `type=access`; identity is not trusted from `X-User-*`.
+- **Permissions/roles:** `RequirePermission` filters check `permissions` (e.g. buses/students/routes); `RequireRole` checks `roleId` (e.g. schools and notifications); `RequireProfile` requires a valid profile. They return 401 without identity and 403 for insufficient permission/role. Filter presence alone does not certify exhaustive coverage or tenant isolation.
+- **Recovery exception:** `sg-ms-forgot-information/Program.cs` registers neither JWT nor global authorization. Its controllers use OTP and rate limiters; Kong allows anonymous access to the `/api/v1/password` prefix but requires JWT for `/api/v1/email/change` and `/api/v1/phone/change`. Edge protection and local protection are not equivalent.
+- **Internal gRPC authorization:** IAM protects `ProfileService` and `InternalProfileService` using `x-internal-api-key` metadata and `InternalApiKeyInterceptor`; fleet applies an interceptor to its gRPC server. Controller authorization does not automatically cover `MapGrpcService`.
 - **System roles:** `ADMIN=1`, `STUDENT=2`, `DRIVER=3`, `PARENT=4`, `SUPER_ADMIN=5` (seeds `001-insert-roles.sql` and `002-insert-rol-super-admin.sql`). The frontend applies `roleGuard` to restrict routes by role.
 
 ### 7.4 Integrations with external systems
@@ -1361,16 +1359,20 @@ The backend follows a conventional REST scheme; application errors are exposed a
 | GPS trackers → gps-backend | Binary TCP (proprietary protocol, frames with CRC-16) | — | Ports `0x01` login, `0x13` heartbeat, `0x31` location, `0x32` alarm, `0x50` LBS, `0x80` command, `79 79` legacy. |
 | Services ↔ Kafka | TCP Kafka (KRaft) | — | Domain topics (section 7.5). |
 | ms-user-management → ms-school-management | gRPC (HTTP/2) | — | `http://ms-school-management:5001`. |
-| ms-fleet → ms-user-management | HTTP/JSON | JWT/tenant | Validates profile existence and name. |
-| ms-route → ms-fleet | HTTP/JSON | JWT/tenant | Buses assigned to a driver. |
-| ms-notification → ms-user-management | HTTP/JSON | JWT/tenant | Student's family members. |
-| sg-ms-forgot-information → ms-iam | HTTP/JSON | `X-Internal-Api-Key` | Email/password/phone changes. |
+| ms-fleet → ms-iam | gRPC | `x-internal-api-key` | `usermanagement.v1.ProfileService`: existence and name. |
+| ms-route → ms-fleet | gRPC | `x-internal-api-key` | `route.v1.RouteService`: assigned bus and details (2 RPCs). |
+| ms-route / ms-notification → ms-user-management | gRPC | No key interceptor verified | `family.FamilyService`: members; server also registers families (2 RPCs). |
+| ms-notification → ms-route | gRPC | No key interceptor verified | `route.RouteService` (16 server RPCs; client copy has 15, lacking `GetTripStatus`). |
+| sg-ms-forgot-information → ms-iam | gRPC | `x-internal-api-key` | `iam.v1.InternalProfileService`: lookup, phone and changes (5 RPCs). |
+| Client not located → ms-notification | gRPC | Review internal exposure | `boarding.BoardingService.GetAlightedCountAtStop`, registered server. |
 | ms-notification → Expo | HTTPS/JSON | — | `https://exp.host/--/api/v2/push/send`. |
 | sg-ms-forgot-information → Twilio | HTTPS/JSON | `TWILIO_*` | SMS verification; 503 if not configured. |
 | sg-ms-forgot-information → SMTP | SMTP/TLS | `SMTP_*` | Sending OTP codes by email. |
 | Clients → Edge | HTTPS (Cloudflare Tunnel in development) | — | `cloudflared` exposes Kong and the password service. |
 
 **Credential management:** external credentials are injected via **environment variables** and are **not** exposed to clients. Sections 8.4 and 9 detail the state of secret management and associated findings.
+
+**Observed architecture boundary:** not every cross-domain read uses gRPC. `sg-ms-notification/src/ms-notification.Api/Infrastructure/Persistence/Directory/{StudentDirectory,SchoolDirectory}.cs` queries profiles/persons and joins profiles, campuses and administrators; `NotificationContext.cs:49–64` maps `Iam`, `UserManagement` and `School` tables. In routes, `TripBoardingQueryRepository.cs:41–54` attempts an EF query and returns zero on failure, rather than calling the Boarding server. That server's existence proves neither use nor a successful count.
 
 ### 7.5 Messaging (Kafka)
 
@@ -1380,11 +1382,29 @@ The backend follows a conventional REST scheme; application errors are exposed a
 | `driver.created` | ms-user-management | ms-iam | Synchronize the driver profile. |
 | `parent.created` | ms-user-management | ms-iam | Synchronize the guardian profile. |
 | `admin.created` | ms-user-management | ms-iam | Synchronize the administrator profile. |
-| `admin.school.updated` | ms-user-management | ms-iam | Update the admin↔school link (**not declared** in `topics.conf`). |
+| `admin.school.updated` | ms-user-management | ms-iam | Update the admin↔school link. |
+| `user.status.changed` | ms-user-management | ms-iam | Synchronize account status. |
 | `profile.created` | ms-iam | *(none in the repo)* | Notify profile creation (no consumer). |
 | `student.scanned` | ms-notification | ms-notification | Trigger the boarding notification. |
+| `incident.reported` | ms-notification | ms-notification | Attempt incident push to resolved recipients. |
 
-Topics are declared with 1 partition and replication factor 1 (development environment). Serialization in .NET uses `System.Text.Json`; ms-iam uses a JSON deserializer with open trusted packages.
+All **nine** topics are declared in `kafka/init/topics.conf:6–20`, with 1 partition and replication factor 1; declaration does not prove creation in a live broker. .NET serializes using `System.Text.Json` (PascalCase, numeric enums by default); IAM explicitly maps PascalCase names with `JsonProperty`.
+
+| Actual payload | Fields |
+|---|---|
+| Person `*.created` | `EventId`, `PersonId`, `Email`, `IdentificationNumber`, `SchoolId`, `CampusId` |
+| `admin.school.updated` / `user.status.changed` | `EventId`, `PersonId`, `SchoolId` / `EventId`, `PersonId`, `Email`, `Status` (text) |
+| `profile.created` | `EventId`, `ProfileId`, `PersonId`, `RoleId` |
+| `student.scanned` | `BoardingId`, `AlertId`, `StudentProfileId`, `RouteExecutionId`, `BoardingType`, `Timestamp`, `StopName`, `StopAddress`, `Latitude`, `Longitude` |
+| `incident.reported` | `AlertId`, `RouteExecutionId`, `ReportedByProfileId`, `AlertTypeId`, `Description`, `StudentsOnBoard`, `Recipients`, `Timestamp` |
+
+**Processing and limits.** IAM uses group `iam`; notifications uses `ms-notification-consumer` and `ms-notification-incident-consumer`, both `Earliest`. .NET publishers await `ProduceAsync` with random GUID keys, not entity keys; IAM calls `KafkaTemplate.send` without awaiting its asynchronous result. No transactional outbox, DLQ or `EventId` deduplication ledger was observed in these adapters. IAM catches/logs use-case errors and returns; notifications catches errors and does not configure success-coupled manual commits. Reliable retry, exactly-once processing and entity ordering beyond the declared configuration are therefore not promised.
+
+`CreateProfileService` rejects an existing person (not an upsert). `ProcessScanService` avoids repeating an explicit type when already in that state; without an explicit type it alternates by state, so this is not request idempotency. The scan consumer avoids recreating existing recipients, **but attempts push again** on reprocessing. The incident consumer records no persistent deduplication.
+
+**Distinct states, no delivery guarantee:** (1) `Boarding`/`Alert` persisted before publication; (2) event processed by the consumer; (3) HTTP send to Expo attempted if tokens exist; (4) device delivery receipt, **not implemented/verified here**. `ExpoPushNotifier` sends batches of 100 and logs errors but does not process tickets/receipts. `AlertRecipient.DateTimeRead` is initialized when the row is created: it proves neither human reading nor delivery. Failure between save and publish can leave an alert without an event; API or Expo HTTP success does not prove receipt either.
+
+**Local evidence (paths relative to `Proyecto`).** `sg-ms-iam/src/main/java/com/school_guardian/ms_iam/infrastructure/{security/JwtTokenProvider.java:37–107,web/JwksController.java:21–23,messaging/PersonCreatedConsumer.java:19–47,config/KafkaConsumerConfig.java:31–81,grpc/GrpcServerLifecycle.java:53–57}`; `sg-ms-{fleet,route,school-management,user-management,notification}/src/*/Program.cs` and their `Infrastructure/Auth/JwtAuthenticationExtensions.cs` (users: `Shared/Infrastructure/Auth`); `sg-ms-notification/src/ms-notification.Api/{Application/UseCase/ProcessScanService.cs:153–175,Application/UseCase/ReportIncidentService.cs:101–108,Infrastructure/Messaging/Kafka/Consumer,Infrastructure/Messaging/Push/ExpoPushNotifier.cs:49–81}`. Per-service `.proto` contracts evidence RPCs/messages, not runtime connectivity or authentication. The catalog's consolidated matrix distinguishes the two `RouteService` contracts.
 
 ---
 
@@ -1410,11 +1430,12 @@ Topics are declared with 1 partition and replication factor 1 (development envir
 |---|---|---|---|---|
 | `ConnectionStrings__DefaultConnection` | .NET services | SQL Server connection string (`school-guardian`). | — | Yes |
 | `Kafka__BootstrapServers` | Several .NET | Kafka broker address. | `kafka:9092` (per compose) | Per service |
-| `Jwt__Secret` / `JWT_SECRET` | .NET / ms-iam | JWT signing key. | Example literal (`your-256-bit-...`) | Yes in production |
-| `Services__UserManagement__BaseUrl` | ms-notification | ms-user-management URL. | — | Yes |
-| `Services__Route__BaseUrl` | ms-notification | ms-route URL. | — | Yes |
-| `Iam__BaseUrl` | ms-fleet | Profile service URL (points to ms-user-management). | `http://ms-user-management:8080` | Yes |
-| `Fleet__BaseUrl` | ms-route | ms-fleet URL. | `http://ms-fleet:8080` | Yes |
+| `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` / `JWT_KEY_ID` | ms-iam | RSA key pair and `kid` (never disclose values). | Ephemeral pair if absent; `sg-iam` | Stable pair needed for restarts/replicas |
+| `Jwt__JwksUrl` / `Jwt__Issuer` / `Jwt__Audience` | Five .NET business services | Local RS256 validation. | IAM JWKS; `school-guardian-iam`; `school-guardian-api` | Options validated at startup |
+| `Grpc__Family__Address` / `Grpc__Route__Address` | ms-notification | Family/Route gRPC addresses. | — | Yes |
+| `Iam__GrpcAddress` | ms-fleet | IAM profile gRPC server. | — | Yes |
+| `Fleet__GrpcAddress` / `Family__GrpcAddress` | ms-route | Fleet/family gRPC addresses. | — | Yes |
+| `IdentityDirectory__GrpcAddress` | sg-ms-forgot-information | IAM internal directory over gRPC. | — | Yes |
 | `SchoolManagement__GrpcAddress` | ms-user-management | ms-school-management gRPC address. | `http://ms-school-management:5001` | Yes |
 | `APP_INTERNAL_API_KEY` / `INTERNAL_API_KEY` | ms-iam / forgot-information | Internal API key. | — | Yes (ms-iam requires it) |
 | `OTP_HASH_PEPPER` | sg-ms-forgot-information | *Pepper* for OTP hashing. | — | Yes |
@@ -1432,7 +1453,7 @@ Topics are declared with 1 partition and replication factor 1 (development envir
 
 | Environment | Network | Database | Gateway | Notes |
 |---|---|---|---|---|
-| **Development** | Docker Compose + `sg-services-network` | SQL Server 2022 in a container (`1433`), `school-guardian` database | Kong `:8000` | Cloudflare tunnels; HTTPS not required; example JWT secret used. |
+| **Development** | Docker Compose + `sg-services-network` | SQL Server 2022 in a container (`1433`), `school-guardian` database | Kong `:8000` | Declared topology; configured or ephemeral RSA keys, effective values not inspected. |
 | **Testing** | Same as development; isolated data | Separate instance or schema recreated by Liquibase | Kong | Used in post-deployment verification. |
 | **Production** | Orchestration (Docker/Kubernetes; K8s aspirational) | Managed SQL Server with backups; TLS | Kong with TLS | Requires real secrets, HTTPS/TLS 1.2+, scaling and observability. |
 
@@ -1440,7 +1461,7 @@ The application **is configured exclusively through environment variables** (RNF
 
 ### 8.4 Secret management
 
-The design foresees injecting secrets per environment. **Critical finding:** the working tree contains `.env` files with **real credentials** (SQL Server `sa` password, internal API key, SMTP/Twilio secrets and OTP *pepper*). Although `.env` files are excluded by `.gitignore` in some cases, the finding is that **potentially compromised credentials must be rotated** and migrated to a secret manager (for example, Docker/Kubernetes secrets, Vault, or a cloud provider's secret store). The `.env.example` files use *placeholders* and are the correct reference.
+The design foresees environment-injected secrets. **Historical finding, not revalidated:** version 1.0 reported credentials in `.env`; this review did not read those files and does not certify their values as real, current or compromised. If exposure is confirmed, rotate through the authorized process and use a secret manager; never copy values into documentation or reports.
 
 ---
 
@@ -1452,12 +1473,12 @@ The design foresees injecting secrets per environment. **Critical finding:** the
 - **Client-side access control:** the web `roleGuard` restricts routes by role (`dashboard-admin` for ADMIN/SUPER_ADMIN, `dashboard-superadmin` and school/admin management for SUPER_ADMIN only).
 - **Backend access control:** the JWT identifies the user and their school; services filter data by **tenant** (`ITenantProvider`). School isolation depends on this tenant resolution from the token.
 - **Inter-service authorization:** internal key (`X-Internal-Api-Key`) for ms-iam's sensitive endpoints.
-- **Documented limitation:** .NET services do not apply `[Authorize]` at the endpoint level; authentication is used for multi-tenancy, not as an explicit authorization barrier. Hardening this is recommended before production.
+- **Controls and exception:** the five .NET business backends require global authorization and permission/role filters; recovery has no local JWT (section 7.3). Coverage, isolation, internal networking and deployment configuration still need verification.
 
 ### 9.2 Data and communications encryption
 
 - **Passwords:** stored with **BCrypt** (`PasswordEncoderConfig` in ms-iam) and validated against a policy (length 8–72 and a combination of uppercase, lowercase, digit and symbol).
-- **Tokens:** the access token is a signed JWT; the refresh token travels in an `HttpOnly`/`Secure`/`SameSite=Strict` cookie (mitigates XSS and CSRF in the refresh flow).
+- **Tokens:** RS256 access and refresh cookie `HttpOnly`/`Secure`/`SameSite=None`; validate CSRF controls and mobile usage separately, without attributing `Strict` protection.
 - **OTP:** codes are stored hashed with a *pepper* (`OTP_HASH_PEPPER`).
 - **Transport:** HTTPS/TLS 1.2+ is foreseen (RNF-04); in development, internal traffic is HTTP within the Docker network and external access is via Cloudflare Tunnel (HTTPS at the edge).
 - **Minors' data (PII):** the SRS includes personal-data protection requirements (Colombian Law 1581 of 2012 and Decree 1377 of 2013) and terms acceptance with parental consent (`TermsAcceptance` with `StudentProfileId`).
@@ -1475,8 +1496,8 @@ The design foresees injecting secrets per environment. **Critical finding:** the
 - Hexagonal architecture and separation of concerns (reduced attack and change surface).
 - Password hashing with BCrypt and a complexity policy.
 - Internal key validated in **constant time** (`MessageDigest.isEqual`) to avoid *timing attacks*.
-- Refresh cookies `HttpOnly`+`Secure`+`SameSite`.
-- **Rate limiting** at two layers: Kong (300 req/min per credential; 10 req/min per IP on recovery) and per-service middleware (`writes` 30/min, `registration` 30/min, `otp-public` 10/min).
+- Refresh cookies `HttpOnly`+`Secure`+`SameSite=None` (not proof of CSRF mitigation).
+- **Rate limiting** by scope: Kong IAM 300/min by Authorization header, login 20/min and 200/h per IP; recovery applies service `otp-public` 10/min per IP. A Kong recovery limit was not verified.
 - Uniform error handling with Problem Details (avoids leaking *stack traces* to the client).
 - Input validation (Spring Validation / DataAnnotations) and CORS restricted by origin.
 - Multi-stage containers with official, minimal base images (runtime without SDK).
@@ -1485,15 +1506,15 @@ The design foresees injecting secrets per environment. **Critical finding:** the
 
 | # | Finding | Risk | Recommendation |
 |---|---|---|---|
-| 1 | Real secrets in `.env` files in the working tree | Credential compromise | Rotate and migrate to a secret manager. |
-| 2 | Example JWT secret as default literal | Token forgery if not overridden | Require `JWT_SECRET` in production (fail-fast). |
+| 1 | Version 1.0 report of secrets in `.env`, not revalidated | Potential exposure, not confirmed here | Investigate without disclosing values; rotate if confirmed. |
+| 2 | Ephemeral RSA keys when configured pair is absent (`RsaKeyProvider`) | Tokens invalid after restart and divergent replica keys | Manage stable RSA keys and rotation; the old HS256 `JWT_SECRET` advice no longer applies. |
 | 3 | In-memory token *deny-list* | Logout ineffective with multiple replicas | Migrate to a shared store (e.g., Redis). |
-| 4 | .NET services without `[Authorize]` | Endpoints protected only at the edge | Add per-service role/scope authorization. |
-| 5 | GPS exposure not routed by Kong | Possible reliance on insecure direct access | Define a route/authentication for the GPS API. |
-| 6 | **HS256** signing (symmetric) instead of the foreseen RS256 | Shared key in every validator | Adopt RS256/JWKS (private key only in ms-iam). |
-| 7 | Duplicated controllers and dead config (ms-iam gRPC, ms-route Kafka) | Subtle surface/errors | Clean up unused routes and dependencies. |
+| 4 | Earlier finding closed in code: global authorization in five .NET backends | Recovery and gRPC use different controls; coverage not certified | Validate effective boundaries and permissions, not missing authorization. |
+| 5 | Earlier finding closed in configuration: protected `/api/gps` in Kong | Deployment/direct exposure not verified | Verify image and network before claiming operational protection. |
+| 6 | Earlier finding closed in code: RS256/JWKS | Key management and rotation need operational validation | Verify stable configuration and JWKS refresh. |
+| 7 | Earlier absent-IAM-gRPC diagnosis superseded | Servers and clients do not imply effective connectivity | Check per-link contracts and controls (section 7.4). |
 | 8 | No transactional *outbox* in Kafka | Lost events if the broker fails after commit | Outbox pattern + `acks=all` + DLQ. |
-| 9 | `admin.school.updated` outside `topics.conf` | Depends on topic auto-creation | Declare the topic explicitly. |
+| 9 | Earlier finding closed: all nine topics appear in `topics.conf` | Live broker not inspected | Check creation/configuration in an authorized environment. |
 | 10 | GPS with in-memory persistence | Data loss on restart | Persist to SQL Server (JPA is disabled). |
 
 ---
