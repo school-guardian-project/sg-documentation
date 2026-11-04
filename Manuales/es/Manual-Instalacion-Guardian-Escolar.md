@@ -101,8 +101,8 @@ El proyecto **no publica una única versión de producto**; cada artefacto decla
 | Microservicios de negocio (.NET) | .NET **10** (`net10.0`) | `TargetFramework` en cada `.csproj` |
 | ms-iam | **Java 21** + Spring Boot **4.1.1** (Maven) | `backend/ms-iam/pom.xml` |
 | gps-backend | **Java 21** + Spring Boot | `gps-backend/pom.xml` |
-| Base de datos | Microsoft **SQL Server 2022** (`2022-latest`) | `database/docker-compose.yaml` |
-| Migraciones | **Liquibase 4.29** | `database/docker-compose.yaml` |
+| Base de datos | Microsoft **SQL Server 2022** (`2022-latest`) | `docker-compose.yaml` |
+| Migraciones | **Liquibase 4.29** | `docker-compose.yaml` |
 | Mensajería | Apache **Kafka 4.1.0** (KRaft) | `backend/kafka/docker-compose.yml` |
 | API Gateway | **Kong 3.9** (modo DB-less) | `backend/ms-api-gateway/docker-compose.yml` |
 | Frontend web | **Angular 21** (`@angular/core ^21.2.9`) sobre **Node 20** (`node:20-alpine`), npm 10.9.1 | `dvlp-front/dvlp-web/package.json`, `Dockerfile` |
@@ -299,8 +299,8 @@ Registrar los SHAs y digests obtenidos permite reproducir exactamente la misma i
 - El proyecto se compone de **varios repositorios**. Se recomienda una carpeta raíz de trabajo y clonarlos en subcarpetas consistentes con las rutas de este manual:
 
   ```bash
-  mkdir -p ~/school-guardian/backend ~/school-guardian/database
-  mkdir -p ~/school-guardian/scholl-guardian-project
+  mkdir -p <RUTA_PROYECTO>/backend <RUTA_PROYECTO>/database
+  mkdir -p <RUTA_PROYECTO>/scholl-guardian-project
   ```
 
 - Dentro de los contenedores, los servicios se ejecutan con **usuarios no privilegiados** cuando la imagen base lo define (por ejemplo, las imágenes .NET usan `USER $APP_UID`). No es necesario crear usuarios del sistema en el host.
@@ -318,12 +318,12 @@ La base de datos **no se crea manualmente**: el `docker-compose.yaml` de `databa
 1. Crear el archivo de entorno a partir del ejemplo y **definir valores propios** (no usar los de ejemplo en producción):
 
    ```bash
-   cd ~/school-guardian/database
+   cd <RUTA_PROYECTO>/database
    cp .env.example .env
    # Editar .env: MSSQL_DATABASE, MSSQL_USER, MSSQL_SA_PASSWORD
    ```
 
-   Variables reales definidas en `database/.env.example`:
+   Variables reales definidas en `.env.example`:
 
    | Variable | Descripción |
    |---|---|
@@ -367,7 +367,7 @@ flowchart TD
 ### 5.1 Clonación de repositorios
 
 ```bash
-mkdir -p ~/school-guardian/backend && cd ~/school-guardian/backend
+mkdir -p <RUTA_PROYECTO>/backend && cd <RUTA_PROYECTO>/backend
 
 git clone https://github.com/school-guardian-project/sg-ms-api-gateway.git ms-api-gateway
 git clone https://github.com/school-guardian-project/broker-kafka.git kafka
@@ -381,7 +381,7 @@ git clone https://github.com/school-guardian-project/sg-ms-configuration.git ms-
 git clone https://github.com/school-guardian-project/sg-ms-exceptional.git ms-exceptional
 git clone https://github.com/school-guardian-project/sg-ms-forgot-information.git sg-ms-forgot-information
 
-cd ~/school-guardian
+cd <RUTA_PROYECTO>
 git clone https://github.com/code-sena/sg-db.git database
 git clone https://github.com/school-guardian-project/GuardianEscolar.git scholl-guardian-project
 ```
@@ -399,7 +399,7 @@ docker network ls | grep sg-services-network
 ### 5.3 Base de datos y migraciones
 
 ```bash
-cd ~/school-guardian/database
+cd <RUTA_PROYECTO>/database
 cp .env.example .env      # solo la primera vez; editar los valores
 docker compose up -d
 ```
@@ -423,7 +423,7 @@ docker compose logs liquibase-route
 ### 5.4 Mensajería (Kafka)
 
 ```bash
-cd ~/school-guardian/backend/kafka
+cd <RUTA_PROYECTO>/backend/kafka
 docker compose up -d
 ```
 
@@ -441,7 +441,7 @@ El contenedor `kafka-init` crea automáticamente los tópicos definidos en `init
 Verificar:
 
 ```bash
-docker exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list
+docker exec kafka <RUTA_LOCAL> --bootstrap-server kafka:9092 --list
 ```
 
 ### 5.5 Microservicios de backend
@@ -451,7 +451,7 @@ Cada servicio se despliega con su propio `docker-compose.yml`. **Preparar el `.e
 **a) `ms-school-management`** (expone REST `:8080` y gRPC h2c `:5001`; es consumido por `ms-iam` y `ms-user-management`):
 
 ```bash
-cd ~/school-guardian/backend/ms-school-management
+cd <RUTA_PROYECTO>/backend/ms-school-management
 cp .env.example .env      # completar ConnectionStrings__DefaultConnection, Kafka, Kestrel, Grpc
 docker compose up -d --build
 ```
@@ -469,7 +469,7 @@ Variables reales (ver `ms-school-management/.env`):
 **b) `ms-iam`** (Java 21; autenticación JWT):
 
 ```bash
-cd ~/school-guardian/backend/ms-iam
+cd <RUTA_PROYECTO>/backend/ms-iam
 cp .env.example .env      # completar MSSQL_*, KAFKA_BOOTSTRAP_SERVERS, JWT_SECRET, APP_INTERNAL_API_KEY
 docker compose up -d --build
 ```
@@ -478,7 +478,7 @@ docker compose up -d --build
 
 ```bash
 for svc in ms-user-management ms-fleet ms-route ms-notification ms-configuration ms-exceptional sg-ms-forgot-information; do
-  ( cd ~/school-guardian/backend/$svc && cp -n .env.example .env 2>/dev/null; docker compose up -d --build )
+  ( cd <RUTA_PROYECTO>/backend/$svc && cp -n .env.example .env 2>/dev/null; docker compose up -d --build )
 done
 ```
 
@@ -497,32 +497,32 @@ Variables relevantes por servicio (según los `.env` reales):
 **Ejecución de pruebas (NUnit).** Los servicios .NET incluyen un servicio de pruebas en el perfil `tests`:
 
 ```bash
-cd ~/school-guardian/backend/ms-route
+cd <RUTA_PROYECTO>/backend/ms-route
 docker compose run --rm ms-route.tests     # ejecuta `dotnet test` (NUnit)
 ```
 
 ### 5.6 API Gateway (Kong)
 
 ```bash
-cd ~/school-guardian/backend/ms-api-gateway
+cd <RUTA_PROYECTO>/backend/ms-api-gateway
 docker compose up -d
 ```
 
-Kong arranca en **modo DB-less** con la configuración declarativa `kong/kong.yml` montada como solo lectura (`/opt/kong/kong.yml`). El archivo define los servicios y rutas hacia los microservicios internos, la política **CORS** y el **rate-limiting** (por token con `limit_by: header` y un techo global por servicio).
+Kong arranca en **modo DB-less** con la configuración declarativa `kong/kong.yml` montada como solo lectura (`<RUTA_LOCAL> El archivo define los servicios y rutas hacia los microservicios internos, la política **CORS** y el **rate-limiting** (por token con `limit_by: header` y un techo global por servicio).
 
 > **Hallazgo.** La configuración de Kong **no define una ruta `/health`**. La verificación se realiza contra las rutas reales de la API (sección 7.2).
 
 ### 5.7 Frontend web (Angular)
 
 ```bash
-cd ~/school-guardian/scholl-guardian-project
+cd <RUTA_PROYECTO>/scholl-guardian-project
 # El archivo dvlp-front/dvlp-web/.env debe apuntar a Kong:
 #   API_URL=http://localhost:8000
 #   API_FORGOT_INFORMATION_URL=http://localhost:8000
 docker compose up -d --build frontend-web
 ```
 
-- **Desarrollo:** el `dev.Dockerfile` usa `node:20-alpine` y ejecuta `ng serve` en `0.0.0.0:4200`, con montaje de `src/`, `public/` y `.env`.
+- **Desarrollo:** el `dev.Dockerfile` usa `node:20-alpine` y ejecuta `ng serve` en `<IP>`, con montaje de `src/`, `public/` y `.env`.
 - **Producción:** el `Dockerfile` construye con `ng build --configuration spa --output-mode=static` y sirve el resultado con **nginx** (`nginx.conf`).
 
 > **Hallazgo (divergencia).** En la imagen de producción, el bloque `location /api` de `nginx.conf` reenvía a `http://backend:8080`, un host que **no existe** en el stack actual (el punto de entrada real es `kong:8000`). Para desplegar la imagen de producción debe corregirse ese *upstream*.
@@ -532,7 +532,7 @@ docker compose up -d --build frontend-web
 Requiere Node 20 y la CLI de Expo. No se conteneriza en el repositorio.
 
 ```bash
-cd ~/school-guardian/scholl-guardian-project/dvlp-front/dvlp-movil/guardian-escolar
+cd <RUTA_PROYECTO>/scholl-guardian-project/dvlp-front/dvlp-movil/guardian-escolar
 cp .env.example .env      # ajustar valores
 npm install
 npm run start             # o: npm run start:lan
@@ -554,7 +554,7 @@ La compilación/entrega móvil se gestiona con **EAS** (`eas.json` define los pe
 Es un servicio Java 21 independiente que **no** usa Compose. Su persistencia está **en memoria** y la autoconfiguración de base de datos está **desactivada**:
 
 ```bash
-cd ~/school-guardian/scholl-guardian-project/gps-backend/gps-backend
+cd <RUTA_PROYECTO>/scholl-guardian-project/gps-backend/gps-backend
 ./mvnw spring-boot:run
 # Expone HTTP en el puerto 8080
 ```
@@ -591,7 +591,7 @@ Ejemplo de configuración (valores **ficticios**):
 
 ```json
 {
-  "ConnectionStrings__DefaultConnection": "Server=sqlserver;Database=school-guardian;User Id=<usuario>;Password=<REDACTADO>;TrustServerCertificate=True",
+  "ConnectionStrings__DefaultConnection": "Server=sqlserver;Database=school-guardian;User Id=<USUARIO>;Password=<REDACTADO>;TrustServerCertificate=True",
   "Kafka__BootstrapServers": "kafka:9092",
   "SchoolManagement__GrpcAddress": "http://ms-school-management:5001",
   "Services__UserManagement__BaseUrl": "http://ms-user-management:8080",
@@ -628,7 +628,7 @@ El usuario administrador inicial se crea mediante **datos semilla** cargados por
 | Acudiente | `parent@school-guardian.com` | `99000000003` |
 | Estudiante | `student@school-guardian.com` | `99000000004` |
 
-> **Cómo funciona.** Los comentarios de las migraciones indican que el `PasswordHash` es **bcrypt (rounds=10) del número de identificación** de cada persona. El script de verificación `scripts/verify-api.sh` confirma este comportamiento. El valor `DEMO_PASSWORD=Demo2026!` del `database/.env.example` corresponde a los **perfiles de demostración** y debe cambiarse.
+> **Cómo funciona.** Los comentarios de las migraciones indican que el `PasswordHash` es **bcrypt (rounds=10) del número de identificación** de cada persona. El script de verificación `verify-api.sh` confirma este comportamiento. El valor `DEMO_PASSWORD=<REDACTADO>` del `.env.example` corresponde a los **perfiles de demostración** y debe cambiarse.
 
 Roles sembrados en `Iam.Role`: **`Admin`**, `Student`, `Driver`, `Parent` y `SuperAdmin`. **Acción obligatoria en producción:** cambiar las contraseñas semilla y deshabilitar los usuarios de demostración.
 
@@ -661,7 +661,7 @@ docker network inspect sg-services-network --format '{{range .Containers}}{{.Nam
 El repositorio incluye un script de verificación real que prueba las rutas del frontend a través de Kong:
 
 ```bash
-cd ~/school-guardian/scholl-guardian-project
+cd <RUTA_PROYECTO>/scholl-guardian-project
 API_URL=http://localhost:8000 ./scripts/verify-api.sh
 ```
 
@@ -723,7 +723,7 @@ Respuesta esperada (valores abreviados):
 1. **Actualizar el código** de cada repositorio implicado:
 
    ```bash
-   for r in ~/school-guardian/backend/* ~/school-guardian/database ~/school-guardian/scholl-guardian-project; do
+   for r in <RUTA_PROYECTO>/backend/* <RUTA_PROYECTO>/database <RUTA_PROYECTO>/scholl-guardian-project; do
      git -C "$r" pull --ff-only
    done
    ```
@@ -732,21 +732,21 @@ Respuesta esperada (valores abreviados):
 3. **Reconstruir y recrear los servicios** afectados:
 
    ```bash
-   cd ~/school-guardian/backend/<servicio>
+   cd <RUTA_PROYECTO>/backend/<servicio>
    docker compose up -d --build
    ```
 
 4. **Aplicar migraciones nuevas:** volver a ejecutar los contenedores Liquibase de `database/`; Liquibase aplica **solo** los *changesets* nuevos y registra el historial:
 
    ```bash
-   cd ~/school-guardian/database
+   cd <RUTA_PROYECTO>/database
    docker compose up -d
    docker compose logs -f liquibase-iam liquibase-route
    ```
 
-5. **Verificar** con `scripts/verify-api.sh` (sección 7.2).
+5. **Verificar** con `verify-api.sh` (sección 7.2).
 
-> **Compatibilidad.** Los cambios de esquema deben respetar el orden de dependencias de clave foránea ya codificado en `database/docker-compose.yaml` (Geographic/Gps/Settings → School → Iam → Fleet → Route → UserManagement → Notification).
+> **Compatibilidad.** Los cambios de esquema deben respetar el orden de dependencias de clave foránea ya codificado en `docker-compose.yaml` (Geographic/Gps/Settings → School → Iam → Fleet → Route → UserManagement → Notification).
 
 ### 8.2 Migración de datos
 
@@ -760,12 +760,12 @@ El repositorio **no incluye** scripts de respaldo ni política de retención. Se
 
 ```bash
 # Respaldo completo (dentro del contenedor de SQL Server)
-docker exec school-guardian-db-dev /opt/mssql-tools18/bin/sqlcmd \
+docker exec school-guardian-db-dev <RUTA_LOCAL> \
   -S localhost -U sa -P '<REDACTADO>' -C \
-  -Q "BACKUP DATABASE [school-guardian] TO DISK = N'/var/lib/mssql/data/school-guardian.bak' WITH INIT, COMPRESSION"
+  -Q "BACKUP DATABASE [school-guardian] TO DISK = N'<RUTA_LOCAL> WITH INIT, COMPRESSION"
 
 # Copiar el respaldo fuera del contenedor
-docker cp school-guardian-db-dev:/var/lib/mssql/data/school-guardian.bak ./backups/
+docker cp school-guardian-db-dev:<RUTA_LOCAL> ./backups/
 ```
 
 Recomendaciones:

@@ -202,7 +202,7 @@ flowchart LR
 | sg-ms-gps | Java 21 | Spring Boot 4.1.1; Spring Web MVC; dependencias JPA/JDBC no prueban persistencia | `sg-ms-gps/pom.xml:8–23` |
 | API Gateway | — | Kong 3.9 (DB-less, config declarativa) | `backend/ms-api-gateway/docker-compose.yml` |
 | Mensajería | — | Apache Kafka 4.1.0 en modo KRaft | `backend/kafka/docker-compose.yml` |
-| Base de datos | — | Microsoft SQL Server 2022 | `database/docker-compose.yaml` |
+| Base de datos | — | Microsoft SQL Server 2022 | `docker-compose.yaml` |
 
 **Frontend.**
 
@@ -493,7 +493,7 @@ sequenceDiagram
 
 ### 4.1 Diagrama entidad–relación
 
-El modelo se materializa en **una base de datos SQL Server** llamada `school-guardian`, organizada por **esquema-por-servicio** (patrón *schema-per-service*). El DBML canónico es `database/db-school-guardian.dbml` (34 tablas agrupadas en 9 esquemas). Por su extensión, el ER se presenta por dominios.
+El modelo se materializa en **una base de datos SQL Server** llamada `school-guardian`, organizada por **esquema-por-servicio** (patrón *schema-per-service*). El DBML canónico es `db-school-guardian.dbml` (34 tablas agrupadas en 9 esquemas). Por su extensión, el ER se presenta por dominios.
 
 **Dominio de identidad y acceso (esquema `Iam`):**
 
@@ -652,7 +652,7 @@ erDiagram
 
 ### 4.2 Diccionario de datos
 
-A continuación se documentan las tablas principales con sus campos, tipos y restricciones. La fuente única es `database/db-school-guardian.dbml`.
+A continuación se documentan las tablas principales con sus campos, tipos y restricciones. La fuente única es `db-school-guardian.dbml`.
 
 **Esquema `Iam`.**
 

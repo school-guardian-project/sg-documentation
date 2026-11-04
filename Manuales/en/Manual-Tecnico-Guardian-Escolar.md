@@ -199,7 +199,7 @@ flowchart LR
 | sg-ms-gps | Java 21 | Spring Boot 4.1.1; Spring Web MVC; JPA/JDBC dependencies do not prove persistence | `sg-ms-gps/pom.xml:8–23` |
 | API Gateway | — | Kong 3.9 (DB-less, declarative config) | `backend/ms-api-gateway/docker-compose.yml` |
 | Messaging | — | Apache Kafka 4.1.0 in KRaft mode | `backend/kafka/docker-compose.yml` |
-| Database | — | Microsoft SQL Server 2022 | `database/docker-compose.yaml` |
+| Database | — | Microsoft SQL Server 2022 | `docker-compose.yaml` |
 
 **Frontend.**
 
@@ -490,7 +490,7 @@ sequenceDiagram
 
 ### 4.1 Entity–relationship diagram
 
-The model is materialized in **one SQL Server database** named `school-guardian`, organized by **schema-per-service**. The canonical DBML is `database/db-school-guardian.dbml` (34 tables grouped into 9 schemas). Because of its size, the ER is presented by domain.
+The model is materialized in **one SQL Server database** named `school-guardian`, organized by **schema-per-service**. The canonical DBML is `db-school-guardian.dbml` (34 tables grouped into 9 schemas). Because of its size, the ER is presented by domain.
 
 **Identity and access domain (`Iam` schema):**
 
@@ -649,7 +649,7 @@ erDiagram
 
 ### 4.2 Data dictionary
 
-The main tables are documented below with their fields, types and constraints. The single source is `database/db-school-guardian.dbml`.
+The main tables are documented below with their fields, types and constraints. The single source is `db-school-guardian.dbml`.
 
 **`Iam` schema.**
 

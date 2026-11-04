@@ -89,8 +89,8 @@
 | **Región AWS** | `us-east-2` (Ohio), zona `us-east-2a` |
 | **ID de instancia** | `i-0911016bb4a900105` |
 | **Sistema Operativo** | Debian GNU/Linux 13 (trixie), kernel 6.12 |
-| **IP pública** | **`52.15.190.40`** (Elastic IP fija) |
-| **Nombre público (DNS)** | `52-15-190-40.sslip.io` (sin comprar dominio) |
+| **IP pública** | **`<IP>`** (Elastic IP fija) |
+| **Nombre público (DNS)** | `<HOST>` (sin comprar dominio) |
 
 ### 1.1.4 Matriz de roles y responsables (DevOps, Tech Lead, QA, DBA)
 
@@ -105,7 +105,7 @@
 | Versión | Fecha | Autor | Descripción del cambio |
 |---|---|---|---|
 | 1.0 | 2026-10-15 | Juan Chala | Versión inicial del manual de despliegue |
-| 1.1 | 2026-10-16 | Juan Chala | Reestructuración al formato de Plan de Despliegue; migración a Elastic IP `52.15.190.40`; integración de Portainer CE |
+| 1.1 | 2026-10-16 | Juan Chala | Reestructuración al formato de Plan de Despliegue; migración a Elastic IP `<IP>`; integración de Portainer CE |
 | 1.2 | 2026-10-18 | Juan Chala | Flujo de Portainer corregido: setup token generado por Portainer (sin credenciales ni token hardcodeados); evidencias visuales §5.4 |
 
 ## 1.3 Resumen de Cambios (Release Notes)
@@ -113,7 +113,7 @@
 ### 1.3.1 Nuevas funcionalidades
 
 - **Sistema GPS completo** (`ms-gps`): servidor TCP en el puerto `8842` (protocolo VT03F) + API REST vía Kong (`/api/gps`). Persistencia en memoria (no requiere base de datos).
-- **Panel de administración Portainer CE**: gestión visual de contenedores en `https://portainer.52-15-190-40.sslip.io`.
+- **Panel de administración Portainer CE**: gestión visual de contenedores en `https://portainer.<HOST>`.
 - **Servicio de información olvidada** (`ms-forgot-information`).
 - **Notificaciones** (`ms-notification`) integradas con el backend vía Kafka.
 
@@ -126,14 +126,14 @@
 
 ### 1.3.3 Cambios de infraestructura y dependencias
 
-- **IP pública pasó de dinámica a Elastic IP fija**: `52.15.190.40`. Ya no cambia al reiniciar la instancia.
-- **Dominio y TLS** regenerados para `52-15-190-40.sslip.io` (Let's Encrypt vía Caddy).
+- **IP pública pasó de dinámica a Elastic IP fija**: `<IP>`. Ya no cambia al reiniciar la instancia.
+- **Dominio y TLS** regenerados para `<HOST>` (Let's Encrypt vía Caddy).
 - **Integración de Portainer CE** (nuevo compose `docker-compose.portainer.yml`) detrás de Caddy, sin abrir puertos nuevos.
 - Base de datos migrada a **AWS RDS SQL Server Express** (free tier), separando la persistencia del servidor de aplicación.
 
 ### 1.3.4 Cambios incompatibles (Breaking changes)
 
-- **Cambio de IP pública**: todas las variables que apuntaban a la IP anterior (`3.15.21.147`, `18.222.76.182`) deben actualizarse a `52.15.190.40` (Vercel, EAS/móvil, tracker GPS).
+- **Cambio de IP pública**: todas las variables que apuntaban a la IP anterior (`<IP>`, `<IP>`) deben actualizarse a `<IP>` (Vercel, EAS/móvil, tracker GPS).
 - **Acceso público a Portainer** por nuevo subdominio; requiere agregar `--trusted-origins` (los navegadores con versiones nuevas de Portainer 2.27.7+ rechazan login sin este flag).
 - **`iam` changeset 019**: su aplicación modifica datos existentes; se marcó como `EXECUTED` manualmente tras insertar las filas requeridas (ver §4.2).
 
@@ -158,9 +158,9 @@
 - **Imagen:** `portainer/portainer-ce:lts` (2.45.2).
 - **Despliegue:** compose propio `docker-compose.portainer.yml`, unido a la red `sg-services-network`.
 - **Publicación:** **ningún puerto al host**. Caddy hace `reverse_proxy` hacia `portainer:9000`.
-- **Acceso:** `https://portainer.52-15-190-40.sslip.io`.
-- **Gestión:** monta `/var/run/docker.sock` para administrar los contenedores del host.
-- **Flag requerido:** `--trusted-origins https://portainer.52-15-190-40.sslip.io` (evita el error *Origin invalid* detrás de proxy).
+- **Acceso:** `https://portainer.<HOST>`.
+- **Gestión:** monta `<RUTA_LOCAL> para administrar los contenedores del host.
+- **Flag requerido:** `--trusted-origins https://portainer.<HOST>` (evita el error *Origin invalid* detrás de proxy).
 - **Setup token (primer acceso):** **no se fija en el compose** (nada hardcodeado). Portainer **genera el token solo** al arrancar y lo imprime en los logs; el procedimiento para obtenerlo está en §4.1.
 
 ### 2.1.2 Capa Frontend Web (Angular SPA / Servidor Web)
@@ -187,8 +187,8 @@
 ### 2.1.4 Capa de Persistencia (SQL Server en RDS)
 
 - **Motor:** Microsoft SQL Server (Express) en **AWS RDS**.
-- **Host:** `school-guardian.choygiky8hou.us-east-2.rds.amazonaws.com:1433`.
-- **Base de datos:** `school-guardian`; usuario `sgadmin`.
+- **Host:** `<HOST_BASE_DATOS>:1433`.
+- **Base de datos:** `school-guardian`; usuario `<USUARIO>`.
 - **Esquemas:** `Iam`, `UserManagement`, `School`, `Fleet`, `Route`, `Notification`, `Gps`, `Geographic`.
 - **Migraciones:** **Liquibase** (la plantilla menciona Flyway/EF Core; en este proyecto se usa Liquibase 4.29 sobre el repo `database/`).
 - **RDS no es accesible desde internet**: solo desde la instancia EC2 (Security Group).
@@ -206,11 +206,11 @@
                                         │
         ┌───────────────────────────────▼───────────────────────────────┐
         │                    AWS EC2  (Debian 13)                        │
-        │                    Elastic IP 52.15.190.40                     │
+        │                    Elastic IP <IP>                     │
         │                                                                │
         │   [ Caddy ]  ← ÚNICO servicio con puertos públicos (80/443)    │
-        │     ├── 52-15-190-40.sslip.io            ─► kong:8000          │
-        │     └── portainer.52-15-190-40.sslip.io  ─► portainer:9000     │
+        │     ├── <HOST>            ─► kong:8000          │
+        │     └── portainer.<HOST>  ─► portainer:9000     │
         │                                                                │
         │   [ Kong (API Gateway, DB-less) ] ─► ms-*  (red interna)       │
         │   [ Kafka ] [ 7 microservicios ] [ Portainer ]                 │
@@ -250,15 +250,15 @@
 
 | Componente | Host / IP | Puerto | Protocolo | ¿Público? |
 |---|---|---|---|---|
-| Caddy (HTTPS) | `52.15.190.40` / `52-15-190-40.sslip.io` | 443 | HTTPS | **Sí** |
-| Caddy (HTTP→redirect) | `52.15.190.40` | 80 | HTTP | **Sí** (redirige a 443) |
-| SSH (administración) | `52.15.190.40` | 22 | SSH | Sí (restringido) |
-| GPS TCP (tracker VT03F) | `52.15.190.40` | 8842 | TCP puro | **Sí** |
+| Caddy (HTTPS) | `<IP>` / `<HOST>` | 443 | HTTPS | **Sí** |
+| Caddy (HTTP→redirect) | `<IP>` | 80 | HTTP | **Sí** (redirige a 443) |
+| SSH (administración) | `<IP>` | 22 | SSH | Sí (restringido) |
+| GPS TCP (tracker VT03F) | `<IP>` | 8842 | TCP puro | **Sí** |
 | Portainer | vía Caddy | 9000 | HTTP (interno) | No (proxy) |
 | Kong | `kong` (Docker) | 8000 / 8001 | HTTP | No |
 | Microservicios `ms-*` | names Docker | 8080 | HTTP | No |
 | Kafka | `kafka` | 9092 | TCP | No |
-| RDS SQL Server | `…rds.amazonaws.com` | 1433 | TDS | No (solo EC2) |
+| RDS SQL Server | `<HOST_BASE_DATOS>` | 1433 | TDS | No (solo EC2) |
 
 ---
 
@@ -297,7 +297,7 @@ Verificación:
 docker --version
 docker compose version
 docker ps                       # contenedores en ejecución
-ls -l /var/run/docker.sock      # socket requerido por Portainer
+ls -l <RUTA_LOCAL>      # socket requerido por Portainer
 ```
 
 ## 3.2 Estrategia y Ejecución de Respaldos (Backups)
@@ -309,11 +309,11 @@ ls -l /var/run/docker.sock      # socket requerido por Portainer
 - **Respaldo lógico** vía `sqlcmd` (equivalente a dump):
 
 ```bash
-docker run --rm --entrypoint /opt/mssql-tools/bin/sqlcmd \
+docker run --rm --entrypoint <RUTA_LOCAL> \
   mcr.microsoft.com/mssql-tools:latest \
-  -S school-guardian.choygiky8hou.us-east-2.rds.amazonaws.com,1433 \
-  -U sgadmin -P "$MSSQL_SA_PASSWORD" -C \
-  -Q "BACKUP DATABASE [school-guardian] TO DISK = N'/tmp/sg.bak'"
+  -S <HOST_BASE_DATOS> \
+  -U <USUARIO> -P "$MSSQL_SA_PASSWORD" -C \
+  -Q "BACKUP DATABASE [school-guardian] TO DISK = N'<RUTA_LOCAL>
 ```
 
 ### 3.2.2 Respaldo de volúmenes persistentes de Docker
@@ -341,7 +341,7 @@ Antes de cada cambio de configuración se crean copias con sufijo `.bak-*`:
 Cada microservicio tiene su `.env` (no versionado) con la conexión a RDS:
 
 ```env
-ConnectionStrings__DefaultConnection=Server=school-guardian.choygiky8hou.us-east-2.rds.amazonaws.com,1433;Database=school-guardian;User Id=sgadmin;Password=***;TrustServerCertificate=True;
+ConnectionStrings__DefaultConnection=Server=<HOST_BASE_DATOS>;Database=school-guardian;User Id=<USUARIO>;Password=<REDACTADO>;TrustServerCertificate=True;
 ```
 
 ### 3.3.2 Claves de firmado de tokens (JWT Secret Keys)
@@ -376,22 +376,22 @@ docker ps --format '{{.Names}}\t{{.Status}}' | grep portainer
 2. Levantar Portainer si no está:
 
 ```bash
-cd ~/projects/school-guardian/backend
+cd <RUTA_LOCAL>
 docker compose -f docker-compose.portainer.yml up -d
 ```
 
 3. Acceder por navegador a:
 
 ```
-https://portainer.52-15-190-40.sslip.io
+https://portainer.<HOST>
 ```
 
 4. En el **primer acceso**, Portainer pide un **setup token**. Obtenerlo leyendo los logs del contenedor (Portainer **lo genera solo**; no está en ningún archivo ni en el compose):
 
 ```bash
-ssh -i ~/Descargas/sg-ssh.pem admin@52.15.190.40 \
+ssh -i <RUTA_LOCAL> admin@<IP> \
   'docker logs portainer 2>&1 | grep setup_token | tail -1'
-# setup_token=<hexadecimal>
+# setup_token=<REDACTADO>
 ```
 
 5. Pegar el token en la pantalla y **crear el usuario administrador propio** (usuario y contraseña de **mínimo 12 caracteres** cada uno) → *Create user* → **Local** → **Connect**.
@@ -448,7 +448,7 @@ SELECT COL_LENGTH('School.School','Latitude');                  -- columna exist
 
 ### 4.3.1 Carga del archivo `docker-compose.yml`
 
-Tres stacks independientes en `~/projects/school-guardian/backend`:
+Tres stacks independientes en `<RUTA_LOCAL>
 
 | Archivo | Contenido |
 |---|---|
@@ -457,7 +457,7 @@ Tres stacks independientes en `~/projects/school-guardian/backend`:
 | `docker-compose.portainer.yml` | Portainer CE |
 
 ```bash
-cd ~/projects/school-guardian/backend
+cd <RUTA_LOCAL>
 docker network create sg-services-network 2>/dev/null || true
 docker compose up -d                       # servicios + kong
 docker compose -f docker-compose.gateway.yml   up -d   # caddy
@@ -485,7 +485,7 @@ docker compose ps            # estado
 1. Editar `deploy/Caddyfile.gateway` con los dos sitios:
 
 ```caddy
-52-15-190-40.sslip.io {
+<HOST> {
 	encode gzip
 	reverse_proxy kong:8000 {
 		header_up Host {host}
@@ -494,7 +494,7 @@ docker compose ps            # estado
 	log { output stdout }
 }
 
-portainer.52-15-190-40.sslip.io {
+portainer.<HOST> {
 	encode gzip
 	reverse_proxy portainer:9000 {
 		header_up Host {host}
@@ -509,8 +509,8 @@ portainer.52-15-190-40.sslip.io {
 ```bash
 docker restart caddy
 docker logs --tail 40 caddy | grep -i "certificate obtained"
-# certificate obtained successfully  identifier=52-15-190-40.sslip.io
-# certificate obtained successfully  identifier=portainer.52-15-190-40.sslip.io
+# certificate obtained successfully  identifier=<HOST>
+# certificate obtained successfully  identifier=portainer.<HOST>
 ```
 
 3. (Opcional) Ajustar orígenes CORS en `ms-api-gateway/kong/kong.yml` y recargar:
@@ -529,7 +529,7 @@ docker restart kong
 
 | Recurso | URL | Resultado esperado |
 |---|---|---|
-| Portainer | `https://portainer.52-15-190-40.sslip.io` | HTTP 200 (pantalla de inicio de sesión) |
+| Portainer | `https://portainer.<HOST>` | HTTP 200 (pantalla de inicio de sesión) |
 
 ### 5.1.2 Interfaz web pública (Angular / Vercel)
 
@@ -552,11 +552,11 @@ La documentación interactiva **no se hace con Swagger UI**, sino con **Scalar**
 
 | Servicio | URL (vía Caddy) |
 |---|---|
-| ms-route | `https://52-15-190-40.sslip.io/route/scalar/v1` |
-| ms-fleet | `https://52-15-190-40.sslip.io/fleet/scalar/v1` |
-| ms-school-management | `https://52-15-190-40.sslip.io/school-management/scalar/v1` |
-| ms-notification | `https://52-15-190-40.sslip.io/notification/scalar/v1` |
-| ms-user-management | `https://52-15-190-40.sslip.io/user/api/scalar/v1` |
+| ms-route | `https://<HOST>/route/scalar/v1` |
+| ms-fleet | `https://<HOST>/fleet/scalar/v1` |
+| ms-school-management | `https://<HOST>/school-management/scalar/v1` |
+| ms-notification | `https://<HOST>/notification/scalar/v1` |
+| ms-user-management | `https://<HOST>/user/api/scalar/v1` |
 
 > El esquema OpenAPI en JSON queda en la misma base (`/scalar/v1` para la UI y `/openapi/v1.json` para el JSON). El acceso requiere token válido (**HTTP 401** sin autenticar). `ms-gps` es Spring Boot y no expone Scalar.
 
@@ -565,7 +565,7 @@ La documentación interactiva **no se hace con Swagger UI**, sino con **Scalar**
 Desde la instancia EC2 (RDS es privado):
 
 ```bash
-timeout 6 bash -c 'cat < /dev/null > /dev/tcp/school-guardian.choygiky8hou.us-east-2.rds.amazonaws.com/1433' \
+timeout 6 bash -c 'cat < /dev/null > /dev/tcp/<HOST_BASE_DATOS>/1433' \
   && echo "RDS 1433 ABIERTO" || echo "RDS 1433 NO alcanzable"
 ```
 
@@ -574,7 +574,7 @@ timeout 6 bash -c 'cat < /dev/null > /dev/tcp/school-guardian.choygiky8hou.us-ea
 ### 5.2.1 Flujo de autenticación y emisión de tokens
 
 ```bash
-BASE=https://52-15-190-40.sslip.io
+BASE=https://<HOST>
 curl -s -m 20 -X POST -H 'Content-Type: application/json' \
   -d '{"email":"admin@school-guardian.com","password":"99000000001"}' \
   "$BASE/api/v1/auth/login"
@@ -647,13 +647,13 @@ free -h
 
 | Recurso | Valor |
 |---|---|
-| **Dominio API (Caddy + Kong)** | `https://52-15-190-40.sslip.io` |
-| **Dominio Portainer** | `https://portainer.52-15-190-40.sslip.io` |
-| **IP pública (Elastic IP)** | `52.15.190.40` |
+| **Dominio API (Caddy + Kong)** | `https://<HOST>` |
+| **Dominio Portainer** | `https://portainer.<HOST>` |
+| **IP pública (Elastic IP)** | `<IP>` |
 | **Web (Vercel)** | `https://guardian-escolar.vercel.app` |
-| **GPS TCP (VT03F)** | `52.15.190.40:8842` |
+| **GPS TCP (VT03F)** | `<IP>` |
 | **IMEI tracker** | `355468590730586` |
-| **RDS Host** | `school-guardian.choygiky8hou.us-east-2.rds.amazonaws.com:1433` |
+| **RDS Host** | `<HOST_BASE_DATOS>:1433` |
 | **Instancia EC2** | `i-0911016bb4a900105` (us-east-2) |
 
 ## 6.2 Credenciales de prueba (entorno de testing)
@@ -669,13 +669,13 @@ free -h
 ## 6.3 Acceso SSH
 
 ```bash
-ssh -i ~/Descargas/sg-ssh.pem admin@52.15.190.40
+ssh -i <RUTA_LOCAL> admin@<IP>
 ```
 
 ## 6.4 Servicio GPS (ms-gps) — configuración del tracker VT03F
 
 ```
-Servidor: 52.15.190.40
+Servidor: <IP>
 Puerto:   8842
 Protocolo: TCP
 ```
@@ -683,22 +683,22 @@ Protocolo: TCP
 Comando SMS de ejemplo (formato VT03F):
 
 ```text
-SERVER,1,52.15.190.40,8842,0#
+SERVER,1,<IP>,8842,0#
 ```
 
 Verificación:
 
 ```bash
 docker logs -f ms-gps      # esperar: "GPS conectado desde: /XX.XX.XX.XX:XXXX"
-curl https://52-15-190-40.sslip.io/api/gps/devices/355468590730586/connected
+curl https://<HOST>/api/gps/devices/355468590730586/connected
 # false → true al conectar el tracker
 ```
 
 ## 6.5 Frontend Web (Vercel) — variables de entorno
 
 ```env
-API_URL=https://52-15-190-40.sslip.io
-API_FORGOT_INFORMATION_URL=https://52-15-190-40.sslip.io
+API_URL=https://<HOST>
+API_FORGOT_INFORMATION_URL=https://<HOST>
 ```
 
 ## 6.6 App Móvil (React Native + Expo) — variables y compilación
@@ -706,8 +706,8 @@ API_FORGOT_INFORMATION_URL=https://52-15-190-40.sslip.io
 Variables EAS (entorno `production`):
 
 ```env
-EXPO_PUBLIC_API_URL=https://52-15-190-40.sslip.io
-EXPO_PUBLIC_FORGOT_INFORMATION_API_URL=https://52-15-190-40.sslip.io
+EXPO_PUBLIC_API_URL=https://<HOST>
+EXPO_PUBLIC_FORGOT_INFORMATION_API_URL=https://<HOST>
 EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=***
 # + variables de Notification API
 ```
@@ -731,13 +731,13 @@ npx --yes eas-cli@latest build -p ios --profile production
 
 | Problema | Causa | Solución |
 |---|---|---|
-| Web login no responde / todo vacío | IP antigua (instancia cambió de IP) | Apuntar a la Elastic IP `52.15.190.40` en Vercel/EAS/móvil |
-| Portainer "Origin invalid" al entrar | Portainer 2.27.7+ detrás de proxy | Flag `--trusted-origins https://portainer.52-15-190-40.sslip.io` en el compose |
+| Web login no responde / todo vacío | IP antigua (instancia cambió de IP) | Apuntar a la Elastic IP `<IP>` en Vercel/EAS/móvil |
+| Portainer "Origin invalid" al entrar | Portainer 2.27.7+ detrás de proxy | Flag `--trusted-origins https://portainer.<HOST>` en el compose |
 | Portainer en bucle de reinicio | `--trusted-origins` sin esquema | Usar `https://host` (imagen LTS) |
 | Web carga pero resto vacío | Kong `/user/*` mal mapeado + columnas BD faltantes | Ruta `/user/api` + `strip_path: true`, y columnas §4.2.2 |
 | `/schools` 500 | `School.Phone` INT vs long; sin Lat/Long | `ALTER COLUMN Phone BIGINT` + columnas faltantes |
 | GPS `/connected` global 404 | El endpoint no existe | Usar `/devices/{imei}/connected` |
-| Tracker no conecta | Apunta a IP antigua | Reconfigurar VT03F a `52.15.190.40:8842` |
+| Tracker no conecta | Apunta a IP antigua | Reconfigurar VT03F a `<IP>` |
 | `ms-iam` caído tras reinicio | Falla de conexión a RDS en el arranque | `docker restart ms-iam` |
 
 ## 6.8 Respaldos relevantes
